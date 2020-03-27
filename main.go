@@ -1,16 +1,11 @@
 package main
 
 import (
-	"io"
 	"log"
 	"net/http"
 )
 
 func main() {
-	h := func(w http.ResponseWriter, req *http.Request) {
-		io.WriteString(w, "Hello, world!\n")
-	}
-
 	/*
 		# TODO:
 		* start redis
@@ -19,6 +14,7 @@ func main() {
 		* listen on sockets
 	*/
 
-	http.HandleFunc("/", h)
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	// serve web app
+	srv := http.FileServer(http.Dir("./web"))
+	log.Fatal(http.ListenAndServe(":6767", srv))
 }
