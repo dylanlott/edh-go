@@ -10,8 +10,8 @@ import (
 )
 
 type Socketer interface {
-	JoinGame(gameID string, playerID player, deck CardList) error
-	LeaveGame(gameID string, playerID string)
+	JoinGame(gameID string, playerID game.UserID, deck game.CardList) error
+	LeaveGame(gameID string, playerID string) error
 }
 
 type socketWrapper struct {
@@ -45,7 +45,7 @@ func NewSocketLayer() (Socketer, error) {
 
 // JoinGame will join a player to a game and return an error if there are any
 // issues.
-func (s *socketWrapper) JoinGame(gameID string, playerID string, deck CardList) error {
+func (s *socketWrapper) JoinGame(gameID string, playerID game.UserID, deck game.CardList) error {
 	return errs.New("not impl")
 }
 

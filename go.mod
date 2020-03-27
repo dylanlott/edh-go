@@ -1,4 +1,4 @@
-module edh-go
+module github.com/dylanlott/edh-go
 
 go 1.13
 
