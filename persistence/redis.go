@@ -12,16 +12,17 @@ type Persistence interface {
 	Get(key Key) (Value, bool, error)
 }
 
+// sqlite implements Persistence with the SQLite driver
 type sqlite struct {
 }
 
-// redis fulfills the Persistence interface with an adapter
+// redis implelement Persistence with the Redis driver
 type redis struct {
 }
 
-// NewDataLayer returns a new Persistence that can be used
+// NewRedis returns a new Redis Persistence that can be used
 // in the application to persist and update state.
-func NewDataLayer() (Persistence, error) {
+func NewRedis() (Persistence, error) {
 	return &redis{}, errs.New("not implemented")
 }
 
@@ -31,4 +32,8 @@ func (r *redis) Put(key Key, val Value) (Value, error) {
 
 func (r *redis) Get(key Key) (Value, bool, error) {
 	return nil, false, errs.New("not implemented")
+}
+
+func (v Value) String() (string, error) {
+	return "", errs.New("not implemented")
 }

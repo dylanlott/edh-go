@@ -1,27 +1,21 @@
-package main
+package game
 
 import (
 	"errors"
 	"sync"
+	"time"
 )
 
 // FullGame implements all of the below code in a neat wrapper
 type FullGame interface {
-	Shuffle(player UserID) (Deck, error)
-	Add(card Card, player UserID) error
-	Remove(card Card, player UserID) error
+	// Get returns a pointer to a PlayerState
+	Get(player UserID) (*PlayerState, error)
+
+	// Join will add a player to the Game
 	Join(deck Deck, player UserID) error
+
+	// Leave will remove a player from a Game
 	Leave(player UserID) error
-}
-
-// Actions represents a change in the board state.
-type Action struct{}
-
-// Card tracks the properties of a Card in a given Game
-type Card struct {
-	Name     string
-	Counters map[string]int
-	Details  map[string]string
 }
 
 // UserID is used for external routing and relation to Users when we go live
@@ -31,9 +25,10 @@ type UserID string
 type Game struct {
 	sync.Mutex
 
-	Name    string
-	ID      string
-	Players map[UserID]PlayerState
+	Name      string
+	ID        string
+	StartTime time.Time
+	Players   map[UserID]PlayerState
 }
 
 // PlayerState maintains a state for each player that is mutex protected.
@@ -45,36 +40,25 @@ type PlayerState struct {
 	Library   CardList
 	Graveyard CardList
 	Exiled    CardList
+	Field     CardList
 
 	// Counters include all game effects on Player
 	Counters map[string]int
 }
 
-// Deck tracks a list of Cards for a Game. These are ephemeral and
-// are created and destroyed per game.
-type Deck struct {
-	Name   string
-	Cards  CardList
-	Player string // refers to player ID, only for internet purposes
-}
-
 // NewGame creates a new Game object to manipulate the game board state.
-func NewGame(players map[UserID]PlayerState) FullGame {
-	return &Game{}
+func NewGame(players map[UserID]Deck) FullGame {
+	g := &Game{}
+	return g
 }
 
 // Shuffles a Deck
-func (g *Game) Shuffle(player UserID) (Deck, error) {
-	// deck := g.Decks[player]
-	return Deck{}, errors.New("not impl")
+func (g *Game) Shuffle(player UserID) CardList {
+	return nil
 }
 
-func (g *Game) Remove(card Card, player UserID) error {
-	return errors.New("not impl")
-}
-
-func (g *Game) Add(card Card, player UserID) error {
-	return errors.New("not impl")
+func (g *Game) Get(player UserID) (*PlayerState, error) {
+	return nil, errors.New("not impl")
 }
 
 func (g *Game) Join(deck Deck, player UserID) error {
