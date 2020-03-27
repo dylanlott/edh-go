@@ -3,7 +3,7 @@ package sockets
 import (
 	"fmt"
 
-	"../game"
+	"github.com/dylanlott/edh-go/game"
 
 	"github.com/googollee/go-socket.io"
 	"github.com/zeebo/errs"
@@ -45,6 +45,11 @@ func NewSocketLayer() (Socketer, error) {
 
 // JoinGame will join a player to a game and return an error if there are any
 // issues.
-func (s *socketWrapper) JoinGame(gameID string, playerID string, deck CardList) {
+func (s *socketWrapper) JoinGame(gameID string, playerID string, deck CardList) error {
+	return errs.New("not impl")
+}
+
+// LeaveGame will remove a player from a game
+func (s *socketWrapper) LeaveGame(gameID string, playerID string) error {
 	return errs.New("not impl")
 }

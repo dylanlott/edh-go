@@ -2,8 +2,6 @@ package game
 
 import (
 	"fmt"
-
-	"github.com/zeebo/errs"
 )
 
 // GameKey holds a reference to the global state of a game
@@ -18,17 +16,20 @@ type CardKey string
 type Field string
 
 func NewGameKey(gameID GameID, userID UserID, fieldID Field) GameKey {
-	return fmt.Sprintf("%s:%s:%s", gameID, userID, fieldID)
+	key := fmt.Sprintf("%s:%s:%s", gameID, userID, fieldID)
+	return GameKey(key)
 }
 
 func NewCardKey(gameId, playerId, cardId, fieldId string) CardKey {
-	return fmt.Sprintf("%s:%s:%s:%s", gameId, playerId, cardId, fieldId)
+	key := fmt.Sprintf("%s:%s:%s:%s", gameId, playerId, cardId, fieldId)
+	return CardKey(key)
 }
 
-func GameKeyFromString(key string) (Game, error) {
-	return nil, errs.New("not impl")
+// String returns the string value of a GameKey
+func (g GameKey) String() string {
+	return string(g)
 }
 
-func CardFieldFromString(key string) (CardField, error) {
-	return nil, errs.New("not impl")
+func ParseGameKey(str string) GameKey {
+	return GameKey("not implemented")
 }

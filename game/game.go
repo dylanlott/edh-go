@@ -20,13 +20,14 @@ type FullGame interface {
 
 // UserID is used for external routing and relation to Users when we go live
 type UserID string
+type GameID string
 
 // Game maintains a Game state with mutexes for protection
 type Game struct {
 	sync.Mutex
 
 	Name      string
-	ID        string
+	ID        GameID
 	StartTime time.Time
 	Players   map[UserID]PlayerState
 }

@@ -3,7 +3,9 @@ package game
 import "errors"
 
 // Card tracks the properties of a Card in a given Game
-type Card struct{}
+type Card struct {
+	Name string
+}
 
 // CardList exposes a set of methods for manipulating a list of Cards
 type CardList []Card

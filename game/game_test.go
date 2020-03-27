@@ -6,7 +6,7 @@ func TestNewFullGame(t *testing.T) {
 	// players default starting state
 	players := make(map[UserID]Deck)
 
-	players["play1"] = Deck{
+	players["player1"] = Deck{
 		Name:  "Karlov Voltron",
 		Cards: CardList{},
 	}
@@ -27,13 +27,13 @@ func TestNewFullGame(t *testing.T) {
 	}
 
 	// Join Game
-	err := g.Join(deck, UserID("play2"))
+	err := g.Join(deck, UserID("player2"))
 	if err != nil {
 		t.Fail()
 	}
 
 	// Leave Game
-	err = g.Leave(UserID("play2"))
+	err = g.Leave(UserID("player2"))
 	if err != nil {
 		t.Fail()
 	}
@@ -41,7 +41,7 @@ func TestNewFullGame(t *testing.T) {
 	// TODO: Test that getting a user that has left the game
 	// returns a nil and an error to make sure that's correct
 
-	p, err := g.Get("play1")
+	p, err := g.Get("player1")
 	if err != nil {
 		t.Fail()
 	}
@@ -50,4 +50,25 @@ func TestNewFullGame(t *testing.T) {
 	}
 
 	// TODO: ensure that player left game in game state
+}
+
+func TestBoardState(t *testing.T) {
+	players := make(map[UserID]Deck)
+
+	players["play1"] = Deck{
+		Name:  "Karlov Voltron",
+		Cards: CardList{},
+	}
+
+	g := NewGame(players)
+
+	p1, err := g.Get("play1")
+	if err != nil {
+		t.Fail()
+	}
+	if p1 == nil {
+		t.Fail()
+	}
+
+	t.Logf("player1: %+v", p1)
 }
