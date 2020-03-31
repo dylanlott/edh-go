@@ -1,9 +1,20 @@
 <template>
   <div id="app">
-    <div id="nav">
-      <router-link to="/">Home</router-link> |
-      <router-link to="/about">About</router-link>
-    </div>
-    <router-view/>
+    <main>
+      <div id="nav">
+        <router-link to="/">EDH Go</router-link> |
+        <router-link to="/about">About</router-link>
+      </div>
+      <router-view/>
+    </main>
   </div>
 </template>
+<script>
+export default {
+  name: 'main',
+  components: {},
+  created () {
+    console.log('created')
+  }
+}
+</script>
