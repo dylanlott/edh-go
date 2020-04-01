@@ -14,7 +14,6 @@ export default new Vuex.Store({
     },
     user: {},
     board: {},
-    notifications: {},
     game: {}
   },
   mutations: {
@@ -23,6 +22,12 @@ export default new Vuex.Store({
     },
     SOCKET_DISCONNECT (state) {
       state.socket.connected = false
+    },
+    GAME_EVENT_JOIN (state, data) {
+      state.game = data
+    },
+    GAME_EVENT_LEAVE (state, data) {
+      state.game = {}
     }
   },
   actions: {

@@ -1,20 +1,22 @@
 <template>
   <div id="app">
     <main>
-      <div id="nav">
-        <router-link to="/">EDH Go</router-link> |
-        <router-link to="/about">About</router-link>
-      </div>
+      <Navbar></Navbar>
       <router-view/>
     </main>
   </div>
 </template>
 <script>
+import Navbar from '@/components/Navbar'
+
 export default {
   name: 'main',
-  components: {},
+  components: {
+    Navbar
+  },
   created () {
     console.log('created')
+    console.log('mounted sockets: ', this.$socket)
   }
 }
 </script>

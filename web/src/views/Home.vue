@@ -1,7 +1,7 @@
 <template>
   <div class="home">
     <section>
-      <p>MVP CSS working</p>
+      <h1>EDH Go is the first board state emulator for Magic the Gathering.</h1>
     </section>
   </div>
 </template>
