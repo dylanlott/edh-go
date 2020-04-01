@@ -9,6 +9,9 @@
       <section>
         <aside class="fullwidth">
           Your Board
+          <aside class="player">
+            <Player :id="player.id" :boardstate="player.boardstate"/>
+          </aside>
         </aside>
       </section>
 
@@ -16,10 +19,10 @@
         <aside class="fullwidth boardstate">
           Board State
             <aside
-            class="player"
-            v-for="player in players"
-            :key="player.id">
-              <Player :id="player.id" :boardstate="player.boardstate"/>
+            class="opponent"
+            v-for="opponent in opponents"
+            :key="opponent.id">
+              <Opponent :id="opponent.id" :boardstate="opponent.boardstate"/>
               <br>
             </aside>
         </aside>
@@ -31,12 +34,23 @@
 <script>
 // @ is an alias to /src
 import Player from '@/components/Player.vue'
+import Opponent from '@/components/Opponent.vue'
 
 export default {
   name: 'Game',
   data () {
     return {
-      players: [
+      player: {
+        id: 'ax8ga8w',
+        boardstate: {
+          graveyard: [],
+          library: [],
+          exiled: [],
+          battlefield: [],
+          meta: {}
+        }
+      },
+      opponents: [
         {
           boardstate: {},
           id: '1'
@@ -57,7 +71,8 @@ export default {
     }
   },
   components: {
-    Player
+    Player,
+    Opponent
   }
 }
 </script>

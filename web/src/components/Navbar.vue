@@ -18,11 +18,7 @@
 </template>
 <script>
 export default {
-  name: 'Navbar',
-  data () {
-    return {
-    }
-  }
+  name: 'Navbar'
 }
 </script>
 <style media="screen">
