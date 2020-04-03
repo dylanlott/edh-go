@@ -12,7 +12,10 @@ func TestNewFullGame(t *testing.T) {
 	}
 
 	// create a new game
-	g := NewGame(players)
+	g, err := NewGame(players)
+	if err != nil {
+		t.Fail()
+	}
 
 	deck := Deck{
 		Name: "test deck",
@@ -27,7 +30,7 @@ func TestNewFullGame(t *testing.T) {
 	}
 
 	// Join Game
-	err := g.Join(deck, UserID("player2"))
+	err = g.Join(deck, UserID("player2"))
 	if err != nil {
 		t.Fail()
 	}
@@ -41,7 +44,7 @@ func TestNewFullGame(t *testing.T) {
 	// TODO: Test that getting a user that has left the game
 	// returns a nil and an error to make sure that's correct
 
-	p, err := g.Get("player1")
+	p, err := g.Get("game1", "player1")
 	if err != nil {
 		t.Fail()
 	}
@@ -60,9 +63,12 @@ func TestBoardState(t *testing.T) {
 		Cards: CardList{},
 	}
 
-	g := NewGame(players)
+	g, err := NewGame(players)
+	if err != nil {
+		t.Fail()
+	}
 
-	p1, err := g.Get("play1")
+	p1, err := g.Get("game1", "play1")
 	if err != nil {
 		t.Fail()
 	}
@@ -71,4 +77,8 @@ func TestBoardState(t *testing.T) {
 	}
 
 	t.Logf("player1: %+v", p1)
+
+	if p1.PlayerID == "" {
+		t.Fail()
+	}
 }

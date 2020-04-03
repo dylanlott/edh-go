@@ -1,11 +1,24 @@
 package game
 
-import "errors"
+import (
+	sdk "github.com/MagicTheGathering/mtg-sdk-go"
+	"github.com/zeebo/errs"
+)
 
 // Card tracks the properties of a Card in a given Game
 type Card struct {
 	Name string
+
+	// Track counters on a card
+	Counters map[string]Counter
+
+	// wrappers around the mtg sdk card
+	card   sdk.Card
+	cardId sdk.CardId
 }
+
+// Query will try to find card info for a given CardID with MTG SDK
+func (card Card) Query() {}
 
 // CardList exposes a set of methods for manipulating a list of Cards
 type CardList []Card
@@ -18,14 +31,21 @@ type Deck struct {
 	Owner     UserID
 }
 
+func NewDecklist(decklist string) (CardList, error) {
+	return CardList{}, errs.New("not impl")
+}
+
 // Shuffle is a sugar method to make Shuffling a list of Cards easier.
 func (c CardList) Shuffle() (CardList, error) {
-	return []Card{}, errors.New("not impl")
+	return []Card{}, errs.New("not impl")
 }
 
 // Fetch removes a card from the library and puts into the player's Hand
 func (c CardList) Fetch(card Card) (CardList, error) {
-	return nil, errors.New("not impl")
+	// check if card is in deck
+	// remove it if it is, and put it into player's Hand instead.
+	// return the new card list or an error
+	return nil, errs.New("not impl")
 }
 
 // Returns the top card of the Deck into the player's Hand
@@ -35,5 +55,5 @@ func (c CardList) Draw() Card {
 
 // TODO: Implement the go Sort interface on Cards here for sorting methods
 func (c CardList) Sort() error {
-	return errors.New("not impl")
+	return errs.New("not impl")
 }
