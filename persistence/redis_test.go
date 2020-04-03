@@ -5,7 +5,8 @@ import (
 )
 
 func TestNewRedis(t *testing.T) {
-	r, err := NewRedis()
+	config := make(Config)
+	r, err := NewRedis(config)
 	if err != nil {
 		t.Logf("FAILED: %s", err)
 		t.Fail()
@@ -16,21 +17,17 @@ func TestNewRedis(t *testing.T) {
 		t.Fail()
 	}
 
-	key := []byte("key1")
-	v, ok, err := r.Get(key)
+	val, ok, err := r.Get("testkey")
 	if err != nil {
-		t.Fail()
-	}
-	if v == nil && ok {
+		t.Logf("failed to get testkey")
 		t.Fail()
 	}
 
-	p, err := r.Put([]byte("key2"), []byte("1"))
-	if err != nil {
+	t.Logf("val: %+v", val)
+
+	// it shouldn't exist yet, so it should return false
+	if ok {
 		t.Fail()
 	}
 
-	if p == nil {
-		t.Fail()
-	}
 }

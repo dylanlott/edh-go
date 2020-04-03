@@ -2,38 +2,68 @@ package persistence
 
 import (
 	"github.com/zeebo/errs"
+
+	"github.com/go-redis/redis/v7"
 )
 
-type Value []byte
-type Key []byte
-
-type Persistence interface {
-	Put(key Key, val Value) (Value, error)
-	Get(key Key) (Value, bool, error)
+// redisDB implelement Persistence with the Redis driver
+type redisDB struct {
+	client *redis.Client
 }
 
-// sqlite implements Persistence with the SQLite driver
-type sqlite struct {
-}
-
-// redis implelement Persistence with the Redis driver
-type redis struct {
-}
+type Config map[string]string
 
 // NewRedis returns a new Redis Persistence that can be used
 // in the application to persist and update state.
-func NewRedis() (Persistence, error) {
-	return &redis{}, errs.New("not implemented")
+func NewRedis(config Config) (Persistence, error) {
+	client := redis.NewClient(&redis.Options{
+		Addr:     "localhost:6379",
+		Password: "", // no password set
+		DB:       0,  // use default DB
+	})
+
+	return &redisDB{
+		client: client,
+	}, nil
 }
 
-func (r *redis) Put(key Key, val Value) (Value, error) {
-	return nil, errs.New("not implemented")
+// Put willj insert a value into the DB
+func (r *redisDB) Put(key Key, val Value) (Value, error) {
+	k, err := key.String()
+	if err != nil {
+		return Value(""), errs.New("failed to get string value for key: %s", err)
+	}
+
+	err = r.client.Set(k, val, 0).Err()
+	if err != nil {
+		return Value(""), errs.Wrap(err)
+	}
+
+	return val, nil
 }
 
-func (r *redis) Get(key Key) (Value, bool, error) {
-	return nil, false, errs.New("not implemented")
+// Get will return a value from the database from a given Key.
+// Keys need to be formatted correctly
+func (r *redisDB) Get(key Key) (Value, bool, error) {
+	k, err := key.String()
+	if err != nil {
+		return Value(""), false, errs.Wrap(err)
+	}
+
+	val, err := r.client.Get(k).Result()
+	if err != nil {
+		return Value(""), false, errs.New("error getting key from redis client: %s", err)
+	}
+
+	return Value(val), true, nil
 }
 
+// String returns the string of Value.
 func (v Value) String() (string, error) {
-	return "", errs.New("not implemented")
+	return string(v), nil
+}
+
+// String returns the string of the Key
+func (k Key) String() (string, error) {
+	return string(k), nil
 }
