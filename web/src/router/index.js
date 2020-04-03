@@ -21,17 +21,17 @@ const routes = [
   {
     path: '/game',
     name: 'Game',
-    component: () => import(/* webpackChunkName: "about" */ '../views/Game.vue')
+    component: () => import(/* webpackChunkName: "game" */ '../views/Game.vue')
   },
   {
     path: '/decks',
     name: 'Decks',
-    component: () => import(/* webpackChunkName: "about" */ '../views/Decks.vue')
+    component: () => import(/* webpackChunkName: "decks" */ '../views/Decks.vue')
   },
   {
     path: '/deckcreator',
     name: 'DeckCreator',
-    component: () => import(/* webpackChunkName: "about" */ '../views/DeckCreator.vue')
+    component: () => import(/* webpackChunkName: "deckcreator" */ '../views/DeckCreator.vue')
   }
 ]
 

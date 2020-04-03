@@ -13,13 +13,19 @@
         <h3>Commander</h3>
         <p>Select the commander for this EDH deck</p>
         <input label="Commander">
-        <textarea cols="50" rows="20"></textarea>
+        <p>Now add the 99.</p>
+        <textarea v-model="rawlist" cols="50" rows="20"></textarea>
       </v-form>
     </section>
   </section>
 </template>
 <script>
 export default {
-  name: 'DeckCreator'
+  name: 'DeckCreator',
+  data () {
+    return {
+      rawlist: ''
+    }
+  }
 }
 </script>

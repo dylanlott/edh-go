@@ -1,4 +1,4 @@
-<template id="">
+<template>
   <section>
     <aside class="opponent">
       <h3>Player {{ id }}</h3>
@@ -8,6 +8,6 @@
 <script>
 export default {
   name: 'Opponent',
-  proper: ['id', 'boardstate']
+  props: ['id', 'boardstate']
 }
 </script>
