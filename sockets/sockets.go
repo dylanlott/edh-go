@@ -11,6 +11,7 @@ import (
 	"github.com/zeebo/errs"
 )
 
+// Socketer is what every socket implementation must fulfill to work with our system.
 type Socketer interface {
 	// JoinGame allows us to handle joining login regardless of underlying
 	// socket implementation
@@ -26,10 +27,6 @@ type Socketer interface {
 
 	// RegisterHandler allows us to pass arbitrary handlers to a socket system.
 	RegisterHandler(room string, event string, handler HandlerFunc) error
-
-	// Serve will kick off the server. Serve is meant to be concurrent and should
-	// gracefully shut down and clean up itself.
-	Serve()
 }
 
 // Config allows for config values to be passed through to the socket layer
@@ -52,13 +49,17 @@ type Game struct {
 	socket Socketer
 }
 
+// socketWrapper holds a reference to the socketio.Server and wraps it with
+// any other data necessary to manage the socket server
 type socketWrapper struct {
-	client *socketio.Server
+	Client *socketio.Server
 }
+
+var _ = (Socketer)(&socketWrapper{})
 
 // NewSocketLayer returns an implementation of the Socketer
 // interface for use in the game database.
-func NewSocketLayer() (Socketer, error) {
+func NewSocketLayer() (*socketWrapper, error) {
 	server, err := socketio.NewServer(nil)
 	if err != nil {
 		return nil, errs.Wrap(err)
@@ -78,49 +79,7 @@ func NewSocketLayer() (Socketer, error) {
 	})
 
 	return &socketWrapper{
-		client: server,
-	}, nil
-}
-
-func NewFullSocketer() (Socketer, error) {
-	server, err := socketio.NewServer(nil)
-	if err != nil {
-		log.Fatal(err)
-	}
-	server.OnConnect("/", func(s socketio.Conn) error {
-		s.SetContext("")
-		fmt.Println("connected:", s.ID())
-		return nil
-	})
-	server.OnEvent("/", "notice", func(s socketio.Conn, msg string) {
-		fmt.Println("notice:", msg)
-		s.Emit("reply", "have "+msg)
-	})
-	server.OnEvent("/chat", "msg", func(s socketio.Conn, msg string) string {
-		s.SetContext(msg)
-		return "recv " + msg
-	})
-	server.OnEvent("/", "bye", func(s socketio.Conn) string {
-		last := s.Context().(string)
-		s.Emit("bye", last)
-		s.Close()
-		return last
-	})
-	server.OnError("/", func(s socketio.Conn, e error) {
-		fmt.Println("meet error:", e)
-	})
-	server.OnDisconnect("/", func(s socketio.Conn, reason string) {
-		fmt.Println("closed", reason)
-	})
-	go server.Serve()
-	defer server.Close()
-
-	http.Handle("/socket.io/", corsMiddleware(server))
-	log.Println("Serving /socket.io/ at localhost:8000...")
-	log.Fatal(http.ListenAndServe(":8000", nil))
-
-	return &socketWrapper{
-		client: server,
+		Client: server,
 	}, nil
 }
 
@@ -139,7 +98,7 @@ func (s *socketWrapper) LeaveGame(gameID string, playerID string) error {
 // initialization of the new socket layer area. There is probably a better
 // way to handle this, but this is clean enough for now.
 func (s *socketWrapper) RegisterHandler(room string, event string, handler HandlerFunc) error {
-	s.client.OnEvent(room, event, handler)
+	s.Client.OnEvent(room, event, handler)
 	return nil
 }
 
@@ -155,8 +114,12 @@ func corsMiddleware(next http.Handler) http.Handler {
 }
 
 func (s *socketWrapper) Serve() {
-	fmt.Printf("starting socket server: %+v\n", s.client)
+	http.Handle("/socket.io/", corsMiddleware(s.Client))
+	fmt.Printf("starting socket server: %+v\n", s.Client)
+	go log.Fatal(http.ListenAndServe(":6768", nil))
+}
 
-	http.Handle("/socket.io/", corsMiddleware(s.client))
-	log.Fatal(http.ListenAndServe(":6768", nil))
+func (s *socketWrapper) GetClient() *socketio.Server {
+	fmt.Printf("get client has been hit")
+	return s.Client
 }

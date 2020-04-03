@@ -5,8 +5,6 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/zeebo/errs"
-
 	"github.com/dylanlott/edh-go/persistence"
 	"github.com/dylanlott/edh-go/sockets"
 )
@@ -22,22 +20,17 @@ func main() {
 	*/
 
 	config := make(persistence.Config)
-	db, err := persistence.NewRedis(config)
+	_, err := persistence.NewRedis(config)
 	if err != nil {
 		log.Fatal(fmt.Errorf("error starting persistence: %s", err))
 	}
 
-	fmt.Printf("connected to db - [%+v]\n", db)
-
-	// start socketio
-	s, err := sockets.NewFullSocketer()
+	server, err := sockets.NewSocketLayer()
 	if err != nil {
-		log.Fatal(errs.New("failed to start socket server"))
+		log.Fatalf("failed to start socket server: %+v\n", err)
 	}
 
-	fmt.Printf("started socket server: %+v\n", s)
-
-	// serve web app
-	srv := http.FileServer(http.Dir("./web"))
-	log.Fatal(http.ListenAndServe(":6767", srv))
+	http.Handle("/socket.io/", server.GetClient())
+	fmt.Printf("server listening on port 8000")
+	log.Fatal(http.ListenAndServe(":8000", nil))
 }
