@@ -41,13 +41,14 @@ type Game struct {
 	Name      string
 	ID        GameID
 	StartTime time.Time
-	Players   map[UserID]PlayerState
+	Players   map[UserID]*PlayerState
 }
 
 // PlayerState maintains a state for each player that is mutex protected.
 type PlayerState struct {
 	sync.Mutex
 
+	gameID GameID
 	// playerID assigns a unique playerID to this board state
 	PlayerID UserID
 

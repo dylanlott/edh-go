@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/dylanlott/edh-go/game"
+	"github.com/dylanlott/edh-go/persistence"
 
 	socketio "github.com/googollee/go-socket.io"
 	"github.com/zeebo/errs"
@@ -37,6 +38,11 @@ type Config map[string]string
 // TODO: See if this needs to take anything or if this will work because
 // access to the socketWrapper is available.
 type HandlerFunc func() error
+
+type SocketGame struct {
+	db         persistence.Persistence
+	boardstate game.Game
+}
 
 // Game joins together a boardstate with a socket layer for interaction over
 // the internet.
