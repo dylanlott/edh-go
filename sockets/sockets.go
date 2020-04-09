@@ -2,8 +2,6 @@ package sockets
 
 import (
 	"fmt"
-	"log"
-	"net/http"
 
 	"github.com/dylanlott/edh-go/game"
 	"github.com/dylanlott/edh-go/persistence"
@@ -39,13 +37,15 @@ type Config map[string]string
 // access to the socketWrapper is available.
 type HandlerFunc func() error
 
+// SocketGame wraps a game with a database and a socket layer to give the
+// socket layer access to PlayerState methods.
 type SocketGame struct {
 	db         persistence.Persistence
 	boardstate game.Game
+	socket     socketWrapper
 }
 
 // Game joins together a boardstate with a socket layer for interaction over
-// the internet.
 type Game struct {
 	id string
 
@@ -108,24 +108,7 @@ func (s *socketWrapper) RegisterHandler(room string, event string, handler Handl
 	return nil
 }
 
-// corsMiddleware handles the CORS configuration for the socket connection in
-// the Serve function.
-func corsMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", "*")
-		w.Header().Set("Access-Control-Allow-Headers",
-			"Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
-		w.Header().Set("Access-Control-Allow-Credentials", "true")
-	})
-}
-
-func (s *socketWrapper) Serve() {
-	http.Handle("/socket.io/", corsMiddleware(s.Client))
-	fmt.Printf("starting socket server: %+v\n", s.Client)
-	go log.Fatal(http.ListenAndServe(":6768", nil))
-}
-
 func (s *socketWrapper) GetClient() *socketio.Server {
-	fmt.Printf("get client has been hit")
+	fmt.Printf("get client has been hit\n")
 	return s.Client
 }
