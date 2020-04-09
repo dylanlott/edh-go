@@ -31,6 +31,7 @@ type Deck struct {
 	Owner     UserID
 }
 
+// Creates a new decklist from a line delimited list of card names.
 func NewDecklist(decklist string) (CardList, error) {
 	return CardList{}, errs.New("not impl")
 }
@@ -38,6 +39,22 @@ func NewDecklist(decklist string) (CardList, error) {
 // Shuffle is a sugar method to make Shuffling a list of Cards easier.
 func (c CardList) Shuffle() (CardList, error) {
 	return []Card{}, errs.New("not impl")
+}
+
+// Validate will valiate the CardList against the format specified in args.
+func (c CardList) Validate(format string) bool {
+	switch format {
+	case "commander":
+		break
+	case "modern":
+		break
+	case "standard":
+		break
+	default:
+		return false
+	}
+
+	return false
 }
 
 // Fetch removes a card from the library and puts into the player's Hand

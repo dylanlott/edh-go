@@ -1,7 +1,6 @@
 package game
 
 import (
-	"errors"
 	"sync"
 	"time"
 
@@ -17,7 +16,7 @@ type FullGame interface {
 	Get(player UserID) (*PlayerState, error)
 
 	// Join will add a player to the Game
-	Join(deck Deck, player UserID) error
+	Join(deck Deck, player UserID) (*Game, error)
 
 	// Leave will remove a player from a Game
 	Leave(player UserID) error
@@ -47,36 +46,6 @@ type Game struct {
 	Players   map[UserID]*PlayerState
 }
 
-// PlayerState maintains a state for each player that is mutex protected.
-type PlayerState struct {
-	sync.Mutex
-
-	gameID GameID
-	// playerID assigns a unique playerID to this board state
-	PlayerID UserID
-
-	// get a reference to the database for persistencea
-	DB persistence.Persistence
-
-	Commander CardList
-	Partner   CardList
-	Hand      CardList
-	Library   CardList
-	Graveyard CardList
-	Exiled    CardList
-	Field     CardList
-
-	// This is for generally revealing cards to opponents.
-	// Revealed	 CardList
-
-	// How should we account for other players taking control of cards?
-	// There are lots of control effects in MTG, having a visual
-	// representation of this control would be beneficial.
-
-	// Counters include all game effects on Player
-	Data map[string]Counter
-}
-
 var _ = (FullGame)(&Game{})
 
 // NewGame creates a new Game object to manipulate the game board state.
@@ -93,8 +62,6 @@ func NewGame(players map[UserID]Deck, db persistence.Persistence) (*Game, error)
 		if len(decklist.Commander) > 1 {
 			return nil, errs.New("must have only one commander")
 		}
-
-		// TODO: Validate that no duplicates are present in card list
 
 		if userID == "" {
 			return nil, errs.New("userID must not be empty")
@@ -132,11 +99,31 @@ func (g *Game) Get(player UserID) (*PlayerState, error) {
 }
 
 // Joins a player to a a game. If no game exists, it will create one.
-func (g *Game) Join(deck Deck, player UserID) error {
-	return errors.New("not impl")
+func (g *Game) Join(deck Deck, player UserID) (*Game, error) {
+	if len(deck.Cards) != 99 {
+		return nil, errs.New("deck must contain exactly 99 cards")
+	}
+
+	if len(deck.Commander) != 1 {
+		return nil, errs.New("deck must have exactly one commander.")
+	}
+
+	g.Players[player] = &PlayerState{
+		DB:        g.DB,
+		PlayerID:  player,
+		Commander: deck.Commander,
+		Library:   deck.Cards,
+		Graveyard: CardList{},
+		Exiled:    CardList{},
+		Hand:      CardList{},
+		Field:     CardList{},
+	}
+
+	return g, nil
 }
 
 // Leave removes a player from a Game.
 func (g *Game) Leave(player UserID) error {
-	return errors.New("not impl")
+	g.Players[player] = nil
+	return nil
 }
