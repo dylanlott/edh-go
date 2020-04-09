@@ -13,9 +13,11 @@ type redisDB struct {
 
 type Config map[string]string
 
+var _ = (Persistence)(&redisDB{})
+
 // NewRedis returns a new Redis Persistence that can be used
 // in the application to persist and update state.
-func NewRedis(config Config) (Persistence, error) {
+func NewRedis(config Config) (*redisDB, error) {
 	client := redis.NewClient(&redis.Options{
 		Addr:     "localhost:6379",
 		Password: "", // no password set

@@ -18,16 +18,14 @@ func TestNewRedis(t *testing.T) {
 	}
 
 	val, ok, err := r.Get("testkey")
-	if err != nil {
-		t.Logf("failed to get testkey")
-		t.Fail()
-	}
-
-	t.Logf("val: %+v", val)
-
-	// it shouldn't exist yet, so it should return false
 	if ok {
 		t.Fail()
 	}
-
+	if err == nil {
+		t.Fail()
+	}
+	if val != Value("") {
+		t.Logf("val: %+v", val)
+		t.Fail()
+	}
 }
