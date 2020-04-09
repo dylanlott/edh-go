@@ -5,6 +5,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/zeebo/errs"
 
 	"github.com/dylanlott/edh-go/persistence"
@@ -79,17 +80,21 @@ type PlayerState struct {
 var _ = (FullGame)(&Game{})
 
 // NewGame creates a new Game object to manipulate the game board state.
+// TODO: This should be named for Commander and other formats will create
+// different game types with different validations.
 func NewGame(players map[UserID]Deck, db persistence.Persistence) (*Game, error) {
 	p := make(map[UserID]*PlayerState)
 
 	for userID, decklist := range players {
 		if len(decklist.Cards) != 99 {
-			return nil, errs.New("deck must have exactly 99 cards")
+			return nil, errs.New("deck must have exactly 99 cards; had %d", len(decklist.Cards))
 		}
 
 		if len(decklist.Commander) > 1 {
 			return nil, errs.New("must have only one commander")
 		}
+
+		// TODO: Validate that no duplicates are present in card list
 
 		if userID == "" {
 			return nil, errs.New("userID must not be empty")
@@ -104,14 +109,21 @@ func NewGame(players map[UserID]Deck, db persistence.Persistence) (*Game, error)
 			Exiled:    CardList{},
 			Field:     CardList{},
 		}
+
+		// TODO: Persist player state here.
+		// db.SetPlayer()
 	}
 
-	// TODO: Persist the game state at creation time.
+	gameID := uuid.New()
 
 	g := &Game{
-		Players: p,
+		Name:      "",
+		ID:        GameID(gameID.String()),
+		StartTime: time.Now(),
+		Players:   p,
 	}
-	return g, errs.New("failed to create new game")
+
+	return g, nil
 }
 
 // Returns the player state for a playerID.

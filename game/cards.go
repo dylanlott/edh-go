@@ -14,7 +14,7 @@ type Card struct {
 
 	// wrappers around the mtg sdk card api
 	CardInfo sdk.Card
-	cardId   sdk.CardId
+	ID       sdk.CardId
 }
 
 // Query will try to find card info for a given CardID with MTG SDK
