@@ -3,4 +3,7 @@ language: go
 go:
   - 1.x
 
+service:
+  - redis-server
+
 script: go test -v ./...
