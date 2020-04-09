@@ -15,8 +15,6 @@ export default {
     Navbar
   },
   created () {
-    console.log('created')
-    console.log('mounted sockets: ', this.$socket)
   }
 }
 </script>

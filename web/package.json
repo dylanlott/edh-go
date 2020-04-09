@@ -9,6 +9,8 @@
   },
   "dependencies": {
     "core-js": "^3.6.4",
+    "socket.io": "^2.3.0",
+    "uws": "^100.0.1",
     "vue": "^2.6.11",
     "vue-router": "^3.1.5",
     "vue-socket.io": "^3.0.7",

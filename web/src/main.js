@@ -9,7 +9,7 @@ Vue.config.productionTip = false
 // Socket.io configuration
 Vue.use(new VueSocketio({
   debug: true,
-  connection: 'http://localhost:8000/socket.io/',
+  connection: 'localhost:8000',
   vuex: {
     store,
     actionPrefix: 'SOCKET_',
