@@ -13,7 +13,7 @@ import (
 // FullGame implements all of the below code in a neat wrapper
 type FullGame interface {
 	// Get returns a pointer to a PlayerState
-	Get(gameID GameID, player UserID) (*PlayerState, error)
+	Get(player UserID) (*PlayerState, error)
 
 	// Join will add a player to the Game
 	Join(deck Deck, player UserID) error
@@ -38,6 +38,8 @@ type GameID string
 type Game struct {
 	sync.Mutex
 
+	DB persistence.Persistence
+
 	Name      string
 	ID        GameID
 	StartTime time.Time
@@ -53,9 +55,10 @@ type PlayerState struct {
 	PlayerID UserID
 
 	// get a reference to the database for persistencea
-	db persistence.Persistence
+	DB persistence.Persistence
 
 	Commander CardList
+	Partner   CardList
 	Hand      CardList
 	Library   CardList
 	Graveyard CardList
@@ -73,14 +76,47 @@ type PlayerState struct {
 	Data map[string]Counter
 }
 
+var _ = (FullGame)(&Game{})
+
 // NewGame creates a new Game object to manipulate the game board state.
-func NewGame(players map[UserID]Deck) (FullGame, error) {
-	return nil, errs.New("failed to create new game")
+func NewGame(players map[UserID]Deck, db persistence.Persistence) (*Game, error) {
+	p := make(map[UserID]*PlayerState)
+
+	for userID, decklist := range players {
+		if len(decklist.Cards) != 99 {
+			return nil, errs.New("deck must have exactly 99 cards")
+		}
+
+		if len(decklist.Commander) > 1 {
+			return nil, errs.New("must have only one commander")
+		}
+
+		if userID == "" {
+			return nil, errs.New("userID must not be empty")
+		}
+
+		p[userID] = &PlayerState{
+			PlayerID:  userID,
+			DB:        db,
+			Library:   decklist.Cards,
+			Commander: decklist.Commander,
+			Graveyard: CardList{},
+			Exiled:    CardList{},
+			Field:     CardList{},
+		}
+	}
+
+	// TODO: Persist the game state at creation time.
+
+	g := &Game{
+		Players: p,
+	}
+	return g, errs.New("failed to create new game")
 }
 
 // Returns the player state for a playerID.
 func (g *Game) Get(player UserID) (*PlayerState, error) {
-	return nil, errors.New("not impl")
+	return g.Players[player], nil
 }
 
 // Joins a player to a a game. If no game exists, it will create one.

@@ -1,7 +1,13 @@
 package game
 
-import "testing"
+import (
+	"testing"
 
+	"github.com/dylanlott/edh-go/persistence"
+)
+
+// TestNewFullGame tries to start a redis instance and uses it to run an
+// integration test suite.
 func TestNewFullGame(t *testing.T) {
 	// players default starting state
 	players := make(map[UserID]Deck)
@@ -11,74 +17,32 @@ func TestNewFullGame(t *testing.T) {
 		Cards: CardList{},
 	}
 
-	// create a new game
-	g, err := NewGame(players)
+	db, err := persistence.NewRedis(persistence.Config{})
 	if err != nil {
+		t.Logf("failed to start redis - %s - skipping tests", err)
+		t.Skip()
+	}
+	if db == nil {
+		t.Log("db was nil")
 		t.Fail()
 	}
-
-	deck := Deck{
-		Name: "test deck",
-		Cards: CardList{
-			Card{
-				Name: "test card 1",
-			},
-		},
-		Commander: Card{
-			Name: "Karlov of the Ghost Council",
-		},
-	}
-
-	// Join Game
-	err = g.Join(deck, UserID("player2"))
-	if err != nil {
-		t.Fail()
-	}
-
-	// Leave Game
-	err = g.Leave(UserID("player2"))
-	if err != nil {
-		t.Fail()
-	}
-
-	// TODO: Test that getting a user that has left the game
-	// returns a nil and an error to make sure that's correct
-
-	p, err := g.Get("game1", "player1")
-	if err != nil {
-		t.Fail()
-	}
-	if p == nil {
-		t.Fail()
-	}
-
-	// TODO: ensure that player left game in game state
 }
 
 func TestBoardState(t *testing.T) {
 	players := make(map[UserID]Deck)
 
+	// TODO: Create a deck for this test.
 	players["play1"] = Deck{
 		Name:  "Karlov Voltron",
 		Cards: CardList{},
 	}
 
-	g, err := NewGame(players)
+	t.Logf("players map: %+v\n", players)
+
+	db, err := persistence.NewRedis(persistence.Config{})
 	if err != nil {
-		t.Fail()
+		t.Logf("failed to connect to redis - skipping tests")
+		t.Skip()
 	}
-
-	p1, err := g.Get("game1", "play1")
-	if err != nil {
-		t.Fail()
-	}
-	if p1 == nil {
-		t.Fail()
-	}
-
-	t.Logf("player1: %+v", p1)
-
-	if p1.PlayerID == "" {
-		t.Fail()
-	}
+	t.Logf("connected to testredis: [ %+v ]", db)
 }

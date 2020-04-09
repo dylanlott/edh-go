@@ -12,13 +12,13 @@ type Card struct {
 	// Track counters on a card
 	Counters map[string]Counter
 
-	// wrappers around the mtg sdk card
-	card   sdk.Card
-	cardId sdk.CardId
+	// wrappers around the mtg sdk card api
+	CardInfo sdk.Card
+	cardId   sdk.CardId
 }
 
 // Query will try to find card info for a given CardID with MTG SDK
-func (card Card) Query() {}
+func (c Card) Query() {}
 
 // CardList exposes a set of methods for manipulating a list of Cards
 type CardList []Card
@@ -26,7 +26,7 @@ type CardList []Card
 // Deck is the top level resource for a given Deck
 type Deck struct {
 	Name      string
-	Commander Card
+	Commander CardList
 	Cards     CardList
 	Owner     UserID
 }
