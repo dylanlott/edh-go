@@ -4,6 +4,7 @@ go 1.13
 
 require (
 	github.com/MagicTheGathering/mtg-sdk-go v0.0.0-20190109105601-3aaea97721aa
+	github.com/alicebob/miniredis/v2 v2.11.4
 	github.com/go-redis/redis/v7 v7.2.0
 	github.com/googollee/go-socket.io v1.4.3
 	github.com/mattn/go-sqlite3 v2.0.3+incompatible
