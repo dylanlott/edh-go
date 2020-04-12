@@ -15,7 +15,6 @@ func main() {
 	}
 	server.OnConnect("/", func(s socketio.Conn) error {
 		s.SetContext("")
-		server.Emit("")
 		fmt.Println("connected:", s.ID())
 		return nil
 	})
