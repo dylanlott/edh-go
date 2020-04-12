@@ -6,5 +6,8 @@ type Config struct {
 }
 
 func NewConfig() Config {
-	return Config{}
+	return Config{
+		Port:        9090,
+		Environment: "development",
+	}
 }
