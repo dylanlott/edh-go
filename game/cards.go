@@ -1,6 +1,9 @@
 package game
 
 import (
+	"fmt"
+	"strings"
+
 	sdk "github.com/MagicTheGathering/mtg-sdk-go"
 	"github.com/zeebo/errs"
 )
@@ -31,9 +34,27 @@ type Deck struct {
 	Owner     UserID
 }
 
-// Creates a new decklist from a line delimited list of card names.
-func NewDecklist(decklist string) (CardList, error) {
-	return CardList{}, errs.New("not impl")
+// NewDecklist creates a new CardList from a line delimited list of card names.
+// These names should be exact. This can be used for any format of Magic game,
+// validation should be done in separate functions. This should purely be used
+// to get the card's ID from MTG SDK ID.
+func NewDecklist(raw string) (CardList, error) {
+	list := strings.Fields(raw)
+	decklist := make(CardList, 0, 99)
+	for _, i := range list {
+		name := strings.TrimSpace(i)
+		fmt.Printf("%s", name)
+		card := Card{
+			Name: name,
+		}
+
+		//TODO: attempt to get card ID based on name provided
+		// TODO: handle unsuccessful lookups
+
+		decklist = append(decklist, card)
+	}
+
+	return decklist, nil
 }
 
 // Shuffle is a sugar method to make Shuffling a list of Cards easier.
