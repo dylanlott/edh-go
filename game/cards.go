@@ -38,23 +38,37 @@ type Deck struct {
 // These names should be exact. This can be used for any format of Magic game,
 // validation should be done in separate functions. This should purely be used
 // to get the card's ID from MTG SDK ID.
-func NewDecklist(raw string) (CardList, error) {
-	list := strings.Fields(raw)
+func NewDecklist(raw string) (CardList, []error) {
+	list := strings.Split(raw, "\n")
 	decklist := make(CardList, 0, 99)
+	errors := []error{}
+
 	for _, i := range list {
-		name := strings.TrimSpace(i)
-		fmt.Printf("%s", name)
+		if i == "" {
+			continue
+		}
+		trimmed := strings.TrimSpace(i)
 		card := Card{
-			Name: name,
+			Name: trimmed,
 		}
 
-		//TODO: attempt to get card ID based on name provided
+		// gets cards that match that name
+		queried, err := sdk.NewQuery().Where(sdk.CardName, trimmed).All()
+		if err != nil {
+			errors = append(errors, err)
+		}
+		// fmt.Printf("queried card: %+v\n error: %s\n", queried, err)
+
+		card.CardInfo = *queried[0]
+
+		fmt.Printf("card: [%+v]\n", card)
+
 		// TODO: handle unsuccessful lookups
 
 		decklist = append(decklist, card)
 	}
 
-	return decklist, nil
+	return decklist, errors
 }
 
 // Shuffle is a sugar method to make Shuffling a list of Cards easier.
