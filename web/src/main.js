@@ -1,21 +1,21 @@
 import Vue from 'vue'
-import VueSocketio from 'vue-socket.io'
+import io from 'socket.io-client'
 import App from './App.vue'
 import router from './router'
 import store from './store'
 
-Vue.config.productionTip = false
+var socket = io()
+// on connection of webapp
+socket.on('connection', (socket) => {
+  socket.emit('/hello', 'world')
+})
 
-// Socket.io configuration
-Vue.use(new VueSocketio({
-  debug: true,
-  connection: 'localhost:8000',
-  vuex: {
-    store,
-    actionPrefix: 'SOCKET_',
-    mutationPrefix: 'SOCKET_'
-  }
-}))
+socket.on('/', 'hello', (msg) => {
+  console.log('hello world: ', msg)
+})
+
+Vue.$socket = socket
+Vue.config.productionTip = false
 
 new Vue({
   router,

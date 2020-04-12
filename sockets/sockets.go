@@ -71,7 +71,6 @@ func NewSocketLayer() (*socketWrapper, error) {
 		return nil, errs.Wrap(err)
 	}
 
-	//declare some sanity hooks on the server method
 	// connected
 	server.OnConnect("/", func(s socketio.Conn) error {
 		s.SetContext("")
@@ -82,6 +81,11 @@ func NewSocketLayer() (*socketWrapper, error) {
 	// disconnected
 	server.OnDisconnect("/", func(s socketio.Conn, reason string) {
 		fmt.Println("closed", reason)
+	})
+
+	// errored
+	server.OnError("/", func(s socketio.Conn, err error) {
+		fmt.Println("error: ", err)
 	})
 
 	return &socketWrapper{
