@@ -45,6 +45,7 @@ func NewDecklist(raw string) (CardList, []error) {
 
 	for _, i := range list {
 		if i == "" {
+			fmt.Println("continuing")
 			continue
 		}
 		trimmed := strings.TrimSpace(i)
@@ -53,6 +54,7 @@ func NewDecklist(raw string) (CardList, []error) {
 		}
 
 		// gets cards that match that name
+		fmt.Printf("querying for %s", sdk.CardName)
 		queried, err := sdk.NewQuery().Where(sdk.CardName, trimmed).All()
 		if err != nil {
 			errors = append(errors, err)
@@ -67,6 +69,9 @@ func NewDecklist(raw string) (CardList, []error) {
 
 		decklist = append(decklist, card)
 	}
+
+	fmt.Printf("decklist: %+v\n", decklist)
+	fmt.Printf("errors: %+v\n", errors)
 
 	return decklist, errors
 }
