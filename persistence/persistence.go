@@ -1,5 +1,9 @@
 package persistence
 
+import (
+	"database/sql"
+)
+
 // Value is a type for handling and validating Values in the game engine
 type Value string
 
@@ -11,4 +15,22 @@ type Key string
 type Persistence interface {
 	Put(key Key, val Value) (Value, error)
 	Get(key Key) (Value, bool, error)
+}
+
+// Database must be fulfilled for the cards package to operate correctly.
+// This is mostly used for mocking out tests and simply fulfills the basic
+// `database/sql` interface. Query and Exec are the main methods.
+type Database interface {
+	Query(query string, args ...interface{}) (*sql.Rows, error)
+	Exec(query string, args ...interface{}) (sql.Result, error)
+	Ping() error
+	Stats() sql.DBStats
+}
+
+// Force DB to fulfill Database
+var _ = (Database)(&DB{})
+
+// DB holds a reference to the database for internal use.
+type DB struct {
+	db *sql.DB
 }

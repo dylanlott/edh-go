@@ -1,9 +1,16 @@
 package main
 
 import (
-	"fmt"
+	"log"
+
+	"github.com/dylanlott/edh-go/persistence"
 )
 
 func main() {
-	fmt.Printf("edh-go")
+	db, err := persistence.NewSQLite("./game/mtgallcards.sqlite")
+	if err != nil {
+		log.Fatalf("failed to open SQLite card database: %s", err)
+	}
+
+	log.Printf("started SQLite database: %+v\n", db)
 }
