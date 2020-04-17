@@ -34,11 +34,18 @@ type UserID string
 // of each, as well as metadata around each game.
 type GameID string
 
-// Game maintains a Game state with mutexes for protection
+// Game maintains a Game state with mutexes for protection.
+// This is where all of the socket, graphQL, and database connections get
+// combined for ease of use.
 type Game struct {
 	sync.Mutex
 
+	// DB holds a reference to the persistence layer so that we can always
+	// have Put and Get access to the database.
 	DB persistence.Persistence
+
+	// stub out gql field
+	gql interface{}
 
 	Name      string
 	ID        GameID
@@ -55,6 +62,8 @@ func NewGame(players map[UserID]Deck, db persistence.Persistence) (*Game, error)
 	p := make(map[UserID]*PlayerState)
 
 	for userID, decklist := range players {
+		// TODO: This should eventually be validated against the format being played
+		// but for now this will just check 99 + 1 commander for EDH
 		if len(decklist.Cards) != 99 {
 			return nil, errs.New("deck must have exactly 99 cards; had %d", len(decklist.Cards))
 		}
