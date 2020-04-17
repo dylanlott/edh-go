@@ -1,15 +1,13 @@
 package game
 
 import (
-	"fmt"
 	"log"
 	"math/rand"
 	"strings"
 
-	"github.com/dylanlott/edh-go/persistence"
-
-	sdk "github.com/MagicTheGathering/mtg-sdk-go"
 	"github.com/zeebo/errs"
+
+	"github.com/dylanlott/edh-go/persistence"
 )
 
 // Card tracks the properties of a Card in a given Game
@@ -23,8 +21,8 @@ type Card struct {
 	Data Data
 
 	// wrappers around the mtg sdk card api
-	CardInfo sdk.Card
-	ID       sdk.CardId
+	// CardInfo sdk.Card
+	// ID       sdk.CardId
 }
 
 // Data is used for populating card data with Query.
@@ -43,9 +41,9 @@ type Deck struct {
 }
 
 // NewDecklist creates a new CardList from a line delimited list of card names.
-// These names should be exact. This can be used for any format of Magic game,
-// validation should be done in separate functions. This should purely be used
-// to get the card's ID from MTG SDK ID.
+// These names should be exact. This can be used for any format of Magic game.
+// Validation should be done in separate functions. This function uses the
+// SQLite database, so tests require it to be mocked.
 func NewDecklist(db persistence.Database, raw string) (CardList, []error) {
 	list := strings.Split(raw, "\n")
 	decklist := make(CardList, 0, 99)
@@ -53,27 +51,16 @@ func NewDecklist(db persistence.Database, raw string) (CardList, []error) {
 
 	for _, i := range list {
 		if i == "" {
-			fmt.Println("continuing")
 			continue
 		}
 		trimmed := strings.TrimSpace(i)
-		card := Card{
-			Name: trimmed,
-		}
-
 		card, err := getCard(db, trimmed)
 		if err != nil {
 			errors = append(errors, errs.Wrap(err))
 			continue
 		}
-
-		log.Printf("retrieved card: %+v\n", card)
-
 		decklist = append(decklist, card)
 	}
-
-	fmt.Printf("decklist: %+v\n", decklist)
-	fmt.Printf("errors: %+v\n", errors)
 
 	return decklist, errors
 }
@@ -121,9 +108,14 @@ func Query(db persistence.Database, name string, id *string) (Card, error) {
 			continue
 		}
 
+		// Add the data to a map for returning
 		data := make(Data)
 		data["name"] = *name
 		data["id"] = *id
+		data["colors"] = *colors
+		data["colorIdentity"] = *colorIdentity
+		data["convertedManaCost"] = *convertedManaCost
+		data["manaCost"] = *manaCost
 
 		card := Card{
 			Name: *name,
@@ -138,8 +130,7 @@ func Query(db persistence.Database, name string, id *string) (Card, error) {
 }
 
 // Shuffle is a sugar method to make Shuffling a list of Cards easier.
-func (c CardList) Shuffle() (CardList, error) {
-	deck := c
+func Shuffle(deck CardList) (CardList, error) {
 	rand.Shuffle(len(deck), func(i, j int) {
 		deck[i], deck[j] = deck[j], deck[i]
 	})
@@ -172,7 +163,6 @@ func Fetch(card Card, list CardList) (CardList, Card, error) {
 	for _, c := range list {
 		if card.Name == c.Name {
 			found = true
-			fmt.Printf("found card in decklist: %+v\n", card)
 			fetched = c
 			// TODO: Remove at index from slice
 			break
@@ -183,14 +173,14 @@ func Fetch(card Card, list CardList) (CardList, Card, error) {
 	// That means there should be no path out where fetching doesn't shuffle
 	// the deck, I whether the fetched card was found or not.
 	if found == false {
-		shuffled, err := list.Shuffle()
+		shuffled, err := Shuffle(list)
 		if err != nil {
 			return shuffled, Card{}, errs.New("failed to shuffle deck or find card")
 		}
 		return shuffled, Card{}, errs.New("card not in deck")
 	}
 
-	shuffled, err := list.Shuffle()
+	shuffled, err := Shuffle(list)
 	if err != nil {
 		return shuffled, Card{}, errs.New("failed to shuffled after successfully fetching")
 	}
@@ -198,40 +188,26 @@ func Fetch(card Card, list CardList) (CardList, Card, error) {
 	return shuffled, fetched, nil
 }
 
-// Returns the top (0 indexed) card of the Deck into the player's Hand
-// This means decks are drawn from left to right in an array, and the "bottom"
-// of the deck is the last in the array.
-func Draw(deck CardList, number int) (CardList, CardList) {
-	// NB: if a player draws all of their cards, they don't lose. But if a player
+// Draw returns the top `number` cards of the deck, the shuffled library with
+// the cards removed from it (drawn from it), and an error.
+// Error will be thrown if a player tries to draw from an empty library, losing
+// them the game.
+func Draw(deck CardList, number int) (drawn CardList, shuffled CardList, err error) {
+	// NB: Drawing on an empty deck is a loss condition
+	if len(deck) == 0 {
+		return nil, nil, errs.New("check yourself before you deck yourself")
+	}
+	// NB: If a player draws all of their cards, they don't lose. But if a player
 	// would go to draw a card and there are none left, then they lose.
 	if number > len(deck) {
-		log.Printf("more cards were drawn than existed in deck")
-		return nil, nil
-	}
-	cards := deck[number:]
-	fmt.Printf("cards: %+v\n", cards)
-
-	if len(deck) > 0 {
-		deck = removeFromTop(deck, number)
-	} else {
-		// TODO: This technically means the player lost the game and we need to
-		// account for that.
-		log.Printf("deck was drawn when no cards were left")
-		return nil, nil
+		return nil, nil, errs.New("check yourself before you deck yourself")
 	}
 
-	return deck, cards
-}
-
-// remove from top will remove from the 0th position first and towards the right
-func removeFromTop(deck CardList, i int) CardList {
-	return append(deck[:i], deck[i+1:]...)
-}
-
-// removeAtIndex will remove an item from a slice at index `i` and return the
-// updates slice.
-func removeAtIndex(s CardList, index int) CardList {
-	return append(s[:index], s[index+1:]...)
+	// draw the cards out
+	drawn = deck[:number]
+	unshuffled := deck[number:]
+	shuffled, err = Shuffle(unshuffled)
+	return drawn, shuffled, err
 }
 
 // getCard returns a single Card from the Database layer, or an error.
@@ -240,7 +216,6 @@ func removeAtIndex(s CardList, index int) CardList {
 func getCard(db persistence.Database, name string) (Card, error) {
 	card, err := Query(db, name, nil)
 	if err != nil {
-		fmt.Printf("error querying for card in getCard: %+v\n", err)
 		return Card{}, errs.Wrap(err)
 	}
 	return card, nil
