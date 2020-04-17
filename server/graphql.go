@@ -44,7 +44,9 @@ func NewGraphQLServer(redisURL string) (*graphQLServer, error) {
 		redisClient:     client,
 		messageChannels: map[string]chan *Message{},
 		userChannels:    map[string]chan string{},
-		mutex:           sync.Mutex{},
+		// TODO: Add Game channels here
+		// gameChannels: map[string]chan *Game{},
+		mutex: sync.Mutex{},
 	}, nil
 }
 

@@ -12,3 +12,8 @@ type Message struct {
 	CreatedAt time.Time `json:"createdAt"`
 	Text      string    `json:"text"`
 }
+
+type User struct {
+	ID       string `json:"id"`
+	Username string `json:"username"`
+}
