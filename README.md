@@ -1,6 +1,6 @@
-# Real-time Chat with GraphQL Subscriptions in Go
-
-Underlying source code for the article [Real-time Chat with GraphQL Subscriptions in Go](https://outcrawl.com/go-graphql-realtime-chat).
+# EDH-Go
+> A Magic: The Gathering board state tracker built with GraphQL and Go.
+ [![Build Status](https://travis-ci.org/dylanlott/edh-go.svg?branch=master)](https://travis-ci.org/dylanlott/edh-go)
 
 ## Running
 
