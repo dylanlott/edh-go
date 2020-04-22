@@ -4,6 +4,7 @@ package server
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -187,6 +188,10 @@ func (s *graphQLServer) createUser(user string) error {
 	}
 	s.mutex.Unlock()
 	return nil
+}
+
+func (s *graphQLServer) Games(ctx context.Context) ([]string, error) {
+	return nil, errors.New("not impl")
 }
 
 func (s *graphQLServer) Mutation() MutationResolver {

@@ -6,6 +6,10 @@ import (
 	"time"
 )
 
+type Game struct {
+	ID string `json:"id"`
+}
+
 type Message struct {
 	ID        string    `json:"id"`
 	User      string    `json:"user"`
