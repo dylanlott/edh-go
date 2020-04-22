@@ -14,7 +14,8 @@ type Mutation {
 type Query {
   messages: [Message!]!
   users: [String!]!
-  games: [String!]!
+  games: [Game!]!
+  boardstate: [BoardState!]!
 }
 
 type Subscription {
@@ -25,8 +26,37 @@ type Subscription {
 type User {
   id: String!
   username: String!
+  boardstate: BoardState!
 }
 
 type Game {
   id: String!
+  players: [User!]!
+}
+
+type BoardState {
+  User: User!
+  Commander: [String!]!
+  Library: [String!]!
+  Graveyard: [String!]!
+  Exiled: [String!]!
+  Field: [String!]!
+  Hand: [String!]!
+  Revealed: [String!]!
+  Controlled: [String!]!
+  Counters: [String!]!
+  Meta: [String!]!
+}
+
+type InputBoardState {
+  Commander: [String!]!
+  Library: [String!]!
+  Graveyard: [String!]!
+  Exiled: [String!]!
+  Field: [String!]!
+  Hand: [String!]!
+  Revealed: [String!]!
+  Controlled: [String!]!
+  Counters: [String!]!
+  Meta: [String!]!
 }

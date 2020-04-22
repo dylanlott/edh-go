@@ -21,17 +21,32 @@ import (
 
 type contextKey string
 
+// Observer must be fulfilled for anything that's lisening to the events that
+// come off of a game. GraphQL mutations trigger these events, which get
+// pushed out to the rest of the users in the game.
+// These are pure functions for a reason - channels can get incredibly messy
+// and event emitters can already be very complicated.
+type Observer interface {
+	Joined(ctx context.Context, game *Game) (*Game, error)
+	Updated(ctx context.Context, game *Game) (*Game, error)
+	Errored(ctx context.Context, game *Game, err error)
+}
+
 const (
 	userContextKey = contextKey("user")
 )
 
+// graphQLServer binds the whole app together.
 type graphQLServer struct {
 	redisClient     *redis.Client
 	messageChannels map[string]chan *Message
 	userChannels    map[string]chan string
+	observers       []Observer
 	mutex           sync.Mutex
 }
 
+// NewGraphQLServer creates a new server to attach the database, game engine,
+// and graphql connections together
 func NewGraphQLServer(redisURL string) (*graphQLServer, error) {
 	client := redis.NewClient(&redis.Options{
 		Addr: redisURL,
@@ -111,6 +126,9 @@ func (s *graphQLServer) Messages(ctx context.Context) ([]*Message, error) {
 	for _, mj := range res {
 		m := &Message{}
 		err = json.Unmarshal([]byte(mj), &m)
+		if err != nil {
+			log.Printf("error unmarhsaling json Message: %s", err)
+		}
 		messages = append(messages, m)
 	}
 	return messages, nil
@@ -190,7 +208,11 @@ func (s *graphQLServer) createUser(user string) error {
 	return nil
 }
 
-func (s *graphQLServer) Games(ctx context.Context) ([]string, error) {
+func (s *graphQLServer) Games(ctx context.Context) ([]*Game, error) {
+	return nil, errors.New("not impl")
+}
+
+func (s *graphQLServer) Boardstate(ctx context.Context) ([]*BoardState, error) {
 	return nil, errors.New("not impl")
 }
 

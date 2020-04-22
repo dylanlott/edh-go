@@ -6,8 +6,36 @@ import (
 	"time"
 )
 
+type BoardState struct {
+	User       *User    `json:"User"`
+	Commander  []string `json:"Commander"`
+	Library    []string `json:"Library"`
+	Graveyard  []string `json:"Graveyard"`
+	Exiled     []string `json:"Exiled"`
+	Field      []string `json:"Field"`
+	Hand       []string `json:"Hand"`
+	Revealed   []string `json:"Revealed"`
+	Controlled []string `json:"Controlled"`
+	Counters   []string `json:"Counters"`
+	Meta       []string `json:"Meta"`
+}
+
 type Game struct {
-	ID string `json:"id"`
+	ID      string  `json:"id"`
+	Players []*User `json:"players"`
+}
+
+type InputBoardState struct {
+	Commander  []string `json:"Commander"`
+	Library    []string `json:"Library"`
+	Graveyard  []string `json:"Graveyard"`
+	Exiled     []string `json:"Exiled"`
+	Field      []string `json:"Field"`
+	Hand       []string `json:"Hand"`
+	Revealed   []string `json:"Revealed"`
+	Controlled []string `json:"Controlled"`
+	Counters   []string `json:"Counters"`
+	Meta       []string `json:"Meta"`
 }
 
 type Message struct {
@@ -18,6 +46,7 @@ type Message struct {
 }
 
 type User struct {
-	ID       string `json:"id"`
-	Username string `json:"username"`
+	ID         string      `json:"id"`
+	Username   string      `json:"username"`
+	Boardstate *BoardState `json:"boardstate"`
 }
