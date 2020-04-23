@@ -39,13 +39,20 @@ const (
 
 // graphQLServer binds the whole app together.
 type graphQLServer struct {
-	redisClient     *redis.Client
-	kv              persistence.Persistence
-	db              persistence.Database
+	mutex sync.Mutex
+
+	// TODO: Remove redisClient and switch over to our Persistence interface
+	redisClient *redis.Client
+
+	// TODO: Wire up our own persistence here
+	kv persistence.Persistence
+	db persistence.Database
+
+	// TODO: Remove these channel implementations and work our own observer
+	// pattern in
 	messageChannels map[string]chan *Message
 	userChannels    map[string]chan string
 	observers       []Observer
-	mutex           sync.Mutex
 }
 
 // NewGraphQLServer creates a new server to attach the database, game engine,

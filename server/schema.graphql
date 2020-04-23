@@ -18,7 +18,7 @@ type Query {
   messages: [Message!]!
   users: [String!]!
   games: [Game!]!
-  boardstate: [BoardState!]!
+  boardstate(userID: String!): [BoardState!]!
 }
 
 type Subscription {

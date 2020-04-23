@@ -89,7 +89,7 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		Boardstate func(childComplexity int) int
+		Boardstate func(childComplexity int, userID string) int
 		Games      func(childComplexity int) int
 		Messages   func(childComplexity int) int
 		Users      func(childComplexity int) int
@@ -118,7 +118,7 @@ type QueryResolver interface {
 	Messages(ctx context.Context) ([]*Message, error)
 	Users(ctx context.Context) ([]string, error)
 	Games(ctx context.Context) ([]*Game, error)
-	Boardstate(ctx context.Context) ([]*BoardState, error)
+	Boardstate(ctx context.Context, userID string) ([]*BoardState, error)
 }
 type SubscriptionResolver interface {
 	MessagePosted(ctx context.Context, user string) (<-chan *Message, error)
@@ -326,7 +326,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			break
 		}
 
-		return e.complexity.Query.Boardstate(childComplexity), true
+		args, err := ec.field_Query_boardstate_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.Boardstate(childComplexity, args["userID"].(string)), true
 
 	case "Query.games":
 		if e.complexity.Query.Games == nil {
@@ -512,7 +517,7 @@ type Query {
   messages: [Message!]!
   users: [String!]!
   games: [Game!]!
-  boardstate: [BoardState!]!
+  boardstate(userID: String!): [BoardState!]!
 }
 
 type Subscription {
@@ -701,6 +706,20 @@ func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs
 		}
 	}
 	args["name"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_boardstate_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["userID"]; ok {
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["userID"] = arg0
 	return args, nil
 }
 
@@ -1723,10 +1742,17 @@ func (ec *executionContext) _Query_boardstate(ctx context.Context, field graphql
 		IsMethod: true,
 	}
 	ctx = graphql.WithResolverContext(ctx, rctx)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Query_boardstate_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	rctx.Args = args
 	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
 	resTmp := ec._fieldMiddleware(ctx, nil, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Boardstate(rctx)
+		return ec.resolvers.Query().Boardstate(rctx, args["userID"].(string))
 	})
 
 	if resTmp == nil {

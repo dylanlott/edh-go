@@ -11,7 +11,7 @@ func (s *graphQLServer) Games(ctx context.Context) ([]*Game, error) {
 	return nil, errs.New("not impl")
 }
 
-func (s *graphQLServer) Boardstate(ctx context.Context) ([]*BoardState, error) {
+func (s *graphQLServer) Boardstate(ctx context.Context, userID string) ([]*BoardState, error) {
 	return nil, errs.New("not impl")
 }
 
@@ -36,9 +36,17 @@ func (s *graphQLServer) CreateGame(ctx context.Context, inputGame *InputGame) (*
 }
 
 func (s *graphQLServer) UpdateBoardState(ctx context.Context, boardstate InputBoardState) (*BoardState, error) {
+	pushBoardStateUpdate(ctx, s.observers, boardstate)
 	return nil, errs.New("not impl")
 }
 
 func (s *graphQLServer) CreateDeck(ctx context.Context, inputDeck *InputDeck) (*Deck, error) {
 	return nil, errs.New("not impl")
+}
+
+func pushBoardStateUpdate(ctx context.Context, observers []Observer, input InputBoardState) {
+	for _, obs := range observers {
+		fmt.Printf("observer: %+v\n", obs)
+		fmt.Printf("board state updated: %+v\n", input)
+	}
 }
