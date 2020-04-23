@@ -44,9 +44,6 @@ type Game struct {
 	// have Put and Get access to the database.
 	DB persistence.Persistence
 
-	// stub out gql field
-	gql interface{}
-
 	Name      string
 	ID        GameID
 	StartTime time.Time
@@ -93,7 +90,6 @@ func NewGame(players map[UserID]Deck, db persistence.Persistence) (*Game, error)
 	gameID := uuid.New()
 
 	g := &Game{
-		Name:      "",
 		ID:        GameID(gameID.String()),
 		StartTime: time.Now(),
 		Players:   p,

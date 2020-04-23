@@ -9,6 +9,7 @@ type Message {
 
 type Mutation {
   postMessage(user: String!, text: String!): Message
+  updateBoard(user: String!): BoardState
 }
 
 type Query {

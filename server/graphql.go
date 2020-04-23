@@ -4,7 +4,6 @@ package server
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -17,6 +16,8 @@ import (
 	"github.com/rs/cors"
 	"github.com/segmentio/ksuid"
 	"github.com/tinrab/retry"
+
+	"github.com/dylanlott/edh-go/persistence"
 )
 
 type contextKey string
@@ -39,6 +40,8 @@ const (
 // graphQLServer binds the whole app together.
 type graphQLServer struct {
 	redisClient     *redis.Client
+	kv              persistence.Persistence
+	db              persistence.Database
 	messageChannels map[string]chan *Message
 	userChannels    map[string]chan string
 	observers       []Observer
@@ -135,6 +138,7 @@ func (s *graphQLServer) Messages(ctx context.Context) ([]*Message, error) {
 }
 
 func (s *graphQLServer) Users(ctx context.Context) ([]string, error) {
+	// TODO: Make this persist via SQLite
 	cmd := s.redisClient.SMembers("users")
 	if cmd.Err() != nil {
 		log.Println(cmd.Err())
@@ -206,14 +210,6 @@ func (s *graphQLServer) createUser(user string) error {
 	}
 	s.mutex.Unlock()
 	return nil
-}
-
-func (s *graphQLServer) Games(ctx context.Context) ([]*Game, error) {
-	return nil, errors.New("not impl")
-}
-
-func (s *graphQLServer) Boardstate(ctx context.Context) ([]*BoardState, error) {
-	return nil, errors.New("not impl")
 }
 
 func (s *graphQLServer) Mutation() MutationResolver {
