@@ -26,22 +26,19 @@ func (s *graphQLServer) CreateGame(ctx context.Context, inputGame *InputGame) (*
 	// 	return nil, err
 	// }
 
-	// for _, obs := range s.observers {
-	// TODO: Context needs to be pulled through from top level of the app
-	// obs.Joined(context.TODO(), g)
-	// }
+	for _, obs := range s.observers {
+		// TODO: Context needs to be pulled through from top level of the app
+		// TODO: Make sure to pass the correct, fleshed out Game here.
+		obs.Joined(context.TODO(), &Game{})
+	}
 
-	return nil, errs.New("not impl")
-}
-
-// updates a Game boardstate for a given User
-func (s *graphQLServer) updateGame(user string, game *Game) (*Game, error) {
-	// save updated game state to redis
-	// if successful, emit game updated event
-	// return Game or error
-	return nil, errs.New("not impl")
+	return &Game{}, errs.New("not impl")
 }
 
 func (s *graphQLServer) UpdateBoardState(ctx context.Context, boardstate InputBoardState) (*BoardState, error) {
-		return nil, errs.New("not impl")
+	return nil, errs.New("not impl")
+}
+
+func (s *graphQLServer) CreateDeck(ctx context.Context, inputDeck *InputDeck) (*Deck, error) {
+	return nil, errs.New("not impl")
 }

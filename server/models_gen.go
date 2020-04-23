@@ -20,12 +20,18 @@ type BoardState struct {
 	Meta       []string `json:"Meta"`
 }
 
+type Deck struct {
+	Commander string   `json:"Commander"`
+	Library   []string `json:"Library"`
+}
+
 type Game struct {
 	ID      string  `json:"id"`
 	Players []*User `json:"players"`
 }
 
 type InputBoardState struct {
+	UserID     string   `json:"UserID"`
 	Commander  []string `json:"Commander"`
 	Library    []string `json:"Library"`
 	Graveyard  []string `json:"Graveyard"`
@@ -36,6 +42,10 @@ type InputBoardState struct {
 	Controlled []string `json:"Controlled"`
 	Counters   []string `json:"Counters"`
 	Meta       []string `json:"Meta"`
+}
+
+type InputDeck struct {
+	Cards []string `json:"cards"`
 }
 
 type InputGame struct {

@@ -64,6 +64,11 @@ type ComplexityRoot struct {
 		User       func(childComplexity int) int
 	}
 
+	Deck struct {
+		Commander func(childComplexity int) int
+		Library   func(childComplexity int) int
+	}
+
 	Game struct {
 		ID      func(childComplexity int) int
 		Players func(childComplexity int) int
@@ -77,6 +82,7 @@ type ComplexityRoot struct {
 	}
 
 	Mutation struct {
+		CreateDeck       func(childComplexity int, input *InputDeck) int
 		CreateGame       func(childComplexity int, input *InputGame) int
 		PostMessage      func(childComplexity int, user string, text string) int
 		UpdateBoardState func(childComplexity int, input InputBoardState) int
@@ -106,6 +112,7 @@ type MutationResolver interface {
 	PostMessage(ctx context.Context, user string, text string) (*Message, error)
 	UpdateBoardState(ctx context.Context, input InputBoardState) (*BoardState, error)
 	CreateGame(ctx context.Context, input *InputGame) (*Game, error)
+	CreateDeck(ctx context.Context, input *InputDeck) (*Deck, error)
 }
 type QueryResolver interface {
 	Messages(ctx context.Context) ([]*Message, error)
@@ -210,6 +217,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.BoardState.User(childComplexity), true
 
+	case "Deck.Commander":
+		if e.complexity.Deck.Commander == nil {
+			break
+		}
+
+		return e.complexity.Deck.Commander(childComplexity), true
+
+	case "Deck.Library":
+		if e.complexity.Deck.Library == nil {
+			break
+		}
+
+		return e.complexity.Deck.Library(childComplexity), true
+
 	case "Game.id":
 		if e.complexity.Game.ID == nil {
 			break
@@ -251,6 +272,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Message.User(childComplexity), true
+
+	case "Mutation.createDeck":
+		if e.complexity.Mutation.CreateDeck == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_createDeck_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.CreateDeck(childComplexity, args["input"].(*InputDeck)), true
 
 	case "Mutation.createGame":
 		if e.complexity.Mutation.CreateGame == nil {
@@ -472,6 +505,7 @@ type Mutation {
   postMessage(user: String!, text: String!): Message
   updateBoardState(input: InputBoardState!): BoardState
   createGame(input: InputGame): Game
+  createDeck(input: InputDeck): Deck
 }
 
 type Query {
@@ -491,6 +525,11 @@ type User {
   username: String!
   deck: String!
   boardstate: BoardState!
+}
+
+type Deck {
+  Commander: String!
+  Library: [String!]
 }
 
 type Game {
@@ -513,6 +552,7 @@ type BoardState {
 }
 
 input InputBoardState {
+  UserID: String!
   Commander: [String!]!
   Library: [String!]!
   Graveyard: [String!]!
@@ -532,6 +572,10 @@ input InputUser {
 
 input InputGame {
   players: [InputUser!]
+}
+
+input InputDeck {
+  cards: [String!]
 }
 `},
 )
@@ -579,6 +623,20 @@ func (ec *executionContext) dir_skip_args(ctx context.Context, rawArgs map[strin
 		}
 	}
 	args["if"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_createDeck_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *InputDeck
+	if tmp, ok := rawArgs["input"]; ok {
+		arg0, err = ec.unmarshalOInputDeck2ᚖgithubᚗcomᚋtinrabᚋgraphqlᚑrealtimeᚑchatᚋserverᚐInputDeck(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
 	return args, nil
 }
 
@@ -1126,6 +1184,71 @@ func (ec *executionContext) _BoardState_Meta(ctx context.Context, field graphql.
 	return ec.marshalNString2ᚕstringᚄ(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Deck_Commander(ctx context.Context, field graphql.CollectedField, obj *Deck) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "Deck",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp := ec._fieldMiddleware(ctx, obj, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Commander, nil
+	})
+
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Deck_Library(ctx context.Context, field graphql.CollectedField, obj *Deck) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "Deck",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp := ec._fieldMiddleware(ctx, obj, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Library, nil
+	})
+
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]string)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalOString2ᚕstringᚄ(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Game_id(ctx context.Context, field graphql.CollectedField, obj *Game) (ret graphql.Marshaler) {
 	ctx = ec.Tracer.StartFieldExecution(ctx, field)
 	defer func() {
@@ -1442,6 +1565,44 @@ func (ec *executionContext) _Mutation_createGame(ctx context.Context, field grap
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
 	return ec.marshalOGame2ᚖgithubᚗcomᚋtinrabᚋgraphqlᚑrealtimeᚑchatᚋserverᚐGame(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_createDeck(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "Mutation",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_createDeck_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	rctx.Args = args
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp := ec._fieldMiddleware(ctx, nil, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().CreateDeck(rctx, args["input"].(*InputDeck))
+	})
+
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*Deck)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalODeck2ᚖgithubᚗcomᚋtinrabᚋgraphqlᚑrealtimeᚑchatᚋserverᚐDeck(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_messages(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -2946,6 +3107,12 @@ func (ec *executionContext) unmarshalInputInputBoardState(ctx context.Context, o
 
 	for k, v := range asMap {
 		switch k {
+		case "UserID":
+			var err error
+			it.UserID, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
 		case "Commander":
 			var err error
 			it.Commander, err = ec.unmarshalNString2ᚕstringᚄ(ctx, v)
@@ -3003,6 +3170,24 @@ func (ec *executionContext) unmarshalInputInputBoardState(ctx context.Context, o
 		case "Meta":
 			var err error
 			it.Meta, err = ec.unmarshalNString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputInputDeck(ctx context.Context, obj interface{}) (InputDeck, error) {
+	var it InputDeck
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "cards":
+			var err error
+			it.Cards, err = ec.unmarshalOString2ᚕstringᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -3139,6 +3324,35 @@ func (ec *executionContext) _BoardState(ctx context.Context, sel ast.SelectionSe
 	return out
 }
 
+var deckImplementors = []string{"Deck"}
+
+func (ec *executionContext) _Deck(ctx context.Context, sel ast.SelectionSet, obj *Deck) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.RequestContext, sel, deckImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Deck")
+		case "Commander":
+			out.Values[i] = ec._Deck_Commander(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "Library":
+			out.Values[i] = ec._Deck_Library(ctx, field, obj)
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
 var gameImplementors = []string{"Game"}
 
 func (ec *executionContext) _Game(ctx context.Context, sel ast.SelectionSet, obj *Game) graphql.Marshaler {
@@ -3234,6 +3448,8 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			out.Values[i] = ec._Mutation_updateBoardState(ctx, field)
 		case "createGame":
 			out.Values[i] = ec._Mutation_createGame(ctx, field)
+		case "createDeck":
+			out.Values[i] = ec._Mutation_createDeck(ctx, field)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -4191,6 +4407,17 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 	return ec.marshalOBoolean2bool(ctx, sel, *v)
 }
 
+func (ec *executionContext) marshalODeck2githubᚗcomᚋtinrabᚋgraphqlᚑrealtimeᚑchatᚋserverᚐDeck(ctx context.Context, sel ast.SelectionSet, v Deck) graphql.Marshaler {
+	return ec._Deck(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalODeck2ᚖgithubᚗcomᚋtinrabᚋgraphqlᚑrealtimeᚑchatᚋserverᚐDeck(ctx context.Context, sel ast.SelectionSet, v *Deck) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._Deck(ctx, sel, v)
+}
+
 func (ec *executionContext) marshalOGame2githubᚗcomᚋtinrabᚋgraphqlᚑrealtimeᚑchatᚋserverᚐGame(ctx context.Context, sel ast.SelectionSet, v Game) graphql.Marshaler {
 	return ec._Game(ctx, sel, &v)
 }
@@ -4200,6 +4427,18 @@ func (ec *executionContext) marshalOGame2ᚖgithubᚗcomᚋtinrabᚋgraphqlᚑre
 		return graphql.Null
 	}
 	return ec._Game(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalOInputDeck2githubᚗcomᚋtinrabᚋgraphqlᚑrealtimeᚑchatᚋserverᚐInputDeck(ctx context.Context, v interface{}) (InputDeck, error) {
+	return ec.unmarshalInputInputDeck(ctx, v)
+}
+
+func (ec *executionContext) unmarshalOInputDeck2ᚖgithubᚗcomᚋtinrabᚋgraphqlᚑrealtimeᚑchatᚋserverᚐInputDeck(ctx context.Context, v interface{}) (*InputDeck, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalOInputDeck2githubᚗcomᚋtinrabᚋgraphqlᚑrealtimeᚑchatᚋserverᚐInputDeck(ctx, v)
+	return &res, err
 }
 
 func (ec *executionContext) unmarshalOInputGame2githubᚗcomᚋtinrabᚋgraphqlᚑrealtimeᚑchatᚋserverᚐInputGame(ctx context.Context, v interface{}) (InputGame, error) {
@@ -4251,6 +4490,38 @@ func (ec *executionContext) unmarshalOString2string(ctx context.Context, v inter
 
 func (ec *executionContext) marshalOString2string(ctx context.Context, sel ast.SelectionSet, v string) graphql.Marshaler {
 	return graphql.MarshalString(v)
+}
+
+func (ec *executionContext) unmarshalOString2ᚕstringᚄ(ctx context.Context, v interface{}) ([]string, error) {
+	var vSlice []interface{}
+	if v != nil {
+		if tmp1, ok := v.([]interface{}); ok {
+			vSlice = tmp1
+		} else {
+			vSlice = []interface{}{v}
+		}
+	}
+	var err error
+	res := make([]string, len(vSlice))
+	for i := range vSlice {
+		res[i], err = ec.unmarshalNString2string(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) marshalOString2ᚕstringᚄ(ctx context.Context, sel ast.SelectionSet, v []string) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	for i := range v {
+		ret[i] = ec.marshalNString2string(ctx, sel, v[i])
+	}
+
+	return ret
 }
 
 func (ec *executionContext) unmarshalOString2ᚖstring(ctx context.Context, v interface{}) (*string, error) {

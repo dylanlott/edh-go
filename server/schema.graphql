@@ -11,6 +11,7 @@ type Mutation {
   postMessage(user: String!, text: String!): Message
   updateBoardState(input: InputBoardState!): BoardState
   createGame(input: InputGame): Game
+  createDeck(input: InputDeck): Deck
 }
 
 type Query {
@@ -30,6 +31,11 @@ type User {
   username: String!
   deck: String!
   boardstate: BoardState!
+}
+
+type Deck {
+  Commander: String!
+  Library: [String!]
 }
 
 type Game {
@@ -52,6 +58,7 @@ type BoardState {
 }
 
 input InputBoardState {
+  UserID: String!
   Commander: [String!]!
   Library: [String!]!
   Graveyard: [String!]!
@@ -71,4 +78,8 @@ input InputUser {
 
 input InputGame {
   players: [InputUser!]
+}
+
+input InputDeck {
+  cards: [String!]
 }
