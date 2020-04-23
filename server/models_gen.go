@@ -38,6 +38,15 @@ type InputBoardState struct {
 	Meta       []string `json:"Meta"`
 }
 
+type InputGame struct {
+	Players []*InputUser `json:"players"`
+}
+
+type InputUser struct {
+	Deck     string `json:"Deck"`
+	Username string `json:"Username"`
+}
+
 type Message struct {
 	ID        string    `json:"id"`
 	User      string    `json:"user"`
@@ -48,5 +57,6 @@ type Message struct {
 type User struct {
 	ID         string      `json:"id"`
 	Username   string      `json:"username"`
+	Deck       string      `json:"deck"`
 	Boardstate *BoardState `json:"boardstate"`
 }

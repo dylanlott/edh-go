@@ -9,7 +9,8 @@ type Message {
 
 type Mutation {
   postMessage(user: String!, text: String!): Message
-  updateBoard(user: String!): BoardState
+  updateBoardState(input: InputBoardState!): BoardState
+  createGame(input: InputGame): Game
 }
 
 type Query {
@@ -27,6 +28,7 @@ type Subscription {
 type User {
   id: String!
   username: String!
+  deck: String!
   boardstate: BoardState!
 }
 
@@ -49,7 +51,7 @@ type BoardState {
   Meta: [String!]!
 }
 
-type InputBoardState {
+input InputBoardState {
   Commander: [String!]!
   Library: [String!]!
   Graveyard: [String!]!
@@ -60,4 +62,13 @@ type InputBoardState {
   Controlled: [String!]!
   Counters: [String!]!
   Meta: [String!]!
+}
+
+input InputUser {
+  Deck: String!
+  Username: String!
+}
+
+input InputGame {
+  players: [InputUser!]
 }

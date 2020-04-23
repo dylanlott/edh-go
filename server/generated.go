@@ -69,19 +69,6 @@ type ComplexityRoot struct {
 		Players func(childComplexity int) int
 	}
 
-	InputBoardState struct {
-		Commander  func(childComplexity int) int
-		Controlled func(childComplexity int) int
-		Counters   func(childComplexity int) int
-		Exiled     func(childComplexity int) int
-		Field      func(childComplexity int) int
-		Graveyard  func(childComplexity int) int
-		Hand       func(childComplexity int) int
-		Library    func(childComplexity int) int
-		Meta       func(childComplexity int) int
-		Revealed   func(childComplexity int) int
-	}
-
 	Message struct {
 		CreatedAt func(childComplexity int) int
 		ID        func(childComplexity int) int
@@ -90,8 +77,9 @@ type ComplexityRoot struct {
 	}
 
 	Mutation struct {
-		PostMessage func(childComplexity int, user string, text string) int
-		UpdateBoard func(childComplexity int, user string) int
+		CreateGame       func(childComplexity int, input *InputGame) int
+		PostMessage      func(childComplexity int, user string, text string) int
+		UpdateBoardState func(childComplexity int, input InputBoardState) int
 	}
 
 	Query struct {
@@ -108,6 +96,7 @@ type ComplexityRoot struct {
 
 	User struct {
 		Boardstate func(childComplexity int) int
+		Deck       func(childComplexity int) int
 		ID         func(childComplexity int) int
 		Username   func(childComplexity int) int
 	}
@@ -115,7 +104,8 @@ type ComplexityRoot struct {
 
 type MutationResolver interface {
 	PostMessage(ctx context.Context, user string, text string) (*Message, error)
-	UpdateBoard(ctx context.Context, user string) (*BoardState, error)
+	UpdateBoardState(ctx context.Context, input InputBoardState) (*BoardState, error)
+	CreateGame(ctx context.Context, input *InputGame) (*Game, error)
 }
 type QueryResolver interface {
 	Messages(ctx context.Context) ([]*Message, error)
@@ -234,76 +224,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Game.Players(childComplexity), true
 
-	case "InputBoardState.Commander":
-		if e.complexity.InputBoardState.Commander == nil {
-			break
-		}
-
-		return e.complexity.InputBoardState.Commander(childComplexity), true
-
-	case "InputBoardState.Controlled":
-		if e.complexity.InputBoardState.Controlled == nil {
-			break
-		}
-
-		return e.complexity.InputBoardState.Controlled(childComplexity), true
-
-	case "InputBoardState.Counters":
-		if e.complexity.InputBoardState.Counters == nil {
-			break
-		}
-
-		return e.complexity.InputBoardState.Counters(childComplexity), true
-
-	case "InputBoardState.Exiled":
-		if e.complexity.InputBoardState.Exiled == nil {
-			break
-		}
-
-		return e.complexity.InputBoardState.Exiled(childComplexity), true
-
-	case "InputBoardState.Field":
-		if e.complexity.InputBoardState.Field == nil {
-			break
-		}
-
-		return e.complexity.InputBoardState.Field(childComplexity), true
-
-	case "InputBoardState.Graveyard":
-		if e.complexity.InputBoardState.Graveyard == nil {
-			break
-		}
-
-		return e.complexity.InputBoardState.Graveyard(childComplexity), true
-
-	case "InputBoardState.Hand":
-		if e.complexity.InputBoardState.Hand == nil {
-			break
-		}
-
-		return e.complexity.InputBoardState.Hand(childComplexity), true
-
-	case "InputBoardState.Library":
-		if e.complexity.InputBoardState.Library == nil {
-			break
-		}
-
-		return e.complexity.InputBoardState.Library(childComplexity), true
-
-	case "InputBoardState.Meta":
-		if e.complexity.InputBoardState.Meta == nil {
-			break
-		}
-
-		return e.complexity.InputBoardState.Meta(childComplexity), true
-
-	case "InputBoardState.Revealed":
-		if e.complexity.InputBoardState.Revealed == nil {
-			break
-		}
-
-		return e.complexity.InputBoardState.Revealed(childComplexity), true
-
 	case "Message.createdAt":
 		if e.complexity.Message.CreatedAt == nil {
 			break
@@ -332,6 +252,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Message.User(childComplexity), true
 
+	case "Mutation.createGame":
+		if e.complexity.Mutation.CreateGame == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_createGame_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.CreateGame(childComplexity, args["input"].(*InputGame)), true
+
 	case "Mutation.postMessage":
 		if e.complexity.Mutation.PostMessage == nil {
 			break
@@ -344,17 +276,17 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.PostMessage(childComplexity, args["user"].(string), args["text"].(string)), true
 
-	case "Mutation.updateBoard":
-		if e.complexity.Mutation.UpdateBoard == nil {
+	case "Mutation.updateBoardState":
+		if e.complexity.Mutation.UpdateBoardState == nil {
 			break
 		}
 
-		args, err := ec.field_Mutation_updateBoard_args(context.TODO(), rawArgs)
+		args, err := ec.field_Mutation_updateBoardState_args(context.TODO(), rawArgs)
 		if err != nil {
 			return 0, false
 		}
 
-		return e.complexity.Mutation.UpdateBoard(childComplexity, args["user"].(string)), true
+		return e.complexity.Mutation.UpdateBoardState(childComplexity, args["input"].(InputBoardState)), true
 
 	case "Query.boardstate":
 		if e.complexity.Query.Boardstate == nil {
@@ -414,6 +346,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.User.Boardstate(childComplexity), true
+
+	case "User.deck":
+		if e.complexity.User.Deck == nil {
+			break
+		}
+
+		return e.complexity.User.Deck(childComplexity), true
 
 	case "User.id":
 		if e.complexity.User.ID == nil {
@@ -531,7 +470,8 @@ type Message {
 
 type Mutation {
   postMessage(user: String!, text: String!): Message
-  updateBoard(user: String!): BoardState
+  updateBoardState(input: InputBoardState!): BoardState
+  createGame(input: InputGame): Game
 }
 
 type Query {
@@ -549,6 +489,7 @@ type Subscription {
 type User {
   id: String!
   username: String!
+  deck: String!
   boardstate: BoardState!
 }
 
@@ -571,7 +512,7 @@ type BoardState {
   Meta: [String!]!
 }
 
-type InputBoardState {
+input InputBoardState {
   Commander: [String!]!
   Library: [String!]!
   Graveyard: [String!]!
@@ -582,6 +523,15 @@ type InputBoardState {
   Controlled: [String!]!
   Counters: [String!]!
   Meta: [String!]!
+}
+
+input InputUser {
+  Deck: String!
+  Username: String!
+}
+
+input InputGame {
+  players: [InputUser!]
 }
 `},
 )
@@ -632,6 +582,20 @@ func (ec *executionContext) dir_skip_args(ctx context.Context, rawArgs map[strin
 	return args, nil
 }
 
+func (ec *executionContext) field_Mutation_createGame_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *InputGame
+	if tmp, ok := rawArgs["input"]; ok {
+		arg0, err = ec.unmarshalOInputGame2ᚖgithubᚗcomᚋtinrabᚋgraphqlᚑrealtimeᚑchatᚋserverᚐInputGame(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
 func (ec *executionContext) field_Mutation_postMessage_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -654,17 +618,17 @@ func (ec *executionContext) field_Mutation_postMessage_args(ctx context.Context,
 	return args, nil
 }
 
-func (ec *executionContext) field_Mutation_updateBoard_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+func (ec *executionContext) field_Mutation_updateBoardState_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 string
-	if tmp, ok := rawArgs["user"]; ok {
-		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+	var arg0 InputBoardState
+	if tmp, ok := rawArgs["input"]; ok {
+		arg0, err = ec.unmarshalNInputBoardState2githubᚗcomᚋtinrabᚋgraphqlᚑrealtimeᚑchatᚋserverᚐInputBoardState(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["user"] = arg0
+	args["input"] = arg0
 	return args, nil
 }
 
@@ -1230,346 +1194,6 @@ func (ec *executionContext) _Game_players(ctx context.Context, field graphql.Col
 	return ec.marshalNUser2ᚕᚖgithubᚗcomᚋtinrabᚋgraphqlᚑrealtimeᚑchatᚋserverᚐUserᚄ(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _InputBoardState_Commander(ctx context.Context, field graphql.CollectedField, obj *InputBoardState) (ret graphql.Marshaler) {
-	ctx = ec.Tracer.StartFieldExecution(ctx, field)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-		ec.Tracer.EndFieldExecution(ctx)
-	}()
-	rctx := &graphql.ResolverContext{
-		Object:   "InputBoardState",
-		Field:    field,
-		Args:     nil,
-		IsMethod: false,
-	}
-	ctx = graphql.WithResolverContext(ctx, rctx)
-	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
-	resTmp := ec._fieldMiddleware(ctx, obj, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Commander, nil
-	})
-
-	if resTmp == nil {
-		if !ec.HasError(rctx) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.([]string)
-	rctx.Result = res
-	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalNString2ᚕstringᚄ(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _InputBoardState_Library(ctx context.Context, field graphql.CollectedField, obj *InputBoardState) (ret graphql.Marshaler) {
-	ctx = ec.Tracer.StartFieldExecution(ctx, field)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-		ec.Tracer.EndFieldExecution(ctx)
-	}()
-	rctx := &graphql.ResolverContext{
-		Object:   "InputBoardState",
-		Field:    field,
-		Args:     nil,
-		IsMethod: false,
-	}
-	ctx = graphql.WithResolverContext(ctx, rctx)
-	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
-	resTmp := ec._fieldMiddleware(ctx, obj, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Library, nil
-	})
-
-	if resTmp == nil {
-		if !ec.HasError(rctx) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.([]string)
-	rctx.Result = res
-	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalNString2ᚕstringᚄ(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _InputBoardState_Graveyard(ctx context.Context, field graphql.CollectedField, obj *InputBoardState) (ret graphql.Marshaler) {
-	ctx = ec.Tracer.StartFieldExecution(ctx, field)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-		ec.Tracer.EndFieldExecution(ctx)
-	}()
-	rctx := &graphql.ResolverContext{
-		Object:   "InputBoardState",
-		Field:    field,
-		Args:     nil,
-		IsMethod: false,
-	}
-	ctx = graphql.WithResolverContext(ctx, rctx)
-	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
-	resTmp := ec._fieldMiddleware(ctx, obj, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Graveyard, nil
-	})
-
-	if resTmp == nil {
-		if !ec.HasError(rctx) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.([]string)
-	rctx.Result = res
-	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalNString2ᚕstringᚄ(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _InputBoardState_Exiled(ctx context.Context, field graphql.CollectedField, obj *InputBoardState) (ret graphql.Marshaler) {
-	ctx = ec.Tracer.StartFieldExecution(ctx, field)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-		ec.Tracer.EndFieldExecution(ctx)
-	}()
-	rctx := &graphql.ResolverContext{
-		Object:   "InputBoardState",
-		Field:    field,
-		Args:     nil,
-		IsMethod: false,
-	}
-	ctx = graphql.WithResolverContext(ctx, rctx)
-	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
-	resTmp := ec._fieldMiddleware(ctx, obj, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Exiled, nil
-	})
-
-	if resTmp == nil {
-		if !ec.HasError(rctx) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.([]string)
-	rctx.Result = res
-	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalNString2ᚕstringᚄ(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _InputBoardState_Field(ctx context.Context, field graphql.CollectedField, obj *InputBoardState) (ret graphql.Marshaler) {
-	ctx = ec.Tracer.StartFieldExecution(ctx, field)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-		ec.Tracer.EndFieldExecution(ctx)
-	}()
-	rctx := &graphql.ResolverContext{
-		Object:   "InputBoardState",
-		Field:    field,
-		Args:     nil,
-		IsMethod: false,
-	}
-	ctx = graphql.WithResolverContext(ctx, rctx)
-	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
-	resTmp := ec._fieldMiddleware(ctx, obj, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Field, nil
-	})
-
-	if resTmp == nil {
-		if !ec.HasError(rctx) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.([]string)
-	rctx.Result = res
-	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalNString2ᚕstringᚄ(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _InputBoardState_Hand(ctx context.Context, field graphql.CollectedField, obj *InputBoardState) (ret graphql.Marshaler) {
-	ctx = ec.Tracer.StartFieldExecution(ctx, field)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-		ec.Tracer.EndFieldExecution(ctx)
-	}()
-	rctx := &graphql.ResolverContext{
-		Object:   "InputBoardState",
-		Field:    field,
-		Args:     nil,
-		IsMethod: false,
-	}
-	ctx = graphql.WithResolverContext(ctx, rctx)
-	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
-	resTmp := ec._fieldMiddleware(ctx, obj, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Hand, nil
-	})
-
-	if resTmp == nil {
-		if !ec.HasError(rctx) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.([]string)
-	rctx.Result = res
-	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalNString2ᚕstringᚄ(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _InputBoardState_Revealed(ctx context.Context, field graphql.CollectedField, obj *InputBoardState) (ret graphql.Marshaler) {
-	ctx = ec.Tracer.StartFieldExecution(ctx, field)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-		ec.Tracer.EndFieldExecution(ctx)
-	}()
-	rctx := &graphql.ResolverContext{
-		Object:   "InputBoardState",
-		Field:    field,
-		Args:     nil,
-		IsMethod: false,
-	}
-	ctx = graphql.WithResolverContext(ctx, rctx)
-	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
-	resTmp := ec._fieldMiddleware(ctx, obj, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Revealed, nil
-	})
-
-	if resTmp == nil {
-		if !ec.HasError(rctx) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.([]string)
-	rctx.Result = res
-	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalNString2ᚕstringᚄ(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _InputBoardState_Controlled(ctx context.Context, field graphql.CollectedField, obj *InputBoardState) (ret graphql.Marshaler) {
-	ctx = ec.Tracer.StartFieldExecution(ctx, field)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-		ec.Tracer.EndFieldExecution(ctx)
-	}()
-	rctx := &graphql.ResolverContext{
-		Object:   "InputBoardState",
-		Field:    field,
-		Args:     nil,
-		IsMethod: false,
-	}
-	ctx = graphql.WithResolverContext(ctx, rctx)
-	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
-	resTmp := ec._fieldMiddleware(ctx, obj, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Controlled, nil
-	})
-
-	if resTmp == nil {
-		if !ec.HasError(rctx) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.([]string)
-	rctx.Result = res
-	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalNString2ᚕstringᚄ(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _InputBoardState_Counters(ctx context.Context, field graphql.CollectedField, obj *InputBoardState) (ret graphql.Marshaler) {
-	ctx = ec.Tracer.StartFieldExecution(ctx, field)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-		ec.Tracer.EndFieldExecution(ctx)
-	}()
-	rctx := &graphql.ResolverContext{
-		Object:   "InputBoardState",
-		Field:    field,
-		Args:     nil,
-		IsMethod: false,
-	}
-	ctx = graphql.WithResolverContext(ctx, rctx)
-	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
-	resTmp := ec._fieldMiddleware(ctx, obj, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Counters, nil
-	})
-
-	if resTmp == nil {
-		if !ec.HasError(rctx) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.([]string)
-	rctx.Result = res
-	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalNString2ᚕstringᚄ(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _InputBoardState_Meta(ctx context.Context, field graphql.CollectedField, obj *InputBoardState) (ret graphql.Marshaler) {
-	ctx = ec.Tracer.StartFieldExecution(ctx, field)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-		ec.Tracer.EndFieldExecution(ctx)
-	}()
-	rctx := &graphql.ResolverContext{
-		Object:   "InputBoardState",
-		Field:    field,
-		Args:     nil,
-		IsMethod: false,
-	}
-	ctx = graphql.WithResolverContext(ctx, rctx)
-	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
-	resTmp := ec._fieldMiddleware(ctx, obj, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Meta, nil
-	})
-
-	if resTmp == nil {
-		if !ec.HasError(rctx) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.([]string)
-	rctx.Result = res
-	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalNString2ᚕstringᚄ(ctx, field.Selections, res)
-}
-
 func (ec *executionContext) _Message_id(ctx context.Context, field graphql.CollectedField, obj *Message) (ret graphql.Marshaler) {
 	ctx = ec.Tracer.StartFieldExecution(ctx, field)
 	defer func() {
@@ -1744,7 +1368,7 @@ func (ec *executionContext) _Mutation_postMessage(ctx context.Context, field gra
 	return ec.marshalOMessage2ᚖgithubᚗcomᚋtinrabᚋgraphqlᚑrealtimeᚑchatᚋserverᚐMessage(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Mutation_updateBoard(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+func (ec *executionContext) _Mutation_updateBoardState(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	ctx = ec.Tracer.StartFieldExecution(ctx, field)
 	defer func() {
 		if r := recover(); r != nil {
@@ -1761,7 +1385,7 @@ func (ec *executionContext) _Mutation_updateBoard(ctx context.Context, field gra
 	}
 	ctx = graphql.WithResolverContext(ctx, rctx)
 	rawArgs := field.ArgumentMap(ec.Variables)
-	args, err := ec.field_Mutation_updateBoard_args(ctx, rawArgs)
+	args, err := ec.field_Mutation_updateBoardState_args(ctx, rawArgs)
 	if err != nil {
 		ec.Error(ctx, err)
 		return graphql.Null
@@ -1770,7 +1394,7 @@ func (ec *executionContext) _Mutation_updateBoard(ctx context.Context, field gra
 	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
 	resTmp := ec._fieldMiddleware(ctx, nil, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().UpdateBoard(rctx, args["user"].(string))
+		return ec.resolvers.Mutation().UpdateBoardState(rctx, args["input"].(InputBoardState))
 	})
 
 	if resTmp == nil {
@@ -1780,6 +1404,44 @@ func (ec *executionContext) _Mutation_updateBoard(ctx context.Context, field gra
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
 	return ec.marshalOBoardState2ᚖgithubᚗcomᚋtinrabᚋgraphqlᚑrealtimeᚑchatᚋserverᚐBoardState(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_createGame(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "Mutation",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_createGame_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	rctx.Args = args
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp := ec._fieldMiddleware(ctx, nil, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().CreateGame(rctx, args["input"].(*InputGame))
+	})
+
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*Game)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalOGame2ᚖgithubᚗcomᚋtinrabᚋgraphqlᚑrealtimeᚑchatᚋserverᚐGame(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_messages(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -2141,6 +1803,40 @@ func (ec *executionContext) _User_username(ctx context.Context, field graphql.Co
 	resTmp := ec._fieldMiddleware(ctx, obj, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Username, nil
+	})
+
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _User_deck(ctx context.Context, field graphql.CollectedField, obj *User) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "User",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp := ec._fieldMiddleware(ctx, obj, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Deck, nil
 	})
 
 	if resTmp == nil {
@@ -3244,6 +2940,120 @@ func (ec *executionContext) ___Type_ofType(ctx context.Context, field graphql.Co
 
 // region    **************************** input.gotpl *****************************
 
+func (ec *executionContext) unmarshalInputInputBoardState(ctx context.Context, obj interface{}) (InputBoardState, error) {
+	var it InputBoardState
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "Commander":
+			var err error
+			it.Commander, err = ec.unmarshalNString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "Library":
+			var err error
+			it.Library, err = ec.unmarshalNString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "Graveyard":
+			var err error
+			it.Graveyard, err = ec.unmarshalNString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "Exiled":
+			var err error
+			it.Exiled, err = ec.unmarshalNString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "Field":
+			var err error
+			it.Field, err = ec.unmarshalNString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "Hand":
+			var err error
+			it.Hand, err = ec.unmarshalNString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "Revealed":
+			var err error
+			it.Revealed, err = ec.unmarshalNString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "Controlled":
+			var err error
+			it.Controlled, err = ec.unmarshalNString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "Counters":
+			var err error
+			it.Counters, err = ec.unmarshalNString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "Meta":
+			var err error
+			it.Meta, err = ec.unmarshalNString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputInputGame(ctx context.Context, obj interface{}) (InputGame, error) {
+	var it InputGame
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "players":
+			var err error
+			it.Players, err = ec.unmarshalOInputUser2ᚕᚖgithubᚗcomᚋtinrabᚋgraphqlᚑrealtimeᚑchatᚋserverᚐInputUserᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputInputUser(ctx context.Context, obj interface{}) (InputUser, error) {
+	var it InputUser
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "Deck":
+			var err error
+			it.Deck, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "Username":
+			var err error
+			it.Username, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 // endregion **************************** input.gotpl *****************************
 
 // region    ************************** interface.gotpl ***************************
@@ -3361,78 +3171,6 @@ func (ec *executionContext) _Game(ctx context.Context, sel ast.SelectionSet, obj
 	return out
 }
 
-var inputBoardStateImplementors = []string{"InputBoardState"}
-
-func (ec *executionContext) _InputBoardState(ctx context.Context, sel ast.SelectionSet, obj *InputBoardState) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.RequestContext, sel, inputBoardStateImplementors)
-
-	out := graphql.NewFieldSet(fields)
-	var invalids uint32
-	for i, field := range fields {
-		switch field.Name {
-		case "__typename":
-			out.Values[i] = graphql.MarshalString("InputBoardState")
-		case "Commander":
-			out.Values[i] = ec._InputBoardState_Commander(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		case "Library":
-			out.Values[i] = ec._InputBoardState_Library(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		case "Graveyard":
-			out.Values[i] = ec._InputBoardState_Graveyard(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		case "Exiled":
-			out.Values[i] = ec._InputBoardState_Exiled(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		case "Field":
-			out.Values[i] = ec._InputBoardState_Field(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		case "Hand":
-			out.Values[i] = ec._InputBoardState_Hand(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		case "Revealed":
-			out.Values[i] = ec._InputBoardState_Revealed(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		case "Controlled":
-			out.Values[i] = ec._InputBoardState_Controlled(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		case "Counters":
-			out.Values[i] = ec._InputBoardState_Counters(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		case "Meta":
-			out.Values[i] = ec._InputBoardState_Meta(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		default:
-			panic("unknown field " + strconv.Quote(field.Name))
-		}
-	}
-	out.Dispatch()
-	if invalids > 0 {
-		return graphql.Null
-	}
-	return out
-}
-
 var messageImplementors = []string{"Message"}
 
 func (ec *executionContext) _Message(ctx context.Context, sel ast.SelectionSet, obj *Message) graphql.Marshaler {
@@ -3492,8 +3230,10 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			out.Values[i] = graphql.MarshalString("Mutation")
 		case "postMessage":
 			out.Values[i] = ec._Mutation_postMessage(ctx, field)
-		case "updateBoard":
-			out.Values[i] = ec._Mutation_updateBoard(ctx, field)
+		case "updateBoardState":
+			out.Values[i] = ec._Mutation_updateBoardState(ctx, field)
+		case "createGame":
+			out.Values[i] = ec._Mutation_createGame(ctx, field)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -3631,6 +3371,11 @@ func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj
 			}
 		case "username":
 			out.Values[i] = ec._User_username(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "deck":
+			out.Values[i] = ec._User_deck(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
@@ -4009,6 +3754,22 @@ func (ec *executionContext) marshalNGame2ᚖgithubᚗcomᚋtinrabᚋgraphqlᚑre
 		return graphql.Null
 	}
 	return ec._Game(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNInputBoardState2githubᚗcomᚋtinrabᚋgraphqlᚑrealtimeᚑchatᚋserverᚐInputBoardState(ctx context.Context, v interface{}) (InputBoardState, error) {
+	return ec.unmarshalInputInputBoardState(ctx, v)
+}
+
+func (ec *executionContext) unmarshalNInputUser2githubᚗcomᚋtinrabᚋgraphqlᚑrealtimeᚑchatᚋserverᚐInputUser(ctx context.Context, v interface{}) (InputUser, error) {
+	return ec.unmarshalInputInputUser(ctx, v)
+}
+
+func (ec *executionContext) unmarshalNInputUser2ᚖgithubᚗcomᚋtinrabᚋgraphqlᚑrealtimeᚑchatᚋserverᚐInputUser(ctx context.Context, v interface{}) (*InputUser, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalNInputUser2githubᚗcomᚋtinrabᚋgraphqlᚑrealtimeᚑchatᚋserverᚐInputUser(ctx, v)
+	return &res, err
 }
 
 func (ec *executionContext) marshalNMessage2githubᚗcomᚋtinrabᚋgraphqlᚑrealtimeᚑchatᚋserverᚐMessage(ctx context.Context, sel ast.SelectionSet, v Message) graphql.Marshaler {
@@ -4428,6 +4189,49 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 		return graphql.Null
 	}
 	return ec.marshalOBoolean2bool(ctx, sel, *v)
+}
+
+func (ec *executionContext) marshalOGame2githubᚗcomᚋtinrabᚋgraphqlᚑrealtimeᚑchatᚋserverᚐGame(ctx context.Context, sel ast.SelectionSet, v Game) graphql.Marshaler {
+	return ec._Game(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalOGame2ᚖgithubᚗcomᚋtinrabᚋgraphqlᚑrealtimeᚑchatᚋserverᚐGame(ctx context.Context, sel ast.SelectionSet, v *Game) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._Game(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalOInputGame2githubᚗcomᚋtinrabᚋgraphqlᚑrealtimeᚑchatᚋserverᚐInputGame(ctx context.Context, v interface{}) (InputGame, error) {
+	return ec.unmarshalInputInputGame(ctx, v)
+}
+
+func (ec *executionContext) unmarshalOInputGame2ᚖgithubᚗcomᚋtinrabᚋgraphqlᚑrealtimeᚑchatᚋserverᚐInputGame(ctx context.Context, v interface{}) (*InputGame, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalOInputGame2githubᚗcomᚋtinrabᚋgraphqlᚑrealtimeᚑchatᚋserverᚐInputGame(ctx, v)
+	return &res, err
+}
+
+func (ec *executionContext) unmarshalOInputUser2ᚕᚖgithubᚗcomᚋtinrabᚋgraphqlᚑrealtimeᚑchatᚋserverᚐInputUserᚄ(ctx context.Context, v interface{}) ([]*InputUser, error) {
+	var vSlice []interface{}
+	if v != nil {
+		if tmp1, ok := v.([]interface{}); ok {
+			vSlice = tmp1
+		} else {
+			vSlice = []interface{}{v}
+		}
+	}
+	var err error
+	res := make([]*InputUser, len(vSlice))
+	for i := range vSlice {
+		res[i], err = ec.unmarshalNInputUser2ᚖgithubᚗcomᚋtinrabᚋgraphqlᚑrealtimeᚑchatᚋserverᚐInputUser(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
 }
 
 func (ec *executionContext) marshalOMessage2githubᚗcomᚋtinrabᚋgraphqlᚑrealtimeᚑchatᚋserverᚐMessage(ctx context.Context, sel ast.SelectionSet, v Message) graphql.Marshaler {

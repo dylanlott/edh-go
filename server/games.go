@@ -2,11 +2,9 @@ package server
 
 import (
 	"context"
-	"log"
+	"fmt"
 
 	"github.com/zeebo/errs"
-
-	"github.com/dylanlott/edh-go/game"
 )
 
 func (s *graphQLServer) Games(ctx context.Context) ([]*Game, error) {
@@ -18,18 +16,10 @@ func (s *graphQLServer) Boardstate(ctx context.Context) ([]*BoardState, error) {
 }
 
 // createGame is untested currently
-func (s *graphQLServer) createGame(user string, rawdeck string) (*Game, error) {
-	// game.NewDecklist()
-	players := make(map[game.UserID]game.Deck)
-	playerID := game.UserID(user)
-	players[playerID] = game.Deck{}
-	g, err := game.NewGame(players, s.kv)
-	if err != nil {
-		log.Printf("error creating new game: %+v\n", err)
-		return nil, errs.Wrap(err)
+func (s *graphQLServer) CreateGame(ctx context.Context, inputGame *InputGame) (*Game, error) {
+	for _, player := range inputGame.Players {
+		fmt.Printf("player: %+v\n", player)
 	}
-
-	log.Printf("created game: %+v\n", g)
 
 	// if err := s.redisClient.SAdd("games", game).Err(); err != nil {
 	// 	log.Printf("error adding game to redis: %s", err)
@@ -52,6 +42,6 @@ func (s *graphQLServer) updateGame(user string, game *Game) (*Game, error) {
 	return nil, errs.New("not impl")
 }
 
-func (s *graphQLServer) UpdateBoard(ctx context.Context, user string) (*BoardState, error) {
-	return nil, errs.New("not impl")
+func (s *graphQLServer) UpdateBoardState(ctx context.Context, boardstate InputBoardState) (*BoardState, error) {
+		return nil, errs.New("not impl")
 }
