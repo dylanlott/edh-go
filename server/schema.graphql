@@ -24,6 +24,7 @@ type Query {
 type Subscription {
   messagePosted(user: String!): Message!
   userJoined(user: String!): String!
+  boardUpdate(user: InputUser!, boardstate: InputBoardState!): User!
 }
 
 type User {

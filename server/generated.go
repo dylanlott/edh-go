@@ -96,6 +96,7 @@ type ComplexityRoot struct {
 	}
 
 	Subscription struct {
+		BoardUpdate   func(childComplexity int, user InputUser, boardstate InputBoardState) int
 		MessagePosted func(childComplexity int, user string) int
 		UserJoined    func(childComplexity int, user string) int
 	}
@@ -123,6 +124,7 @@ type QueryResolver interface {
 type SubscriptionResolver interface {
 	MessagePosted(ctx context.Context, user string) (<-chan *Message, error)
 	UserJoined(ctx context.Context, user string) (<-chan string, error)
+	BoardUpdate(ctx context.Context, user InputUser, boardstate InputBoardState) (<-chan *User, error)
 }
 
 type executableSchema struct {
@@ -354,6 +356,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.Users(childComplexity), true
 
+	case "Subscription.boardUpdate":
+		if e.complexity.Subscription.BoardUpdate == nil {
+			break
+		}
+
+		args, err := ec.field_Subscription_boardUpdate_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Subscription.BoardUpdate(childComplexity, args["user"].(InputUser), args["boardstate"].(InputBoardState)), true
+
 	case "Subscription.messagePosted":
 		if e.complexity.Subscription.MessagePosted == nil {
 			break
@@ -523,6 +537,7 @@ type Query {
 type Subscription {
   messagePosted(user: String!): Message!
   userJoined(user: String!): String!
+  boardUpdate(user: InputUser!, boardstate: InputBoardState!): User!
 }
 
 type User {
@@ -720,6 +735,28 @@ func (ec *executionContext) field_Query_boardstate_args(ctx context.Context, raw
 		}
 	}
 	args["userID"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Subscription_boardUpdate_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 InputUser
+	if tmp, ok := rawArgs["user"]; ok {
+		arg0, err = ec.unmarshalNInputUser2githubᚗcomᚋtinrabᚋgraphqlᚑrealtimeᚑchatᚋserverᚐInputUser(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["user"] = arg0
+	var arg1 InputBoardState
+	if tmp, ok := rawArgs["boardstate"]; ok {
+		arg1, err = ec.unmarshalNInputBoardState2githubᚗcomᚋtinrabᚋgraphqlᚑrealtimeᚑchatᚋserverᚐInputBoardState(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["boardstate"] = arg1
 	return args, nil
 }
 
@@ -1931,6 +1968,56 @@ func (ec *executionContext) _Subscription_userJoined(ctx context.Context, field 
 			graphql.MarshalString(field.Alias).MarshalGQL(w)
 			w.Write([]byte{':'})
 			ec.marshalNString2string(ctx, field.Selections, res).MarshalGQL(w)
+			w.Write([]byte{'}'})
+		})
+	}
+}
+
+func (ec *executionContext) _Subscription_boardUpdate(ctx context.Context, field graphql.CollectedField) (ret func() graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = nil
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "Subscription",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Subscription_boardUpdate_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return nil
+	}
+	rctx.Args = args
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp := ec._fieldMiddleware(ctx, nil, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Subscription().BoardUpdate(rctx, args["user"].(InputUser), args["boardstate"].(InputBoardState))
+	})
+
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return nil
+	}
+	return func() graphql.Marshaler {
+		res, ok := <-resTmp.(<-chan *User)
+		if !ok {
+			return nil
+		}
+		return graphql.WriterFunc(func(w io.Writer) {
+			w.Write([]byte{'{'})
+			graphql.MarshalString(field.Alias).MarshalGQL(w)
+			w.Write([]byte{':'})
+			ec.marshalNUser2ᚖgithubᚗcomᚋtinrabᚋgraphqlᚑrealtimeᚑchatᚋserverᚐUser(ctx, field.Selections, res).MarshalGQL(w)
 			w.Write([]byte{'}'})
 		})
 	}
@@ -3590,6 +3677,8 @@ func (ec *executionContext) _Subscription(ctx context.Context, sel ast.Selection
 		return ec._Subscription_messagePosted(ctx, fields[0])
 	case "userJoined":
 		return ec._Subscription_userJoined(ctx, fields[0])
+	case "boardUpdate":
+		return ec._Subscription_boardUpdate(ctx, fields[0])
 	default:
 		panic("unknown field " + strconv.Quote(fields[0].Name))
 	}
