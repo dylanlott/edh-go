@@ -90,6 +90,7 @@ type ComplexityRoot struct {
 
 	Query struct {
 		Boardstate func(childComplexity int, userID string) int
+		Decks      func(childComplexity int) int
 		Games      func(childComplexity int) int
 		Messages   func(childComplexity int) int
 		Users      func(childComplexity int) int
@@ -120,6 +121,7 @@ type QueryResolver interface {
 	Users(ctx context.Context) ([]string, error)
 	Games(ctx context.Context) ([]*Game, error)
 	Boardstate(ctx context.Context, userID string) ([]*BoardState, error)
+	Decks(ctx context.Context) ([]*Deck, error)
 }
 type SubscriptionResolver interface {
 	MessagePosted(ctx context.Context, user string) (<-chan *Message, error)
@@ -335,6 +337,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.Boardstate(childComplexity, args["userID"].(string)), true
 
+	case "Query.decks":
+		if e.complexity.Query.Decks == nil {
+			break
+		}
+
+		return e.complexity.Query.Decks(childComplexity), true
+
 	case "Query.games":
 		if e.complexity.Query.Games == nil {
 			break
@@ -532,6 +541,7 @@ type Query {
   users: [String!]!
   games: [Game!]!
   boardstate(userID: String!): [BoardState!]!
+  decks: [Deck!]
 }
 
 type Subscription {
@@ -1802,6 +1812,37 @@ func (ec *executionContext) _Query_boardstate(ctx context.Context, field graphql
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
 	return ec.marshalNBoardState2ᚕᚖgithubᚗcomᚋtinrabᚋgraphqlᚑrealtimeᚑchatᚋserverᚐBoardStateᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Query_decks(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "Query",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp := ec._fieldMiddleware(ctx, nil, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().Decks(rctx)
+	})
+
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*Deck)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalODeck2ᚕᚖgithubᚗcomᚋtinrabᚋgraphqlᚑrealtimeᚑchatᚋserverᚐDeckᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query___type(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -3645,6 +3686,17 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 				}
 				return res
 			})
+		case "decks":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_decks(ctx, field)
+				return res
+			})
 		case "__type":
 			out.Values[i] = ec._Query___type(ctx, field)
 		case "__schema":
@@ -4034,6 +4086,20 @@ func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.Se
 		}
 	}
 	return res
+}
+
+func (ec *executionContext) marshalNDeck2githubᚗcomᚋtinrabᚋgraphqlᚑrealtimeᚑchatᚋserverᚐDeck(ctx context.Context, sel ast.SelectionSet, v Deck) graphql.Marshaler {
+	return ec._Deck(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNDeck2ᚖgithubᚗcomᚋtinrabᚋgraphqlᚑrealtimeᚑchatᚋserverᚐDeck(ctx context.Context, sel ast.SelectionSet, v *Deck) graphql.Marshaler {
+	if v == nil {
+		if !ec.HasError(graphql.GetResolverContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._Deck(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalNGame2githubᚗcomᚋtinrabᚋgraphqlᚑrealtimeᚑchatᚋserverᚐGame(ctx context.Context, sel ast.SelectionSet, v Game) graphql.Marshaler {
@@ -4524,6 +4590,46 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 
 func (ec *executionContext) marshalODeck2githubᚗcomᚋtinrabᚋgraphqlᚑrealtimeᚑchatᚋserverᚐDeck(ctx context.Context, sel ast.SelectionSet, v Deck) graphql.Marshaler {
 	return ec._Deck(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalODeck2ᚕᚖgithubᚗcomᚋtinrabᚋgraphqlᚑrealtimeᚑchatᚋserverᚐDeckᚄ(ctx context.Context, sel ast.SelectionSet, v []*Deck) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		rctx := &graphql.ResolverContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithResolverContext(ctx, rctx)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNDeck2ᚖgithubᚗcomᚋtinrabᚋgraphqlᚑrealtimeᚑchatᚋserverᚐDeck(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+	return ret
 }
 
 func (ec *executionContext) marshalODeck2ᚖgithubᚗcomᚋtinrabᚋgraphqlᚑrealtimeᚑchatᚋserverᚐDeck(ctx context.Context, sel ast.SelectionSet, v *Deck) graphql.Marshaler {

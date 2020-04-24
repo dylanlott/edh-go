@@ -19,6 +19,7 @@ type Query {
   users: [String!]!
   games: [Game!]!
   boardstate(userID: String!): [BoardState!]!
+  decks: [Deck!]
 }
 
 type Subscription {

@@ -15,6 +15,10 @@ func (s *graphQLServer) Boardstate(ctx context.Context, userID string) ([]*Board
 	return nil, errs.New("not impl")
 }
 
+func (s *graphQLServer) BoardUpdate(ctx context.Context, user InputUser, bs InputBoardState) (<-chan *User, error) {
+	return nil, errs.New("not impl")
+}
+
 // createGame is untested currently
 func (s *graphQLServer) CreateGame(ctx context.Context, inputGame *InputGame) (*Game, error) {
 	for _, player := range inputGame.Players {
