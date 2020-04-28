@@ -4,7 +4,8 @@ import (
 	"log"
 
 	"github.com/kelseyhightower/envconfig"
-	"github.com/tinrab/graphql-realtime-chat/server"
+
+	"github.com/dylanlott/edh-go/server"
 )
 
 type config struct {

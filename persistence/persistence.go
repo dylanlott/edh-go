@@ -27,6 +27,11 @@ type Database interface {
 	Stats() sql.DBStats
 }
 
+type JSONStorage interface {
+	Put(key Key, val struct{}) (struct{}, error)
+	Get(key Key) (struct{}, error)
+}
+
 // Force DB to fulfill Database
 var _ = (Database)(&DB{})
 

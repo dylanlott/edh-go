@@ -14,7 +14,6 @@ func NewSQLite(path string) (*DB, error) {
 		fmt.Printf("error opening database: %+v\n", err)
 		return nil, errs.Wrap(err)
 	}
-
 	return &DB{
 		db: db,
 	}, nil
