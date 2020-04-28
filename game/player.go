@@ -11,8 +11,9 @@ import (
 // PlayerState maintains a state for each player that is mutex protected.
 type PlayerState struct {
 	sync.Mutex
+
 	// gameID is the GameID of the game the player is currently in.
-	gameID GameID
+	GameID GameID
 	// playerID assigns a unique playerID to this board state
 	PlayerID UserID
 
@@ -26,23 +27,34 @@ type PlayerState struct {
 	Graveyard CardList
 	Exiled    CardList
 	Field     CardList
+	Counters  map[string]Counter
 
 	// This is for generally revealing cards to opponents.
 	Revealed CardList
-
-	// How should we account for other players taking control of cards?
-	// There are lots of control effects in MTG, having a visual
-	// representation of this control would be beneficial.
-
-	// Counters include all game effects on Player
-	Data map[string]Counter
+	Stolen   CardList
 }
 
-// Persitence Interactions
+// NewPlayer returns a new PlayerState
+func NewPlayer(gameID GameID, player UserID, deck Deck, db persistence.Persistence) *PlayerState {
+	return &PlayerState{
+		GameID:    gameID,
+		PlayerID:  player,
+		Commander: deck.Commander,
+		Library:   deck.Cards,
+		Graveyard: CardList{},
+		Exiled:    CardList{},
+		Field:     CardList{},
+	}
+}
+
+/*
+ * Persitence Interactions
+ */
 
 // Persist will save the player's board state to Persistence.
 // This operation is thread safe and acquires a lock on the player struct.
 func (p *PlayerState) Persist() error {
+	// This is inefficient because it goes through each property and saves it
 	return errs.New("not impl")
 }
 
@@ -53,8 +65,10 @@ func (p *PlayerState) PlayerState() (*PlayerState, error) {
 }
 
 // Deck Methods
-func (p *PlayerState) CreateDeck(cards CardList)              {}
-func (p *PlayerState) AddToBattlefield(cards CardList)        {}
+func (p *PlayerState) AddToBattlefield(card Card) (*PlayerState, error) {
+	return nil, errs.New("not impl")
+}
+
 func (p *PlayerState) RemoveFromBattlefield(cards CardList)   {}
 func (p *PlayerState) AddCounters(updates map[string]Counter) {}
 func (p *PlayerState) Reveal(cards CardList)                  {}

@@ -661,7 +661,7 @@ func (ec *executionContext) field_Mutation_createDeck_args(ctx context.Context, 
 	args := map[string]interface{}{}
 	var arg0 *InputDeck
 	if tmp, ok := rawArgs["input"]; ok {
-		arg0, err = ec.unmarshalOInputDeck2ᚖgithubᚗcomᚋtinrabᚋgraphqlᚑrealtimeᚑchatᚋserverᚐInputDeck(ctx, tmp)
+		arg0, err = ec.unmarshalOInputDeck2ᚖgithubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐInputDeck(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -675,7 +675,7 @@ func (ec *executionContext) field_Mutation_createGame_args(ctx context.Context, 
 	args := map[string]interface{}{}
 	var arg0 *InputGame
 	if tmp, ok := rawArgs["input"]; ok {
-		arg0, err = ec.unmarshalOInputGame2ᚖgithubᚗcomᚋtinrabᚋgraphqlᚑrealtimeᚑchatᚋserverᚐInputGame(ctx, tmp)
+		arg0, err = ec.unmarshalOInputGame2ᚖgithubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐInputGame(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -711,7 +711,7 @@ func (ec *executionContext) field_Mutation_updateBoardState_args(ctx context.Con
 	args := map[string]interface{}{}
 	var arg0 InputBoardState
 	if tmp, ok := rawArgs["input"]; ok {
-		arg0, err = ec.unmarshalNInputBoardState2githubᚗcomᚋtinrabᚋgraphqlᚑrealtimeᚑchatᚋserverᚐInputBoardState(ctx, tmp)
+		arg0, err = ec.unmarshalNInputBoardState2githubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐInputBoardState(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -753,7 +753,7 @@ func (ec *executionContext) field_Subscription_boardUpdate_args(ctx context.Cont
 	args := map[string]interface{}{}
 	var arg0 InputUser
 	if tmp, ok := rawArgs["user"]; ok {
-		arg0, err = ec.unmarshalNInputUser2githubᚗcomᚋtinrabᚋgraphqlᚑrealtimeᚑchatᚋserverᚐInputUser(ctx, tmp)
+		arg0, err = ec.unmarshalNInputUser2githubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐInputUser(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -761,7 +761,7 @@ func (ec *executionContext) field_Subscription_boardUpdate_args(ctx context.Cont
 	args["user"] = arg0
 	var arg1 InputBoardState
 	if tmp, ok := rawArgs["boardstate"]; ok {
-		arg1, err = ec.unmarshalNInputBoardState2githubᚗcomᚋtinrabᚋgraphqlᚑrealtimeᚑchatᚋserverᚐInputBoardState(ctx, tmp)
+		arg1, err = ec.unmarshalNInputBoardState2githubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐInputBoardState(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -907,7 +907,7 @@ func (ec *executionContext) _BoardState_User(ctx context.Context, field graphql.
 	res := resTmp.(*User)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalNUser2ᚖgithubᚗcomᚋtinrabᚋgraphqlᚑrealtimeᚑchatᚋserverᚐUser(ctx, field.Selections, res)
+	return ec.marshalNUser2ᚖgithubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐUser(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _BoardState_Commander(ctx context.Context, field graphql.CollectedField, obj *BoardState) (ret graphql.Marshaler) {
@@ -1380,7 +1380,7 @@ func (ec *executionContext) _Game_players(ctx context.Context, field graphql.Col
 	res := resTmp.([]*User)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalNUser2ᚕᚖgithubᚗcomᚋtinrabᚋgraphqlᚑrealtimeᚑchatᚋserverᚐUserᚄ(ctx, field.Selections, res)
+	return ec.marshalNUser2ᚕᚖgithubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐUserᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Message_id(ctx context.Context, field graphql.CollectedField, obj *Message) (ret graphql.Marshaler) {
@@ -1554,7 +1554,7 @@ func (ec *executionContext) _Mutation_postMessage(ctx context.Context, field gra
 	res := resTmp.(*Message)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalOMessage2ᚖgithubᚗcomᚋtinrabᚋgraphqlᚑrealtimeᚑchatᚋserverᚐMessage(ctx, field.Selections, res)
+	return ec.marshalOMessage2ᚖgithubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐMessage(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_updateBoardState(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -1592,7 +1592,7 @@ func (ec *executionContext) _Mutation_updateBoardState(ctx context.Context, fiel
 	res := resTmp.(*BoardState)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalOBoardState2ᚖgithubᚗcomᚋtinrabᚋgraphqlᚑrealtimeᚑchatᚋserverᚐBoardState(ctx, field.Selections, res)
+	return ec.marshalOBoardState2ᚖgithubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐBoardState(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_createGame(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -1630,7 +1630,7 @@ func (ec *executionContext) _Mutation_createGame(ctx context.Context, field grap
 	res := resTmp.(*Game)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalOGame2ᚖgithubᚗcomᚋtinrabᚋgraphqlᚑrealtimeᚑchatᚋserverᚐGame(ctx, field.Selections, res)
+	return ec.marshalOGame2ᚖgithubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐGame(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_createDeck(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -1668,7 +1668,7 @@ func (ec *executionContext) _Mutation_createDeck(ctx context.Context, field grap
 	res := resTmp.(*Deck)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalODeck2ᚖgithubᚗcomᚋtinrabᚋgraphqlᚑrealtimeᚑchatᚋserverᚐDeck(ctx, field.Selections, res)
+	return ec.marshalODeck2ᚖgithubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐDeck(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_messages(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -1702,7 +1702,7 @@ func (ec *executionContext) _Query_messages(ctx context.Context, field graphql.C
 	res := resTmp.([]*Message)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalNMessage2ᚕᚖgithubᚗcomᚋtinrabᚋgraphqlᚑrealtimeᚑchatᚋserverᚐMessageᚄ(ctx, field.Selections, res)
+	return ec.marshalNMessage2ᚕᚖgithubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐMessageᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_users(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -1770,7 +1770,7 @@ func (ec *executionContext) _Query_games(ctx context.Context, field graphql.Coll
 	res := resTmp.([]*Game)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalNGame2ᚕᚖgithubᚗcomᚋtinrabᚋgraphqlᚑrealtimeᚑchatᚋserverᚐGameᚄ(ctx, field.Selections, res)
+	return ec.marshalNGame2ᚕᚖgithubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐGameᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_boardstate(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -1811,7 +1811,7 @@ func (ec *executionContext) _Query_boardstate(ctx context.Context, field graphql
 	res := resTmp.([]*BoardState)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalNBoardState2ᚕᚖgithubᚗcomᚋtinrabᚋgraphqlᚑrealtimeᚑchatᚋserverᚐBoardStateᚄ(ctx, field.Selections, res)
+	return ec.marshalNBoardState2ᚕᚖgithubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐBoardStateᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_decks(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -1842,7 +1842,7 @@ func (ec *executionContext) _Query_decks(ctx context.Context, field graphql.Coll
 	res := resTmp.([]*Deck)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalODeck2ᚕᚖgithubᚗcomᚋtinrabᚋgraphqlᚑrealtimeᚑchatᚋserverᚐDeckᚄ(ctx, field.Selections, res)
+	return ec.marshalODeck2ᚕᚖgithubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐDeckᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query___type(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -1958,7 +1958,7 @@ func (ec *executionContext) _Subscription_messagePosted(ctx context.Context, fie
 			w.Write([]byte{'{'})
 			graphql.MarshalString(field.Alias).MarshalGQL(w)
 			w.Write([]byte{':'})
-			ec.marshalNMessage2ᚖgithubᚗcomᚋtinrabᚋgraphqlᚑrealtimeᚑchatᚋserverᚐMessage(ctx, field.Selections, res).MarshalGQL(w)
+			ec.marshalNMessage2ᚖgithubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐMessage(ctx, field.Selections, res).MarshalGQL(w)
 			w.Write([]byte{'}'})
 		})
 	}
@@ -2058,7 +2058,7 @@ func (ec *executionContext) _Subscription_boardUpdate(ctx context.Context, field
 			w.Write([]byte{'{'})
 			graphql.MarshalString(field.Alias).MarshalGQL(w)
 			w.Write([]byte{':'})
-			ec.marshalNUser2ᚖgithubᚗcomᚋtinrabᚋgraphqlᚑrealtimeᚑchatᚋserverᚐUser(ctx, field.Selections, res).MarshalGQL(w)
+			ec.marshalNUser2ᚖgithubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐUser(ctx, field.Selections, res).MarshalGQL(w)
 			w.Write([]byte{'}'})
 		})
 	}
@@ -2197,7 +2197,7 @@ func (ec *executionContext) _User_boardstate(ctx context.Context, field graphql.
 	res := resTmp.(*BoardState)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalNBoardState2ᚖgithubᚗcomᚋtinrabᚋgraphqlᚑrealtimeᚑchatᚋserverᚐBoardState(ctx, field.Selections, res)
+	return ec.marshalNBoardState2ᚖgithubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐBoardState(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) ___Directive_name(ctx context.Context, field graphql.CollectedField, obj *introspection.Directive) (ret graphql.Marshaler) {
@@ -3359,7 +3359,7 @@ func (ec *executionContext) unmarshalInputInputGame(ctx context.Context, obj int
 		switch k {
 		case "players":
 			var err error
-			it.Players, err = ec.unmarshalOInputUser2ᚕᚖgithubᚗcomᚋtinrabᚋgraphqlᚑrealtimeᚑchatᚋserverᚐInputUserᚄ(ctx, v)
+			it.Players, err = ec.unmarshalOInputUser2ᚕᚖgithubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐInputUserᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -4023,11 +4023,11 @@ func (ec *executionContext) ___Type(ctx context.Context, sel ast.SelectionSet, o
 
 // region    ***************************** type.gotpl *****************************
 
-func (ec *executionContext) marshalNBoardState2githubᚗcomᚋtinrabᚋgraphqlᚑrealtimeᚑchatᚋserverᚐBoardState(ctx context.Context, sel ast.SelectionSet, v BoardState) graphql.Marshaler {
+func (ec *executionContext) marshalNBoardState2githubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐBoardState(ctx context.Context, sel ast.SelectionSet, v BoardState) graphql.Marshaler {
 	return ec._BoardState(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNBoardState2ᚕᚖgithubᚗcomᚋtinrabᚋgraphqlᚑrealtimeᚑchatᚋserverᚐBoardStateᚄ(ctx context.Context, sel ast.SelectionSet, v []*BoardState) graphql.Marshaler {
+func (ec *executionContext) marshalNBoardState2ᚕᚖgithubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐBoardStateᚄ(ctx context.Context, sel ast.SelectionSet, v []*BoardState) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -4051,7 +4051,7 @@ func (ec *executionContext) marshalNBoardState2ᚕᚖgithubᚗcomᚋtinrabᚋgra
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNBoardState2ᚖgithubᚗcomᚋtinrabᚋgraphqlᚑrealtimeᚑchatᚋserverᚐBoardState(ctx, sel, v[i])
+			ret[i] = ec.marshalNBoardState2ᚖgithubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐBoardState(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -4064,7 +4064,7 @@ func (ec *executionContext) marshalNBoardState2ᚕᚖgithubᚗcomᚋtinrabᚋgra
 	return ret
 }
 
-func (ec *executionContext) marshalNBoardState2ᚖgithubᚗcomᚋtinrabᚋgraphqlᚑrealtimeᚑchatᚋserverᚐBoardState(ctx context.Context, sel ast.SelectionSet, v *BoardState) graphql.Marshaler {
+func (ec *executionContext) marshalNBoardState2ᚖgithubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐBoardState(ctx context.Context, sel ast.SelectionSet, v *BoardState) graphql.Marshaler {
 	if v == nil {
 		if !ec.HasError(graphql.GetResolverContext(ctx)) {
 			ec.Errorf(ctx, "must not be null")
@@ -4088,11 +4088,11 @@ func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.Se
 	return res
 }
 
-func (ec *executionContext) marshalNDeck2githubᚗcomᚋtinrabᚋgraphqlᚑrealtimeᚑchatᚋserverᚐDeck(ctx context.Context, sel ast.SelectionSet, v Deck) graphql.Marshaler {
+func (ec *executionContext) marshalNDeck2githubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐDeck(ctx context.Context, sel ast.SelectionSet, v Deck) graphql.Marshaler {
 	return ec._Deck(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNDeck2ᚖgithubᚗcomᚋtinrabᚋgraphqlᚑrealtimeᚑchatᚋserverᚐDeck(ctx context.Context, sel ast.SelectionSet, v *Deck) graphql.Marshaler {
+func (ec *executionContext) marshalNDeck2ᚖgithubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐDeck(ctx context.Context, sel ast.SelectionSet, v *Deck) graphql.Marshaler {
 	if v == nil {
 		if !ec.HasError(graphql.GetResolverContext(ctx)) {
 			ec.Errorf(ctx, "must not be null")
@@ -4102,11 +4102,11 @@ func (ec *executionContext) marshalNDeck2ᚖgithubᚗcomᚋtinrabᚋgraphqlᚑre
 	return ec._Deck(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNGame2githubᚗcomᚋtinrabᚋgraphqlᚑrealtimeᚑchatᚋserverᚐGame(ctx context.Context, sel ast.SelectionSet, v Game) graphql.Marshaler {
+func (ec *executionContext) marshalNGame2githubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐGame(ctx context.Context, sel ast.SelectionSet, v Game) graphql.Marshaler {
 	return ec._Game(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNGame2ᚕᚖgithubᚗcomᚋtinrabᚋgraphqlᚑrealtimeᚑchatᚋserverᚐGameᚄ(ctx context.Context, sel ast.SelectionSet, v []*Game) graphql.Marshaler {
+func (ec *executionContext) marshalNGame2ᚕᚖgithubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐGameᚄ(ctx context.Context, sel ast.SelectionSet, v []*Game) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -4130,7 +4130,7 @@ func (ec *executionContext) marshalNGame2ᚕᚖgithubᚗcomᚋtinrabᚋgraphql�
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNGame2ᚖgithubᚗcomᚋtinrabᚋgraphqlᚑrealtimeᚑchatᚋserverᚐGame(ctx, sel, v[i])
+			ret[i] = ec.marshalNGame2ᚖgithubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐGame(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -4143,7 +4143,7 @@ func (ec *executionContext) marshalNGame2ᚕᚖgithubᚗcomᚋtinrabᚋgraphql�
 	return ret
 }
 
-func (ec *executionContext) marshalNGame2ᚖgithubᚗcomᚋtinrabᚋgraphqlᚑrealtimeᚑchatᚋserverᚐGame(ctx context.Context, sel ast.SelectionSet, v *Game) graphql.Marshaler {
+func (ec *executionContext) marshalNGame2ᚖgithubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐGame(ctx context.Context, sel ast.SelectionSet, v *Game) graphql.Marshaler {
 	if v == nil {
 		if !ec.HasError(graphql.GetResolverContext(ctx)) {
 			ec.Errorf(ctx, "must not be null")
@@ -4153,27 +4153,27 @@ func (ec *executionContext) marshalNGame2ᚖgithubᚗcomᚋtinrabᚋgraphqlᚑre
 	return ec._Game(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalNInputBoardState2githubᚗcomᚋtinrabᚋgraphqlᚑrealtimeᚑchatᚋserverᚐInputBoardState(ctx context.Context, v interface{}) (InputBoardState, error) {
+func (ec *executionContext) unmarshalNInputBoardState2githubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐInputBoardState(ctx context.Context, v interface{}) (InputBoardState, error) {
 	return ec.unmarshalInputInputBoardState(ctx, v)
 }
 
-func (ec *executionContext) unmarshalNInputUser2githubᚗcomᚋtinrabᚋgraphqlᚑrealtimeᚑchatᚋserverᚐInputUser(ctx context.Context, v interface{}) (InputUser, error) {
+func (ec *executionContext) unmarshalNInputUser2githubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐInputUser(ctx context.Context, v interface{}) (InputUser, error) {
 	return ec.unmarshalInputInputUser(ctx, v)
 }
 
-func (ec *executionContext) unmarshalNInputUser2ᚖgithubᚗcomᚋtinrabᚋgraphqlᚑrealtimeᚑchatᚋserverᚐInputUser(ctx context.Context, v interface{}) (*InputUser, error) {
+func (ec *executionContext) unmarshalNInputUser2ᚖgithubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐInputUser(ctx context.Context, v interface{}) (*InputUser, error) {
 	if v == nil {
 		return nil, nil
 	}
-	res, err := ec.unmarshalNInputUser2githubᚗcomᚋtinrabᚋgraphqlᚑrealtimeᚑchatᚋserverᚐInputUser(ctx, v)
+	res, err := ec.unmarshalNInputUser2githubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐInputUser(ctx, v)
 	return &res, err
 }
 
-func (ec *executionContext) marshalNMessage2githubᚗcomᚋtinrabᚋgraphqlᚑrealtimeᚑchatᚋserverᚐMessage(ctx context.Context, sel ast.SelectionSet, v Message) graphql.Marshaler {
+func (ec *executionContext) marshalNMessage2githubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐMessage(ctx context.Context, sel ast.SelectionSet, v Message) graphql.Marshaler {
 	return ec._Message(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNMessage2ᚕᚖgithubᚗcomᚋtinrabᚋgraphqlᚑrealtimeᚑchatᚋserverᚐMessageᚄ(ctx context.Context, sel ast.SelectionSet, v []*Message) graphql.Marshaler {
+func (ec *executionContext) marshalNMessage2ᚕᚖgithubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐMessageᚄ(ctx context.Context, sel ast.SelectionSet, v []*Message) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -4197,7 +4197,7 @@ func (ec *executionContext) marshalNMessage2ᚕᚖgithubᚗcomᚋtinrabᚋgraphq
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNMessage2ᚖgithubᚗcomᚋtinrabᚋgraphqlᚑrealtimeᚑchatᚋserverᚐMessage(ctx, sel, v[i])
+			ret[i] = ec.marshalNMessage2ᚖgithubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐMessage(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -4210,7 +4210,7 @@ func (ec *executionContext) marshalNMessage2ᚕᚖgithubᚗcomᚋtinrabᚋgraphq
 	return ret
 }
 
-func (ec *executionContext) marshalNMessage2ᚖgithubᚗcomᚋtinrabᚋgraphqlᚑrealtimeᚑchatᚋserverᚐMessage(ctx context.Context, sel ast.SelectionSet, v *Message) graphql.Marshaler {
+func (ec *executionContext) marshalNMessage2ᚖgithubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐMessage(ctx context.Context, sel ast.SelectionSet, v *Message) graphql.Marshaler {
 	if v == nil {
 		if !ec.HasError(graphql.GetResolverContext(ctx)) {
 			ec.Errorf(ctx, "must not be null")
@@ -4277,11 +4277,11 @@ func (ec *executionContext) marshalNTime2timeᚐTime(ctx context.Context, sel as
 	return res
 }
 
-func (ec *executionContext) marshalNUser2githubᚗcomᚋtinrabᚋgraphqlᚑrealtimeᚑchatᚋserverᚐUser(ctx context.Context, sel ast.SelectionSet, v User) graphql.Marshaler {
+func (ec *executionContext) marshalNUser2githubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐUser(ctx context.Context, sel ast.SelectionSet, v User) graphql.Marshaler {
 	return ec._User(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNUser2ᚕᚖgithubᚗcomᚋtinrabᚋgraphqlᚑrealtimeᚑchatᚋserverᚐUserᚄ(ctx context.Context, sel ast.SelectionSet, v []*User) graphql.Marshaler {
+func (ec *executionContext) marshalNUser2ᚕᚖgithubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐUserᚄ(ctx context.Context, sel ast.SelectionSet, v []*User) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -4305,7 +4305,7 @@ func (ec *executionContext) marshalNUser2ᚕᚖgithubᚗcomᚋtinrabᚋgraphql�
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNUser2ᚖgithubᚗcomᚋtinrabᚋgraphqlᚑrealtimeᚑchatᚋserverᚐUser(ctx, sel, v[i])
+			ret[i] = ec.marshalNUser2ᚖgithubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐUser(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -4318,7 +4318,7 @@ func (ec *executionContext) marshalNUser2ᚕᚖgithubᚗcomᚋtinrabᚋgraphql�
 	return ret
 }
 
-func (ec *executionContext) marshalNUser2ᚖgithubᚗcomᚋtinrabᚋgraphqlᚑrealtimeᚑchatᚋserverᚐUser(ctx context.Context, sel ast.SelectionSet, v *User) graphql.Marshaler {
+func (ec *executionContext) marshalNUser2ᚖgithubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐUser(ctx context.Context, sel ast.SelectionSet, v *User) graphql.Marshaler {
 	if v == nil {
 		if !ec.HasError(graphql.GetResolverContext(ctx)) {
 			ec.Errorf(ctx, "must not be null")
@@ -4554,11 +4554,11 @@ func (ec *executionContext) marshalN__TypeKind2string(ctx context.Context, sel a
 	return res
 }
 
-func (ec *executionContext) marshalOBoardState2githubᚗcomᚋtinrabᚋgraphqlᚑrealtimeᚑchatᚋserverᚐBoardState(ctx context.Context, sel ast.SelectionSet, v BoardState) graphql.Marshaler {
+func (ec *executionContext) marshalOBoardState2githubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐBoardState(ctx context.Context, sel ast.SelectionSet, v BoardState) graphql.Marshaler {
 	return ec._BoardState(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalOBoardState2ᚖgithubᚗcomᚋtinrabᚋgraphqlᚑrealtimeᚑchatᚋserverᚐBoardState(ctx context.Context, sel ast.SelectionSet, v *BoardState) graphql.Marshaler {
+func (ec *executionContext) marshalOBoardState2ᚖgithubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐBoardState(ctx context.Context, sel ast.SelectionSet, v *BoardState) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -4588,11 +4588,11 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 	return ec.marshalOBoolean2bool(ctx, sel, *v)
 }
 
-func (ec *executionContext) marshalODeck2githubᚗcomᚋtinrabᚋgraphqlᚑrealtimeᚑchatᚋserverᚐDeck(ctx context.Context, sel ast.SelectionSet, v Deck) graphql.Marshaler {
+func (ec *executionContext) marshalODeck2githubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐDeck(ctx context.Context, sel ast.SelectionSet, v Deck) graphql.Marshaler {
 	return ec._Deck(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalODeck2ᚕᚖgithubᚗcomᚋtinrabᚋgraphqlᚑrealtimeᚑchatᚋserverᚐDeckᚄ(ctx context.Context, sel ast.SelectionSet, v []*Deck) graphql.Marshaler {
+func (ec *executionContext) marshalODeck2ᚕᚖgithubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐDeckᚄ(ctx context.Context, sel ast.SelectionSet, v []*Deck) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -4619,7 +4619,7 @@ func (ec *executionContext) marshalODeck2ᚕᚖgithubᚗcomᚋtinrabᚋgraphql�
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNDeck2ᚖgithubᚗcomᚋtinrabᚋgraphqlᚑrealtimeᚑchatᚋserverᚐDeck(ctx, sel, v[i])
+			ret[i] = ec.marshalNDeck2ᚖgithubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐDeck(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -4632,49 +4632,49 @@ func (ec *executionContext) marshalODeck2ᚕᚖgithubᚗcomᚋtinrabᚋgraphql�
 	return ret
 }
 
-func (ec *executionContext) marshalODeck2ᚖgithubᚗcomᚋtinrabᚋgraphqlᚑrealtimeᚑchatᚋserverᚐDeck(ctx context.Context, sel ast.SelectionSet, v *Deck) graphql.Marshaler {
+func (ec *executionContext) marshalODeck2ᚖgithubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐDeck(ctx context.Context, sel ast.SelectionSet, v *Deck) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return ec._Deck(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalOGame2githubᚗcomᚋtinrabᚋgraphqlᚑrealtimeᚑchatᚋserverᚐGame(ctx context.Context, sel ast.SelectionSet, v Game) graphql.Marshaler {
+func (ec *executionContext) marshalOGame2githubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐGame(ctx context.Context, sel ast.SelectionSet, v Game) graphql.Marshaler {
 	return ec._Game(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalOGame2ᚖgithubᚗcomᚋtinrabᚋgraphqlᚑrealtimeᚑchatᚋserverᚐGame(ctx context.Context, sel ast.SelectionSet, v *Game) graphql.Marshaler {
+func (ec *executionContext) marshalOGame2ᚖgithubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐGame(ctx context.Context, sel ast.SelectionSet, v *Game) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return ec._Game(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalOInputDeck2githubᚗcomᚋtinrabᚋgraphqlᚑrealtimeᚑchatᚋserverᚐInputDeck(ctx context.Context, v interface{}) (InputDeck, error) {
+func (ec *executionContext) unmarshalOInputDeck2githubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐInputDeck(ctx context.Context, v interface{}) (InputDeck, error) {
 	return ec.unmarshalInputInputDeck(ctx, v)
 }
 
-func (ec *executionContext) unmarshalOInputDeck2ᚖgithubᚗcomᚋtinrabᚋgraphqlᚑrealtimeᚑchatᚋserverᚐInputDeck(ctx context.Context, v interface{}) (*InputDeck, error) {
+func (ec *executionContext) unmarshalOInputDeck2ᚖgithubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐInputDeck(ctx context.Context, v interface{}) (*InputDeck, error) {
 	if v == nil {
 		return nil, nil
 	}
-	res, err := ec.unmarshalOInputDeck2githubᚗcomᚋtinrabᚋgraphqlᚑrealtimeᚑchatᚋserverᚐInputDeck(ctx, v)
+	res, err := ec.unmarshalOInputDeck2githubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐInputDeck(ctx, v)
 	return &res, err
 }
 
-func (ec *executionContext) unmarshalOInputGame2githubᚗcomᚋtinrabᚋgraphqlᚑrealtimeᚑchatᚋserverᚐInputGame(ctx context.Context, v interface{}) (InputGame, error) {
+func (ec *executionContext) unmarshalOInputGame2githubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐInputGame(ctx context.Context, v interface{}) (InputGame, error) {
 	return ec.unmarshalInputInputGame(ctx, v)
 }
 
-func (ec *executionContext) unmarshalOInputGame2ᚖgithubᚗcomᚋtinrabᚋgraphqlᚑrealtimeᚑchatᚋserverᚐInputGame(ctx context.Context, v interface{}) (*InputGame, error) {
+func (ec *executionContext) unmarshalOInputGame2ᚖgithubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐInputGame(ctx context.Context, v interface{}) (*InputGame, error) {
 	if v == nil {
 		return nil, nil
 	}
-	res, err := ec.unmarshalOInputGame2githubᚗcomᚋtinrabᚋgraphqlᚑrealtimeᚑchatᚋserverᚐInputGame(ctx, v)
+	res, err := ec.unmarshalOInputGame2githubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐInputGame(ctx, v)
 	return &res, err
 }
 
-func (ec *executionContext) unmarshalOInputUser2ᚕᚖgithubᚗcomᚋtinrabᚋgraphqlᚑrealtimeᚑchatᚋserverᚐInputUserᚄ(ctx context.Context, v interface{}) ([]*InputUser, error) {
+func (ec *executionContext) unmarshalOInputUser2ᚕᚖgithubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐInputUserᚄ(ctx context.Context, v interface{}) ([]*InputUser, error) {
 	var vSlice []interface{}
 	if v != nil {
 		if tmp1, ok := v.([]interface{}); ok {
@@ -4686,7 +4686,7 @@ func (ec *executionContext) unmarshalOInputUser2ᚕᚖgithubᚗcomᚋtinrabᚋgr
 	var err error
 	res := make([]*InputUser, len(vSlice))
 	for i := range vSlice {
-		res[i], err = ec.unmarshalNInputUser2ᚖgithubᚗcomᚋtinrabᚋgraphqlᚑrealtimeᚑchatᚋserverᚐInputUser(ctx, vSlice[i])
+		res[i], err = ec.unmarshalNInputUser2ᚖgithubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐInputUser(ctx, vSlice[i])
 		if err != nil {
 			return nil, err
 		}
@@ -4694,11 +4694,11 @@ func (ec *executionContext) unmarshalOInputUser2ᚕᚖgithubᚗcomᚋtinrabᚋgr
 	return res, nil
 }
 
-func (ec *executionContext) marshalOMessage2githubᚗcomᚋtinrabᚋgraphqlᚑrealtimeᚑchatᚋserverᚐMessage(ctx context.Context, sel ast.SelectionSet, v Message) graphql.Marshaler {
+func (ec *executionContext) marshalOMessage2githubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐMessage(ctx context.Context, sel ast.SelectionSet, v Message) graphql.Marshaler {
 	return ec._Message(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalOMessage2ᚖgithubᚗcomᚋtinrabᚋgraphqlᚑrealtimeᚑchatᚋserverᚐMessage(ctx context.Context, sel ast.SelectionSet, v *Message) graphql.Marshaler {
+func (ec *executionContext) marshalOMessage2ᚖgithubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐMessage(ctx context.Context, sel ast.SelectionSet, v *Message) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}

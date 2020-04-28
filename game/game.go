@@ -42,7 +42,7 @@ type Game struct {
 
 	// DB holds a reference to the persistence layer so that we can always
 	// have Put and Get access to the database.
-	DB persistence.Persistence
+	DB persistence.Database
 
 	Name      string
 	ID        GameID
@@ -75,7 +75,6 @@ func NewGame(players map[UserID]Deck, db persistence.Persistence) (*Game, error)
 
 		p[userID] = &PlayerState{
 			PlayerID:  userID,
-			DB:        db,
 			Library:   decklist.Cards,
 			Commander: decklist.Commander,
 			Graveyard: CardList{},
@@ -114,7 +113,6 @@ func (g *Game) Join(deck Deck, player UserID) (*Game, error) {
 	}
 
 	g.Players[player] = &PlayerState{
-		DB:        g.DB,
 		PlayerID:  player,
 		Commander: deck.Commander,
 		Library:   deck.Cards,
