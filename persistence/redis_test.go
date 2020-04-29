@@ -2,6 +2,8 @@ package persistence
 
 import (
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestNewRedis(t *testing.T) {
@@ -28,4 +30,9 @@ func TestNewRedis(t *testing.T) {
 		t.Logf("val: %+v", val)
 		t.Fail()
 	}
+
+	val, err = r.Put(Key("abc"), Value("value"))
+	assert.NoError(t, err)
+	assert.NotNil(t, val)
+	assert.Equal(t, val, Value("value"))
 }

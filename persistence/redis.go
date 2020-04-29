@@ -36,7 +36,7 @@ func (r *redisDB) Put(key Key, val Value) (Value, error) {
 		return Value(""), errs.New("failed to get string value for key: %s", err)
 	}
 
-	err = r.client.Set(k, val, 0).Err()
+	err = r.client.Set(k, []byte(val), 0).Err()
 	if err != nil {
 		return Value(""), errs.Wrap(err)
 	}

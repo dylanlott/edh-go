@@ -65,7 +65,7 @@ func NewGame(players map[UserID]Deck, db persistence.Persistence) (*Game, error)
 			return nil, errs.New("deck must have exactly 99 cards; had %d", len(decklist.Cards))
 		}
 
-		if len(decklist.Commander) > 1 {
+		if len(decklist.Commander) != 1 {
 			return nil, errs.New("must have only one commander")
 		}
 
@@ -109,6 +109,7 @@ func (g *Game) Join(deck Deck, player UserID) (*Game, error) {
 	}
 
 	g.Players[player] = &PlayerState{
+		GameID:     g.ID,
 		PlayerID:   player,
 		BoardState: BoardState{},
 	}
