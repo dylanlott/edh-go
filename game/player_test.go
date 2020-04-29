@@ -12,6 +12,9 @@ func TestPlayerBoardStates(t *testing.T) {
 	assert.Equal(t, player.GameID, GameID("game_id"))
 	assert.Equal(t, player.PlayerID, UserID("player_id"))
 
+	t.Run("test Move", func(t *testing.T) {
+	})
+
 	t.Run("test add card to battlefield", func(t *testing.T) {
 	})
 

@@ -74,12 +74,8 @@ func NewGame(players map[UserID]Deck, db persistence.Persistence) (*Game, error)
 		}
 
 		p[userID] = &PlayerState{
-			PlayerID:  userID,
-			Library:   decklist.Cards,
-			Commander: decklist.Commander,
-			Graveyard: CardList{},
-			Exiled:    CardList{},
-			Field:     CardList{},
+			PlayerID:   userID,
+			BoardState: BoardState{},
 		}
 
 		// TODO: Persist player state here.
@@ -113,13 +109,8 @@ func (g *Game) Join(deck Deck, player UserID) (*Game, error) {
 	}
 
 	g.Players[player] = &PlayerState{
-		PlayerID:  player,
-		Commander: deck.Commander,
-		Library:   deck.Cards,
-		Graveyard: CardList{},
-		Exiled:    CardList{},
-		Hand:      CardList{},
-		Field:     CardList{},
+		PlayerID:   player,
+		BoardState: BoardState{},
 	}
 
 	return g, nil

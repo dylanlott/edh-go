@@ -14,12 +14,18 @@ type PlayerState struct {
 
 	// gameID is the GameID of the game the player is currently in.
 	GameID GameID
+
 	// playerID assigns a unique playerID to this board state
 	PlayerID UserID
 
 	// get a reference to the database for persistencea
 	DB persistence.Persistence
 
+	BoardState BoardState
+}
+
+// BoardState holds the board state for a given PlayerState.
+type BoardState struct {
 	Commander CardList
 	Partner   CardList
 	Hand      CardList
@@ -28,22 +34,16 @@ type PlayerState struct {
 	Exiled    CardList
 	Field     CardList
 	Counters  map[string]Counter
-
-	// This is for generally revealing cards to opponents.
-	Revealed CardList
-	Stolen   CardList
+	Revealed  CardList
+	Stolen    CardList
 }
 
 // NewPlayer returns a new PlayerState
 func NewPlayer(gameID GameID, player UserID, deck Deck, db persistence.Persistence) *PlayerState {
 	return &PlayerState{
-		GameID:    gameID,
-		PlayerID:  player,
-		Commander: deck.Commander,
-		Library:   deck.Cards,
-		Graveyard: CardList{},
-		Exiled:    CardList{},
-		Field:     CardList{},
+		GameID:     gameID,
+		PlayerID:   player,
+		BoardState: BoardState{},
 	}
 }
 
@@ -81,3 +81,18 @@ func (p *PlayerState) AddToLibrary(card Card, pos int)        {}
 func (p *PlayerState) AddToGraveyard(card Card)               {}
 func (p *PlayerState) AddToExile(card Card)                   {}
 func (p *PlayerState) Scry(num int)                           {}
+
+// Move will move a single Card{} around from one list to another using Fetch.
+// TODO: This function will need to be fleshed out
+func Move(from CardList, to CardList, card Card) (listFrom, listTo CardList, err error) {
+	list, fetched, err := Fetch(card, from)
+	if err != nil {
+		return nil, nil, errs.Wrap(err)
+	}
+
+	destination := CardList{}
+	destination = append(destination, to...)
+	destination = append(destination, fetched)
+
+	return list, destination, nil
+}
