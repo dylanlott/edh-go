@@ -22,26 +22,26 @@ func TestDecks(t *testing.T) {
 			assert.Equal(t, 4, len(deck))
 
 			// 4 cards in deck, draw 1
-			drawn, shuffled, err := Draw(deck, 1)
+			drawn, library, err := Draw(deck, 1)
 			assert.NoError(t, err)
 			assert.NotNil(t, drawn)
-			assert.NotNil(t, shuffled)
-			assert.Equal(t, 3, len(shuffled))
+			assert.NotNil(t, library)
+			assert.Equal(t, 3, len(library))
 			assert.Equal(t, 1, len(drawn))
 
 			// 3 cards in deck, draw all 3
 			// This should not fail because drawing your entire library is OK,
-			drawn, shuffled, err = Draw(shuffled, 3)
+			drawn, library, err = Draw(library, 3)
 			assert.NoError(t, err)
-			assert.NotNil(t, shuffled)
+			assert.NotNil(t, library)
 			assert.NotNil(t, drawn)
 			assert.Equal(t, 3, len(drawn))
 
 			// 0 cards left in deck, draw 1, this should fail.
-			drawn, shuffled, err = Draw(shuffled, 1)
+			drawn, library, err = Draw(library, 1)
 			assert.Error(t, err)
 			assert.Nil(t, drawn)
-			assert.Nil(t, shuffled)
+			assert.Nil(t, library)
 			assert.EqualError(t, err, "check yourself before you deck yourself")
 		})
 
@@ -50,7 +50,24 @@ func TestDecks(t *testing.T) {
 			c := Card{
 				Name: "Warlord's Fury",
 			}
-			Fetch(c, deck)
+			card, list, err := Fetch(c, deck)
+			assert.NoError(t, err)
+			assert.NotNil(t, card)
+			assert.NotNil(t, list)
+		})
+
+		t.Run("test put", func(t *testing.T) {
+			deck := makeDeck(t)
+			cards := CardList{
+				{
+					Name: "Goblin Warlord",
+				},
+			}
+			lib, err := Put(deck, cards, 0, false)
+			assert.NoError(t, err)
+			assert.Equal(t, 5, len(lib))
+
+			Draw(lib, 1)
 		})
 	}
 }

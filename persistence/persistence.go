@@ -17,6 +17,13 @@ type Persistence interface {
 	Get(key Key) (Value, bool, error)
 }
 
+// KV is the KV store for the game engine to work with.
+type KV interface {
+	Put(key Key, val Value) (Value, error)
+	Get(key Key) (Value, bool, error)
+	Do(cmd string, args ...interface{}) (interface{}, error)
+}
+
 // Database must be fulfilled for the cards package to operate correctly.
 // This is mostly used for mocking out tests and simply fulfills the basic
 // `database/sql` interface. Query and Exec are the main methods.

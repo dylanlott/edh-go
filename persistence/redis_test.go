@@ -36,3 +36,10 @@ func TestNewRedis(t *testing.T) {
 	assert.NotNil(t, val)
 	assert.Equal(t, val, Value("value"))
 }
+
+func TestRedisComplex(t *testing.T) {
+	config := make(Config)
+	r, err := NewRedis(config)
+	assert.NoError(t, err)
+	assert.NotNil(t, r)
+}

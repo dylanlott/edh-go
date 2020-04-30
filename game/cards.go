@@ -1,6 +1,7 @@
 package game
 
 import (
+	"fmt"
 	"log"
 	"math/rand"
 	"strings"
@@ -10,26 +11,26 @@ import (
 	"github.com/dylanlott/edh-go/persistence"
 )
 
-// Card tracks the properties of a Card in a given Game
+// Card tracks the properties of a Card in a given Game. Cards can have their
+// own state and their own interactions, since they're the atomic unit of
+// Magic.
 type Card struct {
 	Name string
 
-	// Track counters on a card
-	Counters map[string]Counter
+	// Data gets populated by database queries
+	Data CardData
 
-	// Data gets populated on query
-	Data Data
-
-	// wrappers around the mtg sdk card api
-	// CardInfo sdk.Card
-	// ID       sdk.CardId
+	// Game interactions
+	CardTypes []string
+	Counters  map[string]Counter
+	Statuses  []string
+	Blocking  CardList
 }
-
-// Data is used for populating card data with Query.
-type Data map[string]interface{}
 
 // CardList exposes a set of methods for manipulating a list of Cards
 type CardList []Card
+
+type CardData map[string]interface{}
 
 // Deck is the top level resource for a given Deck
 type Deck struct {
@@ -109,7 +110,7 @@ func Query(db persistence.Database, name string, id *string) (Card, error) {
 		}
 
 		// Add the data to a map for returning
-		data := make(Data)
+		data := make(CardData)
 		data["name"] = *name
 		data["id"] = *id
 		data["colors"] = *colors
@@ -155,7 +156,7 @@ func (deck Deck) Validate(format string) bool {
 }
 
 // Fetch removes a card from the CardList and then shuffles the deck.
-func Fetch(card Card, list CardList) (CardList, Card, error) {
+func Fetch(card Card, list CardList) (Card, CardList, error) {
 	// TODO: Should we consider implementing opponent cuts here?
 	found := false
 	fetched := Card{}
@@ -175,24 +176,24 @@ func Fetch(card Card, list CardList) (CardList, Card, error) {
 	if found == false {
 		shuffled, err := Shuffle(list)
 		if err != nil {
-			return shuffled, Card{}, errs.New("failed to shuffle deck or find card")
+			return Card{}, shuffled, errs.New("failed to shuffle deck or find card")
 		}
-		return shuffled, Card{}, errs.New("card not in deck")
+		return Card{}, shuffled, errs.New("card not in deck")
 	}
 
 	shuffled, err := Shuffle(list)
 	if err != nil {
-		return shuffled, Card{}, errs.New("failed to shuffled after successfully fetching")
+		return Card{}, shuffled, errs.New("failed to shuffled after successfully fetching")
 	}
 
-	return shuffled, fetched, nil
+	return fetched, shuffled, nil
 }
 
 // Draw returns the top `number` cards of the deck, the shuffled library with
 // the cards removed from it (drawn from it), and an error.
 // Error will be thrown if a player tries to draw from an empty library, losing
 // them the game.
-func Draw(deck CardList, number int) (drawn CardList, shuffled CardList, err error) {
+func Draw(deck CardList, number int) (drawn CardList, library CardList, err error) {
 	// NB: Drawing on an empty deck is a loss condition
 	if len(deck) == 0 {
 		return nil, nil, errs.New("check yourself before you deck yourself")
@@ -205,9 +206,38 @@ func Draw(deck CardList, number int) (drawn CardList, shuffled CardList, err err
 
 	// draw the cards out
 	drawn = deck[:number]
-	unshuffled := deck[number:]
-	shuffled, err = Shuffle(unshuffled)
-	return drawn, shuffled, err
+	library = deck[number:]
+
+	return drawn, library, err
+}
+
+// Put inserts a CardList into a Deck at position `pos` in the deck.
+// 0 is the top (the card that will be drawn next) and len(Deck)-1 is the
+// bottom. The order of the cards inserted is preserved since this is a
+// common library interaction.
+func Put(deck CardList, cards CardList, pos int, shuffle bool) (library CardList, err error) {
+	library = CardList{}
+	fromTheTop := deck[:pos]
+	bottom := deck[pos:]
+	fmt.Printf("\nbottom: %+v\n", bottom)
+	fmt.Printf("\nfromTheTop: %+v\n", fromTheTop)
+	library = append(library, fromTheTop...)
+	fmt.Printf("\nlibrary 1: %+v\n", library)
+	library = append(library, cards...)
+	fmt.Printf("\nlibrary 2: %+v\n", library)
+	library = append(library, bottom...)
+	fmt.Printf("\nlibrary 3: %+v\n", library)
+
+	if shuffle {
+		shuffled, err := Shuffle(library)
+		if err != nil {
+			return CardList{}, errs.Wrap(err)
+		}
+
+		return shuffled, nil
+	}
+
+	return library, nil
 }
 
 // getCard returns a single Card from the Database layer, or an error.

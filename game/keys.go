@@ -11,9 +11,17 @@ type GameKey string
 // resides in a Game. This is one level of nesting lower on a GameKey.
 type CardKey string
 
+// CardListKey holds a reference to a CardList such as a library or a graveyard
+type CardListKey string
+
 // Field is the generic name for different fields that need to be
 // tracked for a given Player and Game
 type Field string
+
+func NewCardListKey(gameID GameID, userID UserID, name string) CardListKey {
+	key := fmt.Sprintf("%s:%s:%s", gameID, userID, name)
+	return CardListKey(key)
+}
 
 func NewGameKey(gameID GameID, userID UserID, fieldID Field) GameKey {
 	key := fmt.Sprintf("%s:%s:%s", gameID, userID, fieldID)

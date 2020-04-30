@@ -18,8 +18,7 @@ type PlayerState struct {
 	// playerID assigns a unique playerID to this board state
 	PlayerID UserID
 
-	// get a reference to the database for persistencea
-	DB persistence.Persistence
+	KV persistence.KV
 
 	BoardState BoardState
 }
@@ -36,14 +35,18 @@ type BoardState struct {
 	Counters  map[string]Counter
 	Revealed  CardList
 	Stolen    CardList
+	Attacking CardList
+	Blocking  CardList
+	Emblems   map[string]string
 }
 
 // NewPlayer returns a new PlayerState
-func NewPlayer(gameID GameID, player UserID, deck Deck, db persistence.Persistence) *PlayerState {
+func NewPlayer(gameID GameID, player UserID, deck Deck, kv persistence.KV) *PlayerState {
 	return &PlayerState{
 		GameID:     gameID,
 		PlayerID:   player,
 		BoardState: BoardState{},
+		KV:         kv,
 	}
 }
 
@@ -83,9 +86,9 @@ func (p *PlayerState) AddToExile(card Card)                   {}
 func (p *PlayerState) Scry(num int)                           {}
 
 // Move will move a single Card{} around from one list to another using Fetch.
-// TODO: This function will need to be fleshed out
+// TODO: This function will need to be fleshed out and tested
 func Move(from CardList, to CardList, card Card) (listFrom, listTo CardList, err error) {
-	list, fetched, err := Fetch(card, from)
+	fetched, list, err := Fetch(card, from)
 	if err != nil {
 		return nil, nil, errs.Wrap(err)
 	}
