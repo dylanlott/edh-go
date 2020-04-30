@@ -28,6 +28,11 @@ type Subscription {
   boardUpdate(user: InputUser!, boardstate: InputBoardState!): User!
 }
 
+type Card {
+  Name: String!
+  ID: String!
+}
+
 type User {
   id: String!
   username: String!
@@ -47,16 +52,14 @@ type Game {
 
 type BoardState {
   User: User!
-  Commander: [String!]!
-  Library: [String!]!
-  Graveyard: [String!]!
-  Exiled: [String!]!
-  Field: [String!]!
-  Hand: [String!]!
-  Revealed: [String!]!
-  Controlled: [String!]!
-  Counters: [String!]!
-  Meta: [String!]!
+  Commander: [Card!]!
+  Library: [Card!]!
+  Graveyard: [Card!]!
+  Exiled: [Card!]!
+  Field: [Card!]!
+  Hand: [Card!]!
+  Revealed: [Card!]!
+  Controlled: [Card!]!
 }
 
 input InputBoardState {
