@@ -12,6 +12,7 @@ type Mutation {
   updateBoardState(input: InputBoardState!): BoardState
   createGame(input: InputGame): Game
   createDeck(input: InputDeck): Deck
+  signup(input: InputSignup): User!
 }
 
 type Query {
@@ -74,6 +75,12 @@ input InputBoardState {
   Controlled: [String!]!
   Counters: [String!]!
   Meta: [String!]!
+}
+
+input InputSignup {
+  Username: String!
+  Email: String!
+  Password: String!
 }
 
 input InputUser {

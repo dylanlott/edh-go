@@ -7,17 +7,20 @@ import (
 )
 
 type BoardState struct {
-	User       *User    `json:"User"`
-	Commander  []string `json:"Commander"`
-	Library    []string `json:"Library"`
-	Graveyard  []string `json:"Graveyard"`
-	Exiled     []string `json:"Exiled"`
-	Field      []string `json:"Field"`
-	Hand       []string `json:"Hand"`
-	Revealed   []string `json:"Revealed"`
-	Controlled []string `json:"Controlled"`
-	Counters   []string `json:"Counters"`
-	Meta       []string `json:"Meta"`
+	User       *User   `json:"User"`
+	Commander  []*Card `json:"Commander"`
+	Library    []*Card `json:"Library"`
+	Graveyard  []*Card `json:"Graveyard"`
+	Exiled     []*Card `json:"Exiled"`
+	Field      []*Card `json:"Field"`
+	Hand       []*Card `json:"Hand"`
+	Revealed   []*Card `json:"Revealed"`
+	Controlled []*Card `json:"Controlled"`
+}
+
+type Card struct {
+	Name string `json:"Name"`
+	ID   string `json:"ID"`
 }
 
 type Deck struct {
@@ -50,6 +53,12 @@ type InputDeck struct {
 
 type InputGame struct {
 	Players []*InputUser `json:"players"`
+}
+
+type InputSignup struct {
+	Username string `json:"Username"`
+	Email    string `json:"Email"`
+	Password string `json:"Password"`
 }
 
 type InputUser struct {
