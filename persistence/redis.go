@@ -13,8 +13,6 @@ type redisDB struct {
 
 type Config map[string]string
 
-var _ = (Persistence)(&redisDB{})
-
 // NewRedis returns a new Redis Persistence that can be used
 // in the application to persist and update state.
 func NewRedis(config Config) (*redisDB, error) {
