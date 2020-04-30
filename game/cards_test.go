@@ -67,7 +67,11 @@ func TestDecks(t *testing.T) {
 			assert.NoError(t, err)
 			assert.Equal(t, 5, len(lib))
 
-			Draw(lib, 1)
+			drawn, lib, err := Draw(lib, 1)
+			assert.NoError(t, err)
+			assert.NotNil(t, drawn)
+			assert.NotNil(t, lib)
+			assert.Equal(t, drawn[0].Name, "Goblin Warlord")
 		})
 	}
 }
