@@ -43,6 +43,7 @@ type Game struct {
 	// DB holds a reference to the persistence layer so that we can always
 	// have Put and Get access to the database.
 	DB persistence.Database
+	KV persistence.KV
 
 	Name      string
 	ID        GameID
