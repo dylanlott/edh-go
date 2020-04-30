@@ -3,6 +3,9 @@
     <form class="col-12 form"
           v-on:submit.prevent="onLoginClick">
 
+          <div>
+            <h1>Signup for EDH Go</h1>
+          </div>
       <div class="input-group">
         <input type="text"
                class="form-control"
@@ -10,9 +13,28 @@
                placeholder="Username..."
                v-model.trim="userName"
                required>
+      </div>
+      <div class="input-group">
+        <input type="text"
+          class="form-control"
+          placeholder="Password"
+          v-model.trim="password"
+        >
         <div class="input-group-append">
           <button class="btn btn-secondary"
                   type="submit">Log in</button>
+        </div>
+      </div>
+      <hr>
+      <div>
+        <h2>Sign up if you haven't already</h2>
+        <div class="input-group">
+          <input type="text"
+          class="form-control"
+          placeholder="Email">
+          <input type="text"
+          class="form-control"
+          placeholder="Password">
         </div>
       </div>
 
@@ -25,6 +47,8 @@ export default {
   data() {
     return {
       userName: '',
+      password: '',
+      email: ''
     };
   },
   computed: {
@@ -36,7 +60,7 @@ export default {
     onLoginClick() {
       if (this.isInputValid) {
         this.$setCurrentUser(this.userName);
-        this.$router.push({ path: '/' });
+        this.$router.push({ path: '/games' });
       }
     },
   },

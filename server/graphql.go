@@ -108,6 +108,8 @@ func (s *graphQLServer) PostMessage(ctx context.Context, user string, text strin
 		User:      user,
 	}
 	mj, _ := json.Marshal(m)
+
+	// Update messages to key off of `message:<game_id>` and `message:<room_id>`
 	if err := s.redisClient.LPush("messages", mj).Err(); err != nil {
 		log.Println(err)
 		return nil, err

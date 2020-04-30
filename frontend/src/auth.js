@@ -6,8 +6,8 @@ const AuthPlugin = {
     Vue.prototype.$currentUser = function () {
       return Vue.prototype.user;
     };
-    Vue.prototype.$logoutUser = function (user) {
-      Vue.prototype.user = {};
+    Vue.prototype.$logoutUser = function () {
+      delete Vue.prototype.user
     };
   },
 };

@@ -2,7 +2,6 @@
   <div class="">
     <Navbar></Navbar>
     <div class="container">
-      <h1 class="mt-5 mb-4">EDH Go</h1>
       <router-view/>
     </div>
   </div>
