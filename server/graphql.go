@@ -48,6 +48,8 @@ type graphQLServer struct {
 	kv persistence.Persistence
 	db persistence.Database
 
+	cardDB persistence.Database
+
 	// TODO: Remove these channel implementations and work our own observer
 	// pattern in
 	messageChannels map[string]chan *Message
@@ -57,7 +59,7 @@ type graphQLServer struct {
 
 // NewGraphQLServer creates a new server to attach the database, game engine,
 // and graphql connections together
-func NewGraphQLServer(kv persistence.KV, db persistence.Database) (*graphQLServer, error) {
+func NewGraphQLServer(kv persistence.KV, appDB persistence.Database, cardDB persistence.Database) (*graphQLServer, error) {
 	fmt.Printf("creating new graphql client")
 	client := redis.NewClient(&redis.Options{
 		Addr: "localhost:6379",
@@ -68,7 +70,8 @@ func NewGraphQLServer(kv persistence.KV, db persistence.Database) (*graphQLServe
 		return err
 	})
 	return &graphQLServer{
-		db:              db,
+		cardDB:          cardDB,
+		db:              appDB,
 		kv:              kv,
 		redisClient:     client,
 		messageChannels: map[string]chan *Message{},

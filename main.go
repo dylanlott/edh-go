@@ -5,6 +5,7 @@ import (
 	"log"
 
 	"github.com/kelseyhightower/envconfig"
+	"github.com/zeebo/errs"
 
 	"github.com/dylanlott/edh-go/persistence"
 	"github.com/dylanlott/edh-go/server"
@@ -26,7 +27,12 @@ func main() {
 		log.Fatal(err)
 	}
 
-	s, err := server.NewGraphQLServer(nil, db)
+	cardDB, err := persistence.NewSQLite("./persistence/mtgallcards.sqlite")
+	if err != nil {
+		log.Fatalf(errs.Wrap(err).Error())
+	}
+
+	s, err := server.NewGraphQLServer(nil, db, cardDB)
 	if err != nil {
 		log.Fatal(err)
 	}
