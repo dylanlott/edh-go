@@ -57,12 +57,10 @@ type graphQLServer struct {
 
 // NewGraphQLServer creates a new server to attach the database, game engine,
 // and graphql connections together
-func NewGraphQLServer(redisURL string) (*graphQLServer, error) {
-	// todo: wire up database to DB interface here
-	// todo: wire up redis to KV interface here.
+func NewGraphQLServer(kv persistence.KV, db persistence.Database) (*graphQLServer, error) {
 	fmt.Printf("creating new graphql client")
 	client := redis.NewClient(&redis.Options{
-		Addr: redisURL,
+		Addr: "localhost:6379",
 	})
 
 	retry.ForeverSleep(2*time.Second, func(_ int) error {
@@ -70,6 +68,8 @@ func NewGraphQLServer(redisURL string) (*graphQLServer, error) {
 		return err
 	})
 	return &graphQLServer{
+		db:              db,
+		kv:              kv,
 		redisClient:     client,
 		messageChannels: map[string]chan *Message{},
 		userChannels:    map[string]chan string{},

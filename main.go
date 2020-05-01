@@ -6,6 +6,7 @@ import (
 
 	"github.com/kelseyhightower/envconfig"
 
+	"github.com/dylanlott/edh-go/persistence"
 	"github.com/dylanlott/edh-go/server"
 )
 
@@ -20,7 +21,12 @@ func main() {
 		log.Fatal(err)
 	}
 
-	s, err := server.NewGraphQLServer(cfg.RedisURL)
+	db, err := persistence.NewSQLite("./persistence/db.sqlite")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	s, err := server.NewGraphQLServer(nil, db)
 	if err != nil {
 		log.Fatal(err)
 	}
