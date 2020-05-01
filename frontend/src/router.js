@@ -3,7 +3,8 @@ import Router from 'vue-router';
 
 import Home from '@/components/Home.vue';
 import Login from '@/components/Login.vue';
-import Games from '@/components/Games.vue'
+import Games from '@/components/Games.vue';
+import Board from '@/components/Board.vue';
 
 Vue.use(Router);
 
@@ -12,7 +13,7 @@ export default new Router({
     {
       path: '/',
       name: 'home',
-      component: Home,
+        component: Home,
     },
     {
       path: '/login',
@@ -23,6 +24,11 @@ export default new Router({
       path: '/games',
       name: 'games',
       component: Games
+    },
+    {
+      path: '/games/:id',
+      name: 'board',
+      component: Board,
     }
   ],
 });

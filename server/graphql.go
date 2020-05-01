@@ -58,6 +58,9 @@ type graphQLServer struct {
 // NewGraphQLServer creates a new server to attach the database, game engine,
 // and graphql connections together
 func NewGraphQLServer(redisURL string) (*graphQLServer, error) {
+	// todo: wire up database to DB interface here
+	// todo: wire up redis to KV interface here.
+	fmt.Printf("creating new graphql client")
 	client := redis.NewClient(&redis.Options{
 		Addr: redisURL,
 	})

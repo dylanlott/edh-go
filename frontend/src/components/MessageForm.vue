@@ -32,13 +32,7 @@ export default {
 
       this.$apollo
         .mutate({
-          mutation: gql`
-            mutation($user: String!, $text: String!) {
-              postMessage(user: $user, text: $text) {
-                id
-              }
-            }
-          `,
+          mutation: gql``,
           variables: {
             user: user,
             text: messageInput,

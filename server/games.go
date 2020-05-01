@@ -21,6 +21,7 @@ func (s *graphQLServer) BoardUpdate(ctx context.Context, user InputUser, bs Inpu
 
 // createGame is untested currently
 func (s *graphQLServer) CreateGame(ctx context.Context, inputGame *InputGame) (*Game, error) {
+	fmt.Printf("create game hit: %+v\n", inputGame)
 	for _, player := range inputGame.Players {
 		fmt.Printf("player: %+v\n", player)
 	}

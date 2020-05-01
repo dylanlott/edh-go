@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/kelseyhightower/envconfig"
@@ -28,4 +29,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	fmt.Printf("server listening on localhost:%d", 8080)
+	fmt.Printf("serving graphiql playground at localhost:8080/playground")
 }

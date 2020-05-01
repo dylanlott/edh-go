@@ -24,6 +24,8 @@ type Card struct {
 }
 
 type Deck struct {
+	ID        string   `json:"ID"`
+	Name      string   `json:"Name"`
 	Commander string   `json:"Commander"`
 	Library   []string `json:"Library"`
 }
