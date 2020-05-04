@@ -1,12 +1,19 @@
 <template id="">
-
+  <div class="shell">
+    <div class="graveyard">
+      <p>Graveyard</p>
+    </div>
+  </div>
 </template>
 <script>
 export default {
   name: 'playerstate',
   data () { return {}},
   created () {
-    console.log('user id: ', $route.params.id)
-  }
+    console.log('game id: ', this.$route.params.id)
+  },
+  props: [
+    'boardstate'
+  ]
 }
 </script>

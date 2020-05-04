@@ -5,6 +5,7 @@ import Home from '@/components/Home.vue';
 import Login from '@/components/Login.vue';
 import Games from '@/components/Games.vue';
 import Board from '@/components/Board.vue';
+import Card from '@/components/Card.vue';
 
 Vue.use(Router);
 
@@ -29,6 +30,11 @@ export default new Router({
       path: '/games/:id',
       name: 'board',
       component: Board,
+    },
+    {
+      path: '/card/:id',
+      name: 'card',
+      component: Card,
     }
   ],
 });
