@@ -99,7 +99,6 @@ func makeDeck(t *testing.T) CardList {
 		if err != nil {
 			t.Skipf("unable to connect to db - skipping database tests")
 		}
-		assert.NoError(t, err)
 		list, errors := NewDecklist(db, testdata)
 		assert.Equal(t, 0, len(errors))
 		assert.Equal(t, 4, len(list))

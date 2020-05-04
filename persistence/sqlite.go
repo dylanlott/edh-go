@@ -41,3 +41,8 @@ func (db *DB) Ping() error {
 func (db *DB) Stats() sql.DBStats {
 	return db.db.Stats()
 }
+
+// Prepare will return a formatted sql Stmt
+func (db *DB) Prepare(query string) (*sql.Stmt, error) {
+	return db.db.Prepare(query)
+}

@@ -28,6 +28,7 @@ type KV interface {
 // This is mostly used for mocking out tests and simply fulfills the basic
 // `database/sql` interface. Query and Exec are the main methods.
 type Database interface {
+	Prepare(query string) (*sql.Stmt, error)
 	Query(query string, args ...interface{}) (*sql.Rows, error)
 	Exec(query string, args ...interface{}) (sql.Result, error)
 	Ping() error

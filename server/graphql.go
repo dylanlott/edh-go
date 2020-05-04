@@ -44,10 +44,9 @@ type graphQLServer struct {
 	// TODO: Remove redisClient and switch over to our Persistence interface
 	redisClient *redis.Client
 
-	// TODO: Wire up our own persistence here
-	kv persistence.Persistence
-	db persistence.Database
-
+	// Persistence layers
+	kv     persistence.Persistence
+	db     persistence.Database
 	cardDB persistence.Database
 
 	// TODO: Remove these channel implementations and work our own observer
@@ -59,8 +58,15 @@ type graphQLServer struct {
 
 // NewGraphQLServer creates a new server to attach the database, game engine,
 // and graphql connections together
-func NewGraphQLServer(kv persistence.KV, appDB persistence.Database, cardDB persistence.Database) (*graphQLServer, error) {
+func NewGraphQLServer(
+	kv persistence.KV,
+	appDB persistence.Database,
+	cardDB persistence.Database,
+) (*graphQLServer, error) {
+
 	fmt.Printf("creating new graphql client")
+
+	// TODO: Remove this redis client and wire chat up to KV interface instead
 	client := redis.NewClient(&redis.Options{
 		Addr: "localhost:6379",
 	})
@@ -95,6 +101,7 @@ func (s *graphQLServer) Serve(route string, port int) error {
 		),
 	)
 	mux.Handle("/playground", handler.Playground("GraphQL", route))
+	log.Println("serving graphiql at localhost:8080/playground")
 
 	handler := cors.AllowAll().Handler(mux)
 	return http.ListenAndServe(fmt.Sprintf(":%d", port), handler)

@@ -1,7 +1,6 @@
 package game
 
 import (
-	"fmt"
 	"log"
 	"math/rand"
 	"strings"
@@ -219,14 +218,9 @@ func Put(deck CardList, cards CardList, pos int, shuffle bool) (library CardList
 	library = CardList{}
 	fromTheTop := deck[:pos]
 	bottom := deck[pos:]
-	fmt.Printf("\nbottom: %+v\n", bottom)
-	fmt.Printf("\nfromTheTop: %+v\n", fromTheTop)
 	library = append(library, fromTheTop...)
-	fmt.Printf("\nlibrary 1: %+v\n", library)
 	library = append(library, cards...)
-	fmt.Printf("\nlibrary 2: %+v\n", library)
 	library = append(library, bottom...)
-	fmt.Printf("\nlibrary 3: %+v\n", library)
 
 	if shuffle {
 		shuffled, err := Shuffle(library)
