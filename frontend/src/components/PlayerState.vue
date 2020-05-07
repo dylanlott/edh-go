@@ -32,16 +32,12 @@ export default {
         player: {},
         phase: {}
       },
-      boardstate: {
-        battlefield: [],
-        hand: [],
-        library: [],
-        graveyard: [],
-        exiled: [],
-        stolen: [],
-        attacking: [],
-        blocking: [],
-        stack: [],
+      props: {
+        library: Array,
+        graveyard: Array,
+        exiled: Array,
+        battlefield: Array,
+        controlled: Array
       }
     }
   },
