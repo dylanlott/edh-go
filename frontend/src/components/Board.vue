@@ -1,6 +1,6 @@
 <template>
 <div class="board">
-  <h1>Boardstate</h1>
+  <h1 class="display-5">Boardstate</h1>
 
   <div class="opponents">
     <div v-for="o in opponents" class="shell">
@@ -44,29 +44,6 @@ export default {
           graveyard: [],
           exiled: [],
           battlefield: [],
-          hand: [],
-          controlled: [],
-        }
-      }, {
-        id: 2,
-        username: "player2",
-        boardstate: {
-          library: [],
-          graveyard: [],
-          exiled: [],
-          battlefield: [],
-          hand: [],
-          controlled: [],
-        }
-      }, {
-        id: 3,
-        username: "player3",
-        boardstate: {
-          library: [],
-          graveyard: [],
-          exiled: [],
-          battlefield: [],
-          hand: [],
           controlled: [],
         }
       }]

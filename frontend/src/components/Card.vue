@@ -4,7 +4,14 @@
   <div class="card-body">
     <h5 class="card-title">{{ name }}</h5>
     <p class="card-text">{{ text }}</p>
-    <a href="#" class="btn btn-primary">View card image</a>
+    <p class="card-text">{{ types }}</p>
+    <p class="card-text">{{ supertypes }}</p>
+    <p class="card-text">{{ subtypes }}</p>
+    <p class="card-text">{{ convertedManaCost }}</p>
+    <p class="card-text">{{ colorIdentity }}</p>
+    <p class="card-text">{{ image }}</p>
+    <hr>
+    <p>Counters</p>
   </div>
 </div>
 </template>
