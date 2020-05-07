@@ -27,20 +27,48 @@ export default {
       self: {
         id: 4,
         username: "shakezula",
-        boardstate: {}
+        boardstate: {
+          library: [],
+          graveyard: [],
+          exiled: [],
+          battlefield: [],
+          hand: [],
+          controlled: [],
+        }
       },
       opponents: [{
         id: 1,
         username: "player1",
-        boardstate: {}
+        boardstate: {
+          library: [],
+          graveyard: [],
+          exiled: [],
+          battlefield: [],
+          hand: [],
+          controlled: [],
+        }
       }, {
         id: 2,
         username: "player2",
-        boardstate: {}
+        boardstate: {
+          library: [],
+          graveyard: [],
+          exiled: [],
+          battlefield: [],
+          hand: [],
+          controlled: [],
+        }
       }, {
         id: 3,
         username: "player3",
-        boardstate: {}
+        boardstate: {
+          library: [],
+          graveyard: [],
+          exiled: [],
+          battlefield: [],
+          hand: [],
+          controlled: [],
+        }
       }]
     }
   },

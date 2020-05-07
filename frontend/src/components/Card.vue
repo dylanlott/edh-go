@@ -12,6 +12,7 @@
 export default {
   name: 'Card',
   props: [
+    'id',
     'name',
     'convertedManaCost',
     'colorIdentity',
@@ -19,7 +20,11 @@ export default {
     'toughness',
     'text',
     'cardTypes',
-    'image'
+    'supertypes',
+    'subtypes',
+    'types,',
+    'image',
+    'text',
   ]
 }
 </script  >

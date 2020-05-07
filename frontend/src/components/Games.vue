@@ -32,9 +32,12 @@
       <div class="input-group">
         <input type="text"
         class="form-control"
-        v-model="id"
+        v-model="joinGameID"
         placeholder="Game ID">
       </div>
+      <button @click="handleJoinGame()"
+      type="button"
+      class="btn btn-secondary">Join Game</button>
     </div>
   </div>
 </template>
@@ -48,6 +51,7 @@ export default {
     return {
       id: '',
       gameID: '',
+      joinGameID: '',
       deck: {
         library: [],
         commander: ''
@@ -73,13 +77,21 @@ export default {
             user
             name
           }
-        }
-        `
+        }`
       }
     }
   },
   computed: {
-    players: [],
+    players () {
+      return [{
+        id: 'player1',
+        username: 'player1',
+        deck: {
+          library: [],
+          commander: [],
+        }
+      }]
+    },
     username () {
       return this.$currentUser()
     },
@@ -98,6 +110,13 @@ export default {
         }
       })
       router.push({ path: '/games/1234' })
+    },
+    handleJoinGame() {
+      // this.$apollo.mutate({
+      //   mutation: gql``,
+      //   variables: {}
+      // })
+      router.push({ name: 'board', params: { id: this.joinGameID }})
     }
   },
   apollo: {

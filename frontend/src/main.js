@@ -6,6 +6,7 @@ import VueApollo from 'vue-apollo';
 import { split } from 'apollo-link';
 import { WebSocketLink } from 'apollo-link-ws';
 import { getMainDefinition } from 'apollo-utilities';
+import 'bootstrap';
 import 'bootstrap/scss/bootstrap.scss';
 
 import router from './router';
