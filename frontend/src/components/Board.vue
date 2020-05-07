@@ -1,16 +1,20 @@
 <template>
 <div class="board">
   <h1 class="display-5">Boardstate</h1>
-
+  <div class="turn-track">
+    <b>Active Turn: {{ turn.player }}</b>
+    <div class="progress">
+      <div class="progress-bar bg-success" role="progressbar" style="width: 25%" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
+    </div>
+  </div>
   <div class="opponents">
     <div v-for="o in opponents" class="shell">
       <h1>{{ o.username }}</h1>
-      <PlayerState
-      ></PlayerState>
+      <PlayerState ></PlayerState>
     </div>
   </div>
   <hr>
-  <div class="self">
+  <div class="self shell">
     <h1>Self</h1>
     <SelfState></SelfState>
   </div>
@@ -24,6 +28,23 @@ export default {
   name: 'board',
   data () {
     return {
+      turn: {
+        phase: '',
+        player: 'player1'
+      },
+      phases: [
+        'untap',
+        'upkeep',
+        'draw',
+        'main phase 1',
+        'combat',
+        'declare attackers',
+        'declare blockers',
+        'resolve combat damage',
+        'main phase 2',
+        'end phase',
+        'discard'
+      ],
       self: {
         id: 4,
         username: "shakezula",
@@ -55,7 +76,7 @@ export default {
   }
 }
 </script>
-<style media="screen">
+<style media="screen" scoped>
 .shell {
   padding: .5rem;
   border: 1px solid #efefef;

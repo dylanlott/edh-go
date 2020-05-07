@@ -22,16 +22,16 @@ export default {
     'id',
     'name',
     'convertedManaCost',
+    'manaCost',
     'colorIdentity',
     'power',
     'toughness',
     'text',
-    'cardTypes',
+    'types',
     'supertypes',
     'subtypes',
     'types,',
     'image',
-    'text',
   ]
 }
 </script  >

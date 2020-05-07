@@ -1,52 +1,25 @@
 <template id="">
-  <div class="shell">
-<div class="accordion" id="accordionExample">
-  <div class="card">
-    <div class="card-header" id="headingOne">
-      <h4 class="mb-0">
-        <button class="btn btn-link text-info" type="button" data-toggle="collapse" data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
-          Battlefield
-        </button>
-      </h4>
-    </div>
-
-    <div id="collapseOne" class="collapse show" aria-labelledby="headingOne" data-parent="#accordionExample">
-      <div class="card-body">
-        <div class="" v-for="card in boardstate.battlefield">
-        </div>
-        <div v-if="boardstate.battlefield.length < 1">No cards.</div>
+  <div class="player state">
+    <div class="row">
+      <div class="graveyard col-sm">
+        <p class="text-center bg-secondary text-white">Battlefield</p>
+      </div>
+      <div class="library col-sm">
+        <p class="text-center bg-secondary text-white">Libarary</p>
+      </div>
+      <div class="exiled col-sm">
+        <p class="text-center bg-secondary text-white">Exiled</p>
+      </div>
+      <div class="hand col-sm">
+        <p class="text-center bg-secondary text-white">Graveyard</p>
+      </div>
+      <div class="revealed col-sm">
+        <p class="text-center bg-secondary text-white">Revealed</p>
+      </div>
+      <div class="emblems col-sm">
+        <p class="text-center bg-secondary text-white">Emblems/Counters</p>
       </div>
     </div>
-  </div>
-  <div class="card">
-    <div class="card-header" id="headingTwo">
-      <h4 class="mb-0">
-        <button class="btn btn-link collapsed" type="button" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
-          Graveyard
-        </button>
-      </h4>
-    </div>
-    <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionExample">
-      <div class="card-body">
-        <div v-if="boardstate.graveyard.length < 1">No graveyard cards.</div>
-      </div>
-    </div>
-  </div>
-  <div class="card">
-    <div class="card-header" id="headingThree">
-      <h4 class="mb-0">
-        <button class="btn btn-link collapsed" type="button" data-toggle="collapse" data-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
-          Exiled
-        </button>
-      </h4>
-    </div>
-    <div id="collapseThree" class="collapse" aria-labelledby="headingThree" data-parent="#accordionExample">
-      <div class="card-body">
-        <div v-if="boardstate.exiled.length < 1">No graveyard cards.</div>
-      </div>
-    </div>
-  </div>
-</div>
   </div>
 </template>
 <script>
@@ -77,3 +50,5 @@ export default {
   },
 }
 </script>
+<style media="screen">
+</style>
