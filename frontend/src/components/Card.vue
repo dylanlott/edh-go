@@ -14,7 +14,9 @@ export default {
   data () {
     return {
       trackers: {},
-      labels: []
+      labels: {},
+      counters: {},
+      reminders: {},
     }
   },
   props: [
@@ -31,7 +33,6 @@ export default {
     'subtypes',
     'types,',
     'image',
-    'counters',
   ],
   methods: {
     addCounter (name) {
@@ -41,13 +42,28 @@ export default {
       this.trackers[name]--
     },
     addLabel (name, value) {
-    }
+    },
+    removeLabel (name) {
+
+    },
+    updateLabel (name, value) {
+
+    },
+    tap () {
+
+    },
+    moveTo (dst) {
+
+    },
+    flip () {
+
+    },
   }
 }
 </script>
 <style scoped media="screen">
 .mtg-card {
-  width: 150px;
+  width: 175px;
   font-size: 14px;
 }
 div .card-body {
