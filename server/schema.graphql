@@ -77,6 +77,9 @@ input InputBoardState {
   Controlled: [String!]!
   Counters: [String!]!
   Meta: [String!]!
+  ActivePlayer: String
+  ActivePhase: String
+  TurnNumber: Int
 }
 
 input InputSignup {
@@ -95,5 +98,7 @@ input InputGame {
 }
 
 input InputDeck {
+  name: String
+  commander: [String!]
   cards: [String!]
 }

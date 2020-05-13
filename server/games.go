@@ -4,11 +4,16 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/google/uuid"
 	"github.com/zeebo/errs"
 )
 
 func (s *graphQLServer) Games(ctx context.Context) ([]*Game, error) {
-	return nil, errs.New("not impl")
+	games := []*Game{}
+	for _, game := range s.Directory {
+		games = append(games, game)
+	}
+	return games, nil
 }
 
 func (s *graphQLServer) Boardstate(ctx context.Context, userID string) ([]*BoardState, error) {
@@ -22,33 +27,29 @@ func (s *graphQLServer) BoardUpdate(ctx context.Context, user InputUser, bs Inpu
 // createGame is untested currently
 func (s *graphQLServer) CreateGame(ctx context.Context, inputGame *InputGame) (*Game, error) {
 	fmt.Printf("create game hit: %+v\n", inputGame)
+
+	g := &Game{
+		ID: uuid.New().String(),
+	}
+
 	for _, player := range inputGame.Players {
 		fmt.Printf("player: %+v\n", player)
 	}
 
-	// if err := s.redisClient.SAdd("games", game).Err(); err != nil {
-	// 	log.Printf("error adding game to redis: %s", err)
-	// 	return nil, err
-	// }
-
 	for _, obs := range s.observers {
 		// TODO: Context needs to be pulled through from top level of the app
 		// TODO: Make sure to pass the correct, fleshed out Game here.
-		obs.Joined(context.TODO(), &Game{})
+		obs.Joined(ctx, &Game{})
 	}
 
-	return &Game{}, errs.New("not impl")
+	// TODO: Wire Game type up to game.Game
+	return g, nil
 }
 
 func (s *graphQLServer) UpdateBoardState(ctx context.Context, boardstate InputBoardState) (*BoardState, error) {
 	pushBoardStateUpdate(ctx, s.observers, boardstate)
 	return nil, errs.New("not impl")
 }
-
-func (s *graphQLServer) CreateDeck(ctx context.Context, inputDeck *InputDeck) (*Deck, error) {
-	return nil, errs.New("not impl")
-}
-
 func pushBoardStateUpdate(ctx context.Context, observers []Observer, input InputBoardState) {
 	for _, obs := range observers {
 		fmt.Printf("observer: %+v\n", obs)

@@ -637,6 +637,9 @@ input InputBoardState {
   Controlled: [String!]!
   Counters: [String!]!
   Meta: [String!]!
+  ActivePlayer: String
+  ActivePhase: String
+  TurnNumber: Int
 }
 
 input InputSignup {
@@ -655,6 +658,8 @@ input InputGame {
 }
 
 input InputDeck {
+  name: String
+  commander: [String!]
   cards: [String!]
 }
 `},
@@ -3521,6 +3526,24 @@ func (ec *executionContext) unmarshalInputInputBoardState(ctx context.Context, o
 			if err != nil {
 				return it, err
 			}
+		case "ActivePlayer":
+			var err error
+			it.ActivePlayer, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "ActivePhase":
+			var err error
+			it.ActivePhase, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "TurnNumber":
+			var err error
+			it.TurnNumber, err = ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
 		}
 	}
 
@@ -3533,6 +3556,18 @@ func (ec *executionContext) unmarshalInputInputDeck(ctx context.Context, obj int
 
 	for k, v := range asMap {
 		switch k {
+		case "name":
+			var err error
+			it.Name, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "commander":
+			var err error
+			it.Commander, err = ec.unmarshalOString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
 		case "cards":
 			var err error
 			it.Cards, err = ec.unmarshalOString2ᚕstringᚄ(ctx, v)
@@ -5016,6 +5051,29 @@ func (ec *executionContext) unmarshalOInputUser2ᚕᚖgithubᚗcomᚋdylanlott�
 		}
 	}
 	return res, nil
+}
+
+func (ec *executionContext) unmarshalOInt2int(ctx context.Context, v interface{}) (int, error) {
+	return graphql.UnmarshalInt(v)
+}
+
+func (ec *executionContext) marshalOInt2int(ctx context.Context, sel ast.SelectionSet, v int) graphql.Marshaler {
+	return graphql.MarshalInt(v)
+}
+
+func (ec *executionContext) unmarshalOInt2ᚖint(ctx context.Context, v interface{}) (*int, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalOInt2int(ctx, v)
+	return &res, err
+}
+
+func (ec *executionContext) marshalOInt2ᚖint(ctx context.Context, sel ast.SelectionSet, v *int) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec.marshalOInt2int(ctx, sel, *v)
 }
 
 func (ec *executionContext) marshalOMessage2githubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐMessage(ctx context.Context, sel ast.SelectionSet, v Message) graphql.Marshaler {

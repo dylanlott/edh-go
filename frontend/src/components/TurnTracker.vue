@@ -2,7 +2,9 @@
   <div class="turn-tracker">
     <div class="row">
       <div class="col-10">
-        <b>{{ players[turn.player]['username'] }} Phase: {{ phases[turn.phase] }}</b>
+        <b>{{ players[turn.player]['username'] }}
+          Phase: {{ phases[turn.phase] }}
+        </b>
       </div>
       <div class="col-2">
         <button

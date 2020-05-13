@@ -22,7 +22,7 @@ import (
 
 type contextKey string
 
-// Observer must be fulfilled for anything that's lisening to the events that
+// Observer must be fulfilled for anything that's listening to the events that
 // come off of a game. GraphQL mutations trigger these events, which get
 // pushed out to the rest of the users in the game.
 // These are pure functions for a reason - channels can get incredibly messy
@@ -44,6 +44,9 @@ type graphQLServer struct {
 	// TODO: Remove redisClient and switch over to our Persistence interface
 	redisClient *redis.Client
 
+	// Directory maps game ID's to a Game pointer
+	Directory map[string]*Game
+
 	// Persistence layers
 	kv     persistence.Persistence
 	db     persistence.Database
@@ -63,9 +66,6 @@ func NewGraphQLServer(
 	appDB persistence.Database,
 	cardDB persistence.Database,
 ) (*graphQLServer, error) {
-
-	fmt.Printf("creating new graphql client")
-
 	// TODO: Remove this redis client and wire chat up to KV interface instead
 	client := redis.NewClient(&redis.Options{
 		Addr: "localhost:6379",
