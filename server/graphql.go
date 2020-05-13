@@ -73,6 +73,9 @@ func NewGraphQLServer(
 
 	retry.ForeverSleep(2*time.Second, func(_ int) error {
 		_, err := client.Ping().Result()
+		if err != nil {
+			log.Printf("error connecting to redis: %+v\n", err)
+		}
 		return err
 	})
 	return &graphQLServer{

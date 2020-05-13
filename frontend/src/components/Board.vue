@@ -1,17 +1,12 @@
 <template>
 <div class="board">
   <h1 class="display-5">{{ gameID }}</h1>
-  <div class="turn-track">
-    <b>Active Turn: {{ turn.player }}</b>
-    <div class="progress">
-      <div class="progress-bar bg-success" role="progressbar" style="width: 25%" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
-    </div>
-  </div>
+  <TurnTracker gameID="gameID"/>
   <div class="opponents">
     <div v-for="o in opponents" class="shell">
       <h1>{{ o.username }}</h1>
       <PlayerState v-bind="o.boardstate"></PlayerState>
-    </div>
+    </div >
   </div>
   <hr>
   <div class="self shell">
@@ -29,6 +24,7 @@
 import PlayerState from '@/components/PlayerState.vue'
 import SelfState from '@/components/SelfState.vue'
 import Card from '@/components/Card.vue'
+import TurnTracker from '@/components/TurnTracker.vue'
 import draggable from 'vuedraggable'
 
 const testCard = {
@@ -59,23 +55,6 @@ export default {
   data () {
     return {
       gameID: this.$route.params.id,
-      turn: {
-        phase: '',
-        player: 'player1'
-      },
-      phases: [
-        'untap',
-        'upkeep',
-        'draw',
-        'main phase 1',
-        'combat',
-        'declare attackers',
-        'declare blockers',
-        'resolve combat damage',
-        'main phase 2',
-        'end phase',
-        'discard'
-      ],
       self: {
         id: 4,
         username: "shakezula",
@@ -102,6 +81,7 @@ export default {
     }
   },
   components: {
+    TurnTracker,
     PlayerState,
     SelfState,
     Card

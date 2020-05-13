@@ -1,7 +1,7 @@
 <template>
   <div>
     <div class="row">
-      <div class="col-sm">
+      <div class="col-lg">
         <p class="bg-dark text-center text-white">Battlefield</p>
         <draggable
         class="col-sm card-wrapper"
@@ -14,6 +14,8 @@
            </div>
         </draggable>
       </div>
+    </div>
+    <div class="row">
       <div class="col-sm">
         <p class="bg-dark text-center text-white">Exiled</p>
         <draggable
@@ -66,26 +68,36 @@
            </div>
         </draggable>
       </div>
+      <div class="col-sm library" @click="draw()">
+        <p class="bg-dark text-center text-white">Library</p>
+        <draggable
+        class="col-sm card-wrapper"
+        v-model="boardstate.library"
+        group="people"
+        @start="drag=true"
+        @end="drag=false">
+           <div v-for="card in boardstate.library" :key="card.id">
+             <Card v-bind="card" hidden="true"/>
+           </div>
+        </draggable>
+      </div>
     </div>
     <hr>
     <div class="container shell">
       <h3>Hand</h3>
-      <div class="row">
-        <!-- Start draggable -->
+      <div class="col-sm">
         <draggable
-        class="col-sm card-wrapper"
+        class="row card-wrapper"
         v-model="boardstate.hand"
         group="people"
         @start="drag=true"
         @end="drag=false">
-           <div v-for="card in boardstate.hand" :key="card.id">
-             <Card v-bind="card"/>
+           <div class="mtg-card"
+           v-for="card in boardstate.hand"
+           :key="card.id">
+            <Card v-bind="card"></Card>
            </div>
         </draggable>
-          <!-- End Draggable -->
-        <div class="col-xs border border-dark">
-          <p class="bg-dark text-center text-white">Libarary</p>
-        </div>
       </div>
     </div>
     <code>{{ boardstate }}</code>
@@ -127,14 +139,39 @@ export default {
     return {
       boardstate: {
         graveyard: [],
-        library: [],
+        library: [testCard2, testCard],
         exiled: [],
-        hand: [testCard2, testCard],
+        hand: [],
         battlefield: [],
         emblems: [],
         revealed: []
       },
     }
+  },
+  watch: {
+    boardstate: {
+      handler(newState, oldState) {
+        // TODO: Emit event here to graphQL that records boardstate mutations
+        console.log('newState: ', newState)
+        console.log('oldState: ', oldState)
+      },
+      deep: true
+    }
+  },
+  methods: {
+    draw () {
+      if (this.boardstate.library.length == 0) {
+        return
+      }
+
+      const card = this.boardstate.library.shift()
+      this.boardstate.hand.push(card)
+    },
+    shuffle () {
+      console.log('shuffling deck')
+      // TODO: This should trigger a shuffle on the server and update the
+      // library on the client side
+    },
   },
   components: {
     Card,
@@ -142,3 +179,8 @@ export default {
   }
 }
 </script>
+<style media="screen">
+  .library {
+    hidden: true;
+  }
+</style>
