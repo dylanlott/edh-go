@@ -15,7 +15,7 @@ import (
 // Magic.
 type Card struct {
 	Name  string
-	Split string // For the case where cards have two-in-one.
+	Split string // For handling split cards
 
 	// Data gets populated by database queries
 	Data CardData
