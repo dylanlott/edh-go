@@ -22,6 +22,9 @@ run:
 		$(GOCMD) run ./
 generate:
 		$(GOCMD) generate ./...
+dev:
+		# dev target requires watchexec to be installed
+		watchexec $(GOCMD) run ./
 # Cross compilation
 build-linux:
 		CGO_ENABLED=0 GOOS=linux GOARCH=amd64 $(GOBUILD) -o $(BINARY_UNIX) -v
