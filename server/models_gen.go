@@ -7,20 +7,28 @@ import (
 )
 
 type BoardState struct {
-	User       *User   `json:"User"`
-	Commander  []*Card `json:"Commander"`
-	Library    []*Card `json:"Library"`
-	Graveyard  []*Card `json:"Graveyard"`
-	Exiled     []*Card `json:"Exiled"`
-	Field      []*Card `json:"Field"`
-	Hand       []*Card `json:"Hand"`
-	Revealed   []*Card `json:"Revealed"`
-	Controlled []*Card `json:"Controlled"`
+	User       *User      `json:"User"`
+	GameID     string     `json:"GameID"`
+	Commander  []*Card    `json:"Commander"`
+	Library    []*Card    `json:"Library"`
+	Graveyard  []*Card    `json:"Graveyard"`
+	Exiled     []*Card    `json:"Exiled"`
+	Field      []*Card    `json:"Field"`
+	Hand       []*Card    `json:"Hand"`
+	Revealed   []*Card    `json:"Revealed"`
+	Controlled []*Card    `json:"Controlled"`
+	Counters   []*Counter `json:"Counters"`
 }
 
 type Card struct {
 	Name string `json:"Name"`
 	ID   string `json:"ID"`
+}
+
+type Counter struct {
+	Card  *Card  `json:"card"`
+	Name  string `json:"name"`
+	Value string `json:"value"`
 }
 
 type Deck struct {
@@ -30,32 +38,59 @@ type Deck struct {
 	Library   []string `json:"Library"`
 }
 
+type Emblem struct {
+	Name   string `json:"name"`
+	Value  string `json:"value"`
+	Player *User  `json:"player"`
+}
+
 type Game struct {
-	ID      string  `json:"id"`
-	Players []*User `json:"players"`
+	ID        string        `json:"id"`
+	CreatedAt time.Time     `json:"created_at"`
+	Rules     []*Rule       `json:"rules"`
+	Turn      *Turn         `json:"turn"`
+	Players   []*BoardState `json:"players"`
 }
 
 type InputBoardState struct {
-	UserID       string   `json:"UserID"`
-	Commander    []string `json:"Commander"`
-	Library      []string `json:"Library"`
-	Graveyard    []string `json:"Graveyard"`
-	Exiled       []string `json:"Exiled"`
-	Field        []string `json:"Field"`
-	Hand         []string `json:"Hand"`
-	Revealed     []string `json:"Revealed"`
-	Controlled   []string `json:"Controlled"`
-	Counters     []string `json:"Counters"`
-	Meta         []string `json:"Meta"`
-	ActivePlayer *string  `json:"ActivePlayer"`
-	ActivePhase  *string  `json:"ActivePhase"`
-	TurnNumber   *int     `json:"TurnNumber"`
+	UserID       string          `json:"UserID"`
+	GameID       string          `json:"GameID"`
+	Commander    []string        `json:"Commander"`
+	Library      []string        `json:"Library"`
+	Graveyard    []string        `json:"Graveyard"`
+	Exiled       []string        `json:"Exiled"`
+	Field        []string        `json:"Field"`
+	Hand         []string        `json:"Hand"`
+	Revealed     []string        `json:"Revealed"`
+	Controlled   []string        `json:"Controlled"`
+	Counters     []*InputCounter `json:"Counters"`
+	Emblems      []*InputEmblem  `json:"Emblems"`
+	ActivePlayer *string         `json:"ActivePlayer"`
+	ActivePhase  *string         `json:"ActivePhase"`
+	TurnNumber   *int            `json:"TurnNumber"`
+}
+
+type InputCard struct {
+	ID   *string `json:"ID"`
+	Name string  `json:"Name"`
+}
+
+type InputCounter struct {
+	Card  *InputCard `json:"card"`
+	Name  string     `json:"name"`
+	Value string     `json:"value"`
 }
 
 type InputDeck struct {
 	Name      *string  `json:"name"`
 	Commander []string `json:"commander"`
 	Cards     []string `json:"cards"`
+}
+
+type InputEmblem struct {
+	Name   string     `json:"name"`
+	Value  string     `json:"value"`
+	Player *InputUser `json:"player"`
 }
 
 type InputGame struct {
@@ -69,8 +104,8 @@ type InputSignup struct {
 }
 
 type InputUser struct {
-	Deck     string `json:"Deck"`
-	Username string `json:"Username"`
+	Deck     *InputDeck `json:"Deck"`
+	Username string     `json:"Username"`
 }
 
 type Message struct {
@@ -78,6 +113,17 @@ type Message struct {
 	User      string    `json:"user"`
 	CreatedAt time.Time `json:"createdAt"`
 	Text      string    `json:"text"`
+}
+
+type Rule struct {
+	Name  string `json:"name"`
+	Value string `json:"value"`
+}
+
+type Turn struct {
+	CurrentPlayer *string `json:"CurrentPlayer"`
+	ActivePhase   *string `json:"ActivePhase"`
+	TurnNumber    *int    `json:"TurnNumber"`
 }
 
 type User struct {

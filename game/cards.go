@@ -14,7 +14,8 @@ import (
 // own state and their own interactions, since they're the atomic unit of
 // Magic.
 type Card struct {
-	Name string
+	Name  string
+	Split string // For the case where cards have two-in-one.
 
 	// Data gets populated by database queries
 	Data CardData

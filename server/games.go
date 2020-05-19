@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/zeebo/errs"
@@ -16,11 +17,23 @@ func (s *graphQLServer) Games(ctx context.Context) ([]*Game, error) {
 	return games, nil
 }
 
-func (s *graphQLServer) Boardstate(ctx context.Context, userID string) ([]*BoardState, error) {
-	return nil, errs.New("not impl")
+func (s *graphQLServer) Boardstate(ctx context.Context, gameID string) ([]*BoardState, error) {
+	game, ok := s.Directory[gameID]
+	if !ok {
+		return nil, errs.New("game does not exist with ID of %s", gameID)
+	}
+
+	return game.Players, nil
 }
 
-func (s *graphQLServer) BoardUpdate(ctx context.Context, user InputUser, bs InputBoardState) (<-chan *User, error) {
+func (s *graphQLServer) BoardUpdate(ctx context.Context, bs InputBoardState) (<-chan []*BoardState, error) {
+	game, ok := s.Directory[bs.GameID]
+	if !ok {
+		return nil, errs.New("game does not exist with ID of %s", bs.GameID)
+	}
+
+	fmt.Printf("found game: %+v\n", game)
+
 	return nil, errs.New("not impl")
 }
 
@@ -29,20 +42,32 @@ func (s *graphQLServer) CreateGame(ctx context.Context, inputGame *InputGame) (*
 	fmt.Printf("create game hit: %+v\n", inputGame)
 
 	g := &Game{
-		ID: uuid.New().String(),
+		ID:        uuid.New().String(),
+		CreatedAt: time.Now(),
+		Players:   []*BoardState{},
 	}
 
 	for _, player := range inputGame.Players {
 		fmt.Printf("player: %+v\n", player)
+		bs := &BoardState{
+			User: &User{
+				ID:       uuid.New().String(), // used for storing user items in redis
+				Username: player.Username,
+			},
+			GameID: g.ID,
+		}
+
+		g.Players = append(g.Players, bs)
 	}
 
+	// Set game in directory for access
+	s.Directory[g.ID] = g
+
+	// Alert observers
 	for _, obs := range s.observers {
-		// TODO: Context needs to be pulled through from top level of the app
-		// TODO: Make sure to pass the correct, fleshed out Game here.
-		obs.Joined(ctx, &Game{})
+		obs.Joined(ctx, g)
 	}
 
-	// TODO: Wire Game type up to game.Game
 	return g, nil
 }
 

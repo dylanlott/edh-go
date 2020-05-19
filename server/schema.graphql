@@ -10,7 +10,8 @@ type Message {
 type Mutation {
   postMessage(user: String!, text: String!): Message
   updateBoardState(input: InputBoardState!): BoardState
-  createGame(input: InputGame): Game
+  createGame(input: InputGame!): Game!
+  updateGame(input: InputGame!): Game!
   createDeck(input: InputDeck): Deck
   signup(input: InputSignup): User!
 }
@@ -19,14 +20,14 @@ type Query {
   messages: [Message!]!
   users: [String!]!
   games: [Game!]!
-  boardstate(userID: String!): [BoardState!]!
+  boardstate(gameID: String!): [BoardState!]!
   decks(userID: String!): [Deck!]
 }
 
 type Subscription {
   messagePosted(user: String!): Message!
   userJoined(user: String!): String!
-  boardUpdate(user: InputUser!, boardstate: InputBoardState!): User!
+  boardUpdate(boardstate: InputBoardState!): [BoardState!]
 }
 
 type Card {
@@ -50,11 +51,38 @@ type Deck {
 
 type Game {
   id: String!
-  players: [User!]!
+  created_at: Time!
+  rules: [Rule!]
+  turn: Turn!
+  players: [BoardState!]!
+}
+
+type Turn {
+  CurrentPlayer: String
+  ActivePhase: String
+  TurnNumber: Int
+}
+
+type Rule {
+  name: String!
+  value: String!
+}
+
+type Emblem {
+  name: String!
+  value: String!
+  player: User!
+}
+
+type Counter {
+  card: Card!
+  name: String!
+  value: String!
 }
 
 type BoardState {
   User: User!
+  GameID: String!
   Commander: [Card!]!
   Library: [Card!]!
   Graveyard: [Card!]!
@@ -63,10 +91,23 @@ type BoardState {
   Hand: [Card!]!
   Revealed: [Card!]!
   Controlled: [Card!]!
+  Counters: [Counter!]
+}
+
+input InputCard {
+  ID: String
+  Name: String!
+}
+
+input InputCounter {
+  card: InputCard!
+  name: String!
+  value: String!
 }
 
 input InputBoardState {
   UserID: String!
+  GameID: String!
   Commander: [String!]!
   Library: [String!]!
   Graveyard: [String!]!
@@ -75,8 +116,8 @@ input InputBoardState {
   Hand: [String!]!
   Revealed: [String!]!
   Controlled: [String!]!
-  Counters: [String!]!
-  Meta: [String!]!
+  Counters: [InputCounter!]
+  Emblems: [InputEmblem!]
   ActivePlayer: String
   ActivePhase: String
   TurnNumber: Int
@@ -88,8 +129,14 @@ input InputSignup {
   Password: String!
 }
 
+input InputEmblem {
+  name: String!
+  value: String!
+  player: InputUser!
+}
+
 input InputUser {
-  Deck: String!
+  Deck: InputDeck
   Username: String!
 }
 

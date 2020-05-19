@@ -9,7 +9,8 @@
         group="people"
         @start="drag=true"
         @end="drag=false">
-           <div v-for="card in boardstate.battlefield" :key="card.id">
+           <div v-for="card in boardstate.battlefield" :key="card.id"
+           class="row">
              <Card v-bind="card"/>
            </div>
         </draggable>
@@ -100,7 +101,7 @@
         </draggable>
       </div>
     </div>
-    <code>{{ boardstate }}</code>
+    <!-- <code>{{ boardstate }}</code> -->
   </div>
 </template>
 <script>

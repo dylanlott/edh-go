@@ -1,24 +1,26 @@
 <template>
-<div class="board">
-  <h1 class="display-5">{{ gameID }}</h1>
-  <TurnTracker gameID="gameID"/>
-  <div class="opponents">
-    <div v-for="o in opponents" class="shell">
-      <h1>{{ o.username }}</h1>
-      <PlayerState v-bind="o.boardstate"></PlayerState>
-    </div >
-  </div>
-  <hr>
-  <div class="self shell">
-    <h1>{{ self.username }}</h1>
-    <SelfState></SelfState>
-  </div>
-  <div class="container controlpanel">
-    <div class="row">
-      <button class="btn btn-primary btn-sm">Toggle boards</button>
+  <div class="board">
+    <h1 class="display-5">{{ gameID }}</h1>
+    <TurnTracker gameID="gameID"/>
+    <div class="opponents">
+      <div v-for="o in opponents" class="shell">
+        <h1>{{ o.username }}</h1>
+        <PlayerState v-bind="o.boardstate"></PlayerState>
+      </div >
+    </div>
+    <hr>
+    <div class="self shell">
+      <h1>{{ self.username }}</h1>
+      <SelfState></SelfState>
+    </div>
+    <div class="container controlpanel">
+      <div class="row">
+        <button class="btn btn-primary btn-sm">Collapse Opponents</button>
+        <button class="btn btn-primary btn-sm">Untap</button>
+        <button class="btn btn-primary btn-sm"></button>
+      </div>
     </div>
   </div>
-</div>
 </template>
 <script>
 import PlayerState from '@/components/PlayerState.vue'
@@ -54,6 +56,7 @@ export default {
   name: 'board',
   data () {
     return {
+      // TODO: This needs to be modeled after BoardState 
       gameID: this.$route.params.id,
       self: {
         id: 4,

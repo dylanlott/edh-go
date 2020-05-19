@@ -53,7 +53,7 @@ export default {
       gameID: '',
       joinGameID: '',
       deck: {
-        library: [],
+        library: '',
         commander: ''
       }
     }
@@ -66,20 +66,7 @@ export default {
     });
   },
   apollo: {
-    // TODO: Make sure this works.
-    decks() {
-      const user = this.$currentUser();
-      return {
-        query: gql`
-        {
-          decks {
-            id
-            user
-            name
-          }
-        }`
-      }
-    }
+
   },
   computed: {
     players () {

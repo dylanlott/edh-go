@@ -29,13 +29,9 @@ type contextKey string
 // and event emitters can already be very complicated.
 type Observer interface {
 	Joined(ctx context.Context, game *Game) (*Game, error)
-	Updated(ctx context.Context, game *Game) (*Game, error)
+	Updated(ctx context.Context, game *Game)
 	Errored(ctx context.Context, game *Game, err error)
 }
-
-const (
-	userContextKey = contextKey("user")
-)
 
 // graphQLServer binds the whole app together.
 type graphQLServer struct {
@@ -52,11 +48,13 @@ type graphQLServer struct {
 	db     persistence.Database
 	cardDB persistence.Database
 
-	// TODO: Remove these channel implementations and work our own observer
-	// pattern in
+	// Channels per resource to achieve realtime
+	gameChannels    map[string]chan *Game
 	messageChannels map[string]chan *Message
 	userChannels    map[string]chan string
-	observers       []Observer
+
+	// Observers for listening and logging events
+	observers []Observer
 }
 
 // NewGraphQLServer creates a new server to attach the database, game engine,
@@ -78,16 +76,18 @@ func NewGraphQLServer(
 		}
 		return err
 	})
+
 	return &graphQLServer{
+		mutex:           sync.Mutex{},
 		cardDB:          cardDB,
 		db:              appDB,
 		kv:              kv,
 		redisClient:     client,
 		messageChannels: map[string]chan *Message{},
 		userChannels:    map[string]chan string{},
-		// TODO: Add Game channels here
-		// gameChannels: map[string]chan *Game{},
-		mutex: sync.Mutex{},
+		gameChannels:    map[string]chan *Game{},
+		Directory:       make(map[string]*Game),
+		observers:       []Observer{},
 	}, nil
 }
 

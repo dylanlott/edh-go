@@ -53,28 +53,28 @@ export default {
       this.trackers[name]--
     },
     addLabel (name, value) {
+      this.labels.name = value
     },
     removeLabel (name) {
-
+      delete this.labels.name
     },
     updateLabel (name, value) {
-
+      this.labels.name
     },
     tap () {
       this.tapped = !this.tapped
     },
     moveTo (dst) {
-
     },
     flip () {
-
+      this.flipped = !this.flipped
     },
   }
 }
 </script>
 <style scoped media="screen">
 .mtg-card {
-  margin: .75rem -0.5rem;
+  margin: .75rem 0rem;
   width: 175px;
   font-size: 14px;
 }
