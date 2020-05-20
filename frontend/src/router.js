@@ -1,7 +1,7 @@
 import Vue from 'vue';
 import Router from 'vue-router';
 
-import Home from '@/components/Home.vue';
+import Landing from '@/components/Landing.vue';
 import Login from '@/components/Login.vue';
 import Games from '@/components/Games.vue';
 import Board from '@/components/Board.vue';
@@ -14,7 +14,7 @@ export default new Router({
     {
       path: '/',
       name: 'home',
-        component: Home,
+        component: Landing,
     },
     {
       path: '/login',
