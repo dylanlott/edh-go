@@ -10,7 +10,7 @@
         <button
           type="button"
           @click="tick()"
-          class="btn btn-success">
+          class="button is-success">
           Next Phase
         </button>
       </div>

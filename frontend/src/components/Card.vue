@@ -76,7 +76,7 @@ export default {
 .mtg-card {
   margin: .75rem 0rem;
   width: 175px;
-  font-size: 14px;
+  font-size: 12px;
 }
 div .card-body {
   line-height: .85rem;

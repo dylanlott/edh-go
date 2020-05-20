@@ -13,11 +13,10 @@
       <h1>{{ self.username }}</h1>
       <SelfState></SelfState>
     </div>
-    <div class="container controlpanel">
-      <div class="row">
-        <button class="btn btn-primary btn-sm">Collapse Opponents</button>
-        <button class="btn btn-primary btn-sm">Untap</button>
-        <button class="btn btn-primary btn-sm"></button>
+    <div class="container controlpanel columns">
+      <div class="column">
+        <button class="button is-small is-primary">Collapse All</button>
+        <button class="button is-small is-primary">Untap</button>
       </div>
     </div>
   </div>
@@ -56,7 +55,7 @@ export default {
   name: 'board',
   data () {
     return {
-      // TODO: This needs to be modeled after BoardState 
+      // TODO: This needs to be modeled after BoardState
       gameID: this.$route.params.id,
       self: {
         id: 4,

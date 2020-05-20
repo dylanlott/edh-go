@@ -1,28 +1,34 @@
 <template>
-  <nav class="navbar navbar-expand-lg navbar-light bg-light">
-    <div class="container">
-      <a class="navbar-brand" href="/">
-        <img src="../logo.png" height="40" alt="EDH Go">
-      </a>
-      <button class="navbar-toggler"
-      type="button"
-      data-toggle="collapse"
-      data-target="#navbarSupportedContent"
-      aria-controls="navbarSupportedContent"
-      aria-expanded="false"
-      aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
+    <b-navbar>
+        <template slot="brand">
+            <b-navbar-item tag="router-link" :to="{ path: '/' }">
+              <img src="../logo.png" alt="EDH Go">
+            </b-navbar-item>
+        </template>
+        <template slot="start">
+            <b-navbar-item href="#">
+                Home
+            </b-navbar-item>
+            <b-navbar-item href="/games">
+                Games
+            </b-navbar-item>
+        </template>
 
-      <div class="collapse navbar-collapse" id="navbarSupportedContent">
-        <ul class="navbar-nav mr-auto">
-          <!-- <a class="nav-link" href="/">Home</a>
-          <a class="nav-link" href="/games">Games</a>
-          <a class="nav-link" href="/login">Sign Up</a> -->
-        </ul>
-      </div>
-    </div>
-  </nav>
+        <template slot="end">
+            <b-navbar-item tag="div">
+                <div class="buttons">
+                    <a class="button is-primary">
+                        <strong>Sign up</strong>
+                    </a>
+                    <a tag="router-link"
+                    href="/login"
+                    class="button is-light">
+                        Log in
+                    </a>
+                </div>
+            </b-navbar-item>
+        </template>
+    </b-navbar>
 </template>
 <script>
 export default {

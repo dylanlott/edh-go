@@ -6,8 +6,15 @@ import VueApollo from 'vue-apollo';
 import { split } from 'apollo-link';
 import { WebSocketLink } from 'apollo-link-ws';
 import { getMainDefinition } from 'apollo-utilities';
+
+// TODO: Remove bootstrap cause it sucks
 import 'bootstrap';
+
+// Buefy
+import Buefy from 'buefy'
+import 'buefy/dist/buefy.css'
 import './scss/custom.scss';
+Vue.use(Buefy)
 
 import router from './router';
 import App from './App.vue';
