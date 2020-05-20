@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/google/uuid"
@@ -65,7 +66,10 @@ func (s *graphQLServer) CreateGame(ctx context.Context, inputGame *InputGame) (*
 
 	// Alert observers
 	for _, obs := range s.observers {
-		obs.Joined(ctx, g)
+		_, err := obs.Joined(ctx, g)
+		if err != nil {
+			log.Printf("error alerting observers: %+v", err)
+		}
 	}
 
 	return g, nil

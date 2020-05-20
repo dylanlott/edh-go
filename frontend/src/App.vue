@@ -1,9 +1,7 @@
 <template>
-  <div class="">
+  <div>
     <Navbar></Navbar>
-    <div class="container">
       <router-view/>
-    </div>
   </div>
 </template>
 
@@ -16,11 +14,5 @@ export default {
 };
 </script>
 <style lang="scss" media="screen">
-@import "node_modules/bootstrap/scss/bootstrap";
-
-$theme-colors: (
-  "primary": #3C34B2,
-  "danger": #BC2E2E,
-  "success": #18C572
-);
+@import "./scss/custom.scss";
 </style>

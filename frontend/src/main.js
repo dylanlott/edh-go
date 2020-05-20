@@ -7,7 +7,7 @@ import { split } from 'apollo-link';
 import { WebSocketLink } from 'apollo-link-ws';
 import { getMainDefinition } from 'apollo-utilities';
 import 'bootstrap';
-import 'bootstrap/scss/bootstrap.scss';
+import './scss/custom.scss';
 
 import router from './router';
 import App from './App.vue';

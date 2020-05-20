@@ -173,7 +173,7 @@ func Fetch(card Card, list CardList) (Card, CardList, error) {
 	// OPINION: Anytime the player "touches" the deck, it should be shuffled.
 	// That means there should be no path out where fetching doesn't shuffle
 	// the deck, I whether the fetched card was found or not.
-	if found == false {
+	if !found {
 		shuffled, err := Shuffle(list)
 		if err != nil {
 			return Card{}, shuffled, errs.New("failed to shuffle deck or find card")
