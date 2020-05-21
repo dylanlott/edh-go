@@ -185,6 +185,8 @@ func (s *graphQLServer) MessagePosted(ctx context.Context, user string) (<-chan 
 		return nil, err
 	}
 
+	fmt.Printf("\n received messagePosted: %+v\n", user)
+
 	// Create new channel for request
 	messages := make(chan *Message, 1)
 	s.mutex.Lock()
@@ -202,15 +204,19 @@ func (s *graphQLServer) MessagePosted(ctx context.Context, user string) (<-chan 
 	return messages, nil
 }
 
-func (s *graphQLServer) UserJoined(ctx context.Context, user string) (<-chan string, error) {
+func (s *graphQLServer) UserJoined(ctx context.Context, user string, gameID string) (<-chan string, error) {
 	err := s.createUser(user)
 	if err != nil {
 		return nil, err
 	}
 
+	fmt.Printf("userJoined: %s", user)
+
 	// Create new channel for request
 	users := make(chan string, 1)
 	s.mutex.Lock()
+
+	// userChannels is a map of usernames to
 	s.userChannels[user] = users
 	s.mutex.Unlock()
 

@@ -27,26 +27,30 @@ func (s *graphQLServer) Boardstate(ctx context.Context, gameID string) ([]*Board
 	return game.Players, nil
 }
 
-func (s *graphQLServer) BoardUpdate(ctx context.Context, bs InputBoardState) (<-chan *Game, error) {
-	fmt.Printf("boardupdate: %+v\n", bs)
-	game, ok := s.Directory[bs.GameID]
+func (s *graphQLServer) GameUpdated(ctx context.Context, gameID string) (<-chan *Game, error) {
+	return nil, errs.New("Not impl")
+}
+
+func (s *graphQLServer) BoardUpdate(ctx context.Context, bs InputBoardState) (<-chan *BoardState, error) {
+	_, ok := s.boardStates[bs.User.Username]
 	if !ok {
-		return nil, errs.New("game does not exist with ID of %s", bs.GameID)
+		return nil, errs.New("no boardstate exists for that user: %s", bs.User.Username)
 	}
 
+	boardstates := make(chan *BoardState, 1)
 	s.mutex.Lock()
-	// take new boardstate and persist it, and update it
-	player := bs.UserID
-	for i, p := range game.Players {
-		if p.User.ID == player {
-			// swap old player `p` state with new player state `bs`
-			// TODO: Add user boardstate channel and push boardstate across channels
-			game.Players[i] = convertInputBoardState(bs)
-		}
-	}
+	fmt.Printf("hitting BoardUpdate channel")
+	s.boardStates[bs.User.Username] = boardstates
 	s.mutex.Unlock()
 
-	return s.gameChannels[game.ID], errs.New("not impl")
+	go func() {
+		<-ctx.Done()
+		s.mutex.Lock()
+		delete(s.boardStates, bs.User.Username)
+		s.mutex.Unlock()
+	}()
+
+	return boardstates, nil
 }
 
 // UpdateGame is what's used to change the name of the game, format, insert
@@ -64,21 +68,27 @@ func (s *graphQLServer) CreateGame(ctx context.Context, inputGame InputGame) (*G
 		Players:   []*BoardState{},
 	}
 
-	// TODO: Flesh out boardstate
-	// TODO: Make boardstate persist
 	for _, player := range inputGame.Players {
 		bs := &BoardState{
 			User: &User{
-				ID:       uuid.New().String(), // used for storing user items in redis
+				ID:       uuid.New().String(),
 				Username: player.Username,
 			},
 			GameID: g.ID,
 		}
 		g.Players = append(g.Players, bs)
+		// assign boardstates to directory
+		s.mutex.Lock()
+		fmt.Printf("pushing boardstate to boardStates[%s]: %+v\n", player.Username, bs)
+		// instantiate player boardstate channel for updates
+		s.boardStates[player.Username] = make(chan *BoardState, 1)
+		fmt.Printf("pushed boardstate successfully")
+		s.mutex.Unlock()
 	}
 
 	// Set game in directory for access
 	s.mutex.Lock()
+	fmt.Printf("setting gameID in directory")
 	s.gameChannels[g.ID] = make(chan *Game, 1)
 	s.Directory[g.ID] = g
 	s.mutex.Unlock()
@@ -91,13 +101,29 @@ func (s *graphQLServer) CreateGame(ctx context.Context, inputGame InputGame) (*G
 		}
 	}
 
+	fmt.Printf("returning game; %+v\n", g)
 	return g, nil
 }
 
 func (s *graphQLServer) UpdateBoardState(ctx context.Context, boardstate InputBoardState) (*BoardState, error) {
-	pushBoardStateUpdate(ctx, s.observers, boardstate)
-	return nil, errs.New("not impl")
+	b := &BoardState{
+		GameID: boardstate.GameID,
+	}
+
+	s.mutex.Lock()
+	for _, ch := range s.gameChannels {
+		ch <- &Game{
+			ID: boardstate.GameID,
+			Players: []*BoardState{
+				// TODO: Make sure this persists with other players board states too
+				boardStateFromInput(boardstate),
+			},
+		}
+	}
+	s.mutex.Unlock()
+	return b, nil
 }
+
 func pushBoardStateUpdate(ctx context.Context, observers []Observer, input InputBoardState) {
 	for _, obs := range observers {
 		fmt.Printf("observer: %+v\n", obs)
@@ -105,6 +131,55 @@ func pushBoardStateUpdate(ctx context.Context, observers []Observer, input Input
 	}
 }
 
-func convertInputBoardState(bs InputBoardState) *BoardState {
-	return nil
+func boardStateFromInput(bs InputBoardState) *BoardState {
+	out := &BoardState{
+		User: &User{
+			Username: bs.User.Username,
+		},
+		GameID: bs.GameID,
+	}
+
+	for _, c := range bs.Commander {
+		out.Commander = append(out.Commander, &Card{
+			Name: c.Name,
+		})
+	}
+
+	for _, c := range bs.Library {
+		out.Library = append(out.Library, &Card{
+			Name: c.Name,
+		})
+	}
+
+	for _, c := range bs.Exiled {
+		out.Exiled = append(out.Exiled, &Card{
+			Name: c.Name,
+		})
+	}
+
+	for _, c := range bs.Field {
+		out.Field = append(out.Field, &Card{
+			Name: c.Name,
+		})
+	}
+
+	for _, c := range bs.Hand {
+		out.Hand = append(out.Hand, &Card{
+			Name: c.Name,
+		})
+	}
+
+	for _, c := range bs.Controlled {
+		out.Controlled = append(out.Controlled, &Card{
+			Name: c.Name,
+		})
+	}
+
+	for _, c := range bs.Revealed {
+		out.Revealed = append(out.Revealed, &Card{
+			Name: c.Name,
+		})
+	}
+
+	return out
 }

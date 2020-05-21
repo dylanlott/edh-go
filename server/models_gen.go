@@ -53,16 +53,16 @@ type Game struct {
 }
 
 type InputBoardState struct {
-	UserID     string          `json:"UserID"`
+	User       *InputUser      `json:"User"`
 	GameID     string          `json:"GameID"`
-	Commander  []string        `json:"Commander"`
-	Library    []*string       `json:"Library"`
-	Graveyard  []*string       `json:"Graveyard"`
-	Exiled     []*string       `json:"Exiled"`
-	Field      []*string       `json:"Field"`
-	Hand       []*string       `json:"Hand"`
-	Revealed   []*string       `json:"Revealed"`
-	Controlled []*string       `json:"Controlled"`
+	Commander  []*InputCard    `json:"Commander"`
+	Library    []*InputCard    `json:"Library"`
+	Graveyard  []*InputCard    `json:"Graveyard"`
+	Exiled     []*InputCard    `json:"Exiled"`
+	Field      []*InputCard    `json:"Field"`
+	Hand       []*InputCard    `json:"Hand"`
+	Revealed   []*InputCard    `json:"Revealed"`
+	Controlled []*InputCard    `json:"Controlled"`
 	Counters   []*InputCounter `json:"Counters"`
 	Emblems    []*InputEmblem  `json:"Emblems"`
 }
@@ -124,8 +124,7 @@ type Turn struct {
 }
 
 type User struct {
-	ID         string      `json:"id"`
-	Username   string      `json:"username"`
-	Deck       string      `json:"deck"`
-	Boardstate *BoardState `json:"boardstate"`
+	ID       string `json:"id"`
+	Username string `json:"username"`
+	Deck     string `json:"deck"`
 }

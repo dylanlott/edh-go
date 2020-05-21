@@ -27,8 +27,9 @@ type Query {
 
 type Subscription {
   messagePosted(user: String!): Message!
-  userJoined(user: String!): String!
-  boardUpdate(boardstate: InputBoardState!): Game!
+  gameUpdated(gameID: String!): Game!
+  userJoined(user: String!, gameID: String!): String!
+  boardUpdate(boardstate: InputBoardState!): BoardState!
 }
 
 type Card {
@@ -40,7 +41,6 @@ type User {
   id: String!
   username: String!
   deck: String!
-  boardstate: BoardState!
 }
 
 type Deck {
@@ -107,16 +107,16 @@ input InputCounter {
 }
 
 input InputBoardState {
-  UserID: String!
+  User: InputUser!
   GameID: String!
-  Commander: [String!]!
-  Library: [String]!
-  Graveyard: [String]!
-  Exiled: [String]!
-  Field: [String]!
-  Hand: [String]!
-  Revealed: [String]!
-  Controlled: [String]!
+  Commander: [InputCard!]!
+  Library: [InputCard]!
+  Graveyard: [InputCard]!
+  Exiled: [InputCard]!
+  Field: [InputCard]!
+  Hand: [InputCard]!
+  Revealed: [InputCard]!
+  Controlled: [InputCard]!
   Counters: [InputCounter]
   Emblems: [InputEmblem]
 }
