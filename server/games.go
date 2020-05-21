@@ -105,23 +105,15 @@ func (s *graphQLServer) CreateGame(ctx context.Context, inputGame InputGame) (*G
 	return g, nil
 }
 
-func (s *graphQLServer) UpdateBoardState(ctx context.Context, boardstate InputBoardState) (*BoardState, error) {
-	b := &BoardState{
-		GameID: boardstate.GameID,
-	}
-
+func (s *graphQLServer) UpdateBoardState(ctx context.Context, bs InputBoardState) (*BoardState, error) {
+	fmt.Printf("hitting update board state")
+	updated := boardStateFromInput(bs)
 	s.mutex.Lock()
-	for _, ch := range s.gameChannels {
-		ch <- &Game{
-			ID: boardstate.GameID,
-			Players: []*BoardState{
-				// TODO: Make sure this persists with other players board states too
-				boardStateFromInput(boardstate),
-			},
-		}
-	}
+	fmt.Printf("updating boardstate: %+v\n", bs)
+	s.boardStates[bs.User.Username] <- updated
 	s.mutex.Unlock()
-	return b, nil
+	fmt.Printf("returning updated; %+v\n", updated)
+	return updated, nil
 }
 
 func pushBoardStateUpdate(ctx context.Context, observers []Observer, input InputBoardState) {

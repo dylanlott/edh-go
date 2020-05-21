@@ -67,6 +67,7 @@ func NewGraphQLServer(
 ) (*graphQLServer, error) {
 	// TODO: Remove this redis client and wire chat up to KV interface instead
 	client := redis.NewClient(&redis.Options{
+		// TODO: Make this take an environment variable instead
 		Addr: "localhost:6379",
 	})
 
