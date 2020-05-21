@@ -53,21 +53,18 @@ type Game struct {
 }
 
 type InputBoardState struct {
-	UserID       string          `json:"UserID"`
-	GameID       string          `json:"GameID"`
-	Commander    []string        `json:"Commander"`
-	Library      []string        `json:"Library"`
-	Graveyard    []string        `json:"Graveyard"`
-	Exiled       []string        `json:"Exiled"`
-	Field        []string        `json:"Field"`
-	Hand         []string        `json:"Hand"`
-	Revealed     []string        `json:"Revealed"`
-	Controlled   []string        `json:"Controlled"`
-	Counters     []*InputCounter `json:"Counters"`
-	Emblems      []*InputEmblem  `json:"Emblems"`
-	ActivePlayer *string         `json:"ActivePlayer"`
-	ActivePhase  *string         `json:"ActivePhase"`
-	TurnNumber   *int            `json:"TurnNumber"`
+	UserID     string          `json:"UserID"`
+	GameID     string          `json:"GameID"`
+	Commander  []string        `json:"Commander"`
+	Library    []*string       `json:"Library"`
+	Graveyard  []*string       `json:"Graveyard"`
+	Exiled     []*string       `json:"Exiled"`
+	Field      []*string       `json:"Field"`
+	Hand       []*string       `json:"Hand"`
+	Revealed   []*string       `json:"Revealed"`
+	Controlled []*string       `json:"Controlled"`
+	Counters   []*InputCounter `json:"Counters"`
+	Emblems    []*InputEmblem  `json:"Emblems"`
 }
 
 type InputCard struct {
@@ -121,9 +118,9 @@ type Rule struct {
 }
 
 type Turn struct {
-	CurrentPlayer *string `json:"CurrentPlayer"`
-	ActivePhase   *string `json:"ActivePhase"`
-	TurnNumber    *int    `json:"TurnNumber"`
+	Player *string `json:"Player"`
+	Phase  *string `json:"Phase"`
+	Number *int    `json:"Number"`
 }
 
 type User struct {

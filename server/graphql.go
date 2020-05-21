@@ -35,7 +35,7 @@ type Observer interface {
 
 // graphQLServer binds the whole app together.
 type graphQLServer struct {
-	mutex sync.Mutex
+	mutex sync.RWMutex
 
 	// TODO: Remove redisClient and switch over to our Persistence interface
 	redisClient *redis.Client
@@ -50,6 +50,7 @@ type graphQLServer struct {
 
 	// Channels per resource to achieve realtime
 	gameChannels    map[string]chan *Game
+	boardStates     map[string]chan *BoardState
 	messageChannels map[string]chan *Message
 	userChannels    map[string]chan string
 
@@ -78,7 +79,7 @@ func NewGraphQLServer(
 	})
 
 	return &graphQLServer{
-		mutex:           sync.Mutex{},
+		mutex:           sync.RWMutex{},
 		cardDB:          cardDB,
 		db:              appDB,
 		kv:              kv,
@@ -86,6 +87,7 @@ func NewGraphQLServer(
 		messageChannels: map[string]chan *Message{},
 		userChannels:    map[string]chan string{},
 		gameChannels:    map[string]chan *Game{},
+		boardStates:     map[string]chan *BoardState{},
 		Directory:       make(map[string]*Game),
 		observers:       []Observer{},
 	}, nil

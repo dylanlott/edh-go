@@ -22,12 +22,13 @@ type Query {
   games: [Game!]!
   boardstate(gameID: String!): [BoardState!]!
   decks(userID: String!): [Deck!]
+  cards(cardID: String, name: String): [Card!]
 }
 
 type Subscription {
   messagePosted(user: String!): Message!
   userJoined(user: String!): String!
-  boardUpdate(boardstate: InputBoardState!): [BoardState!]
+  boardUpdate(boardstate: InputBoardState!): Game!
 }
 
 type Card {
@@ -58,9 +59,9 @@ type Game {
 }
 
 type Turn {
-  CurrentPlayer: String
-  ActivePhase: String
-  TurnNumber: Int
+  Player: String
+  Phase: String
+  Number: Int
 }
 
 type Rule {
@@ -109,18 +110,15 @@ input InputBoardState {
   UserID: String!
   GameID: String!
   Commander: [String!]!
-  Library: [String!]!
-  Graveyard: [String!]!
-  Exiled: [String!]!
-  Field: [String!]!
-  Hand: [String!]!
-  Revealed: [String!]!
-  Controlled: [String!]!
-  Counters: [InputCounter!]
-  Emblems: [InputEmblem!]
-  ActivePlayer: String
-  ActivePhase: String
-  TurnNumber: Int
+  Library: [String]!
+  Graveyard: [String]!
+  Exiled: [String]!
+  Field: [String]!
+  Hand: [String]!
+  Revealed: [String]!
+  Controlled: [String]!
+  Counters: [InputCounter]
+  Emblems: [InputEmblem]
 }
 
 input InputSignup {
