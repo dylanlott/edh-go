@@ -46,6 +46,7 @@ type Emblem struct {
 
 type Game struct {
 	ID        string        `json:"id"`
+	Handle    *string       `json:"handle"`
 	CreatedAt time.Time     `json:"created_at"`
 	Rules     []*Rule       `json:"rules"`
 	Turn      *Turn         `json:"turn"`
@@ -91,13 +92,22 @@ type InputEmblem struct {
 }
 
 type InputGame struct {
-	Players []*InputUser `json:"players"`
+	ID      string             `json:"ID"`
+	Turn    *InputTurn         `json:"Turn"`
+	Handle  *string            `json:"Handle"`
+	Players []*InputBoardState `json:"Players"`
 }
 
 type InputSignup struct {
 	Username string `json:"Username"`
 	Email    string `json:"Email"`
 	Password string `json:"Password"`
+}
+
+type InputTurn struct {
+	Player string `json:"Player"`
+	Phase  string `json:"Phase"`
+	Number int    `json:"Number"`
 }
 
 type InputUser struct {
@@ -118,9 +128,9 @@ type Rule struct {
 }
 
 type Turn struct {
-	Player *string `json:"Player"`
-	Phase  *string `json:"Phase"`
-	Number *int    `json:"Number"`
+	Player string `json:"Player"`
+	Phase  string `json:"Phase"`
+	Number int    `json:"Number"`
 }
 
 type User struct {

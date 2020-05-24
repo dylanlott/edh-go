@@ -18,17 +18,48 @@ func (s *graphQLServer) Games(ctx context.Context) ([]*Game, error) {
 	return games, nil
 }
 
-func (s *graphQLServer) Boardstate(ctx context.Context, gameID string) ([]*BoardState, error) {
+func (s *graphQLServer) Boardstates(ctx context.Context, gameID string, userID *string) ([]*BoardState, error) {
 	game, ok := s.Directory[gameID]
-	if !ok {
-		return nil, errs.New("game does not exist with ID of %s", gameID)
+
+	// if no userID provided, send all board states
+	if userID == nil {
+		if !ok {
+			return nil, errs.New("game does not exist with ID of %s", gameID)
+		}
+
+		return game.Players, nil
 	}
 
-	return game.Players, nil
+	// userID not nil, so send only that boardstate
+	for _, player := range game.Players {
+		if player.User.Username == *userID {
+			return []*BoardState{player}, nil
+		}
+	}
+
+	return nil, errs.New("no user with ID of %s found", *userID)
 }
 
-func (s *graphQLServer) GameUpdated(ctx context.Context, gameID string) (<-chan *Game, error) {
-	return nil, errs.New("Not impl")
+func (s *graphQLServer) GameUpdated(ctx context.Context, game InputGame) (<-chan *Game, error) {
+	_, ok := s.gameChannels[game.ID]
+	if !ok {
+		return nil, errs.New("game does not exist with ID of %s", game.ID)
+	}
+
+	games := make(chan *Game, 1)
+	s.mutex.Lock()
+	fmt.Printf("\n - hitting GameUpdated method: %+v\n", game)
+	s.gameChannels[game.ID] = games
+	s.mutex.Unlock()
+
+	go func() {
+		<-ctx.Done()
+		s.mutex.Lock()
+		delete(s.gameChannels, game.ID)
+		s.mutex.Unlock()
+	}()
+
+	return games, nil
 }
 
 func (s *graphQLServer) BoardUpdate(ctx context.Context, bs InputBoardState) (<-chan *BoardState, error) {
@@ -39,7 +70,6 @@ func (s *graphQLServer) BoardUpdate(ctx context.Context, bs InputBoardState) (<-
 
 	boardstates := make(chan *BoardState, 1)
 	s.mutex.Lock()
-	fmt.Printf("hitting BoardUpdate channel")
 	s.boardStates[bs.User.Username] = boardstates
 	s.mutex.Unlock()
 
@@ -55,9 +85,13 @@ func (s *graphQLServer) BoardUpdate(ctx context.Context, bs InputBoardState) (<-
 
 // UpdateGame is what's used to change the name of the game, format, insert
 // or remove players, or change other meta informatin about a game.
-// Game shouldn't touch BoardState information ever.
+// NB: Game _can_ touch boardstate right now, and it probably shouldn't.
 func (s *graphQLServer) UpdateGame(ctx context.Context, inputGame InputGame) (*Game, error) {
-	return nil, errs.New("not impl")
+	updated := gameFromInput(inputGame)
+	s.mutex.Lock()
+	s.gameChannels[inputGame.ID] <- updated
+	s.mutex.Unlock()
+	return updated, nil
 }
 
 // createGame is untested currently
@@ -72,16 +106,17 @@ func (s *graphQLServer) CreateGame(ctx context.Context, inputGame InputGame) (*G
 		bs := &BoardState{
 			User: &User{
 				ID:       uuid.New().String(),
-				Username: player.Username,
+				Username: player.User.Username,
 			},
 			GameID: g.ID,
 		}
 		g.Players = append(g.Players, bs)
 		// assign boardstates to directory
 		s.mutex.Lock()
-		fmt.Printf("pushing boardstate to boardStates[%s]: %+v\n", player.Username, bs)
+		fmt.Printf("pushing boardstate to boardStates[%s]: %+v\n", player.User.Username, bs)
 		// instantiate player boardstate channel for updates
-		s.boardStates[player.Username] = make(chan *BoardState, 1)
+		// NB: Username's must be unique.
+		s.boardStates[player.User.Username] = make(chan *BoardState, 1)
 		fmt.Printf("pushed boardstate successfully")
 		s.mutex.Unlock()
 	}
@@ -106,13 +141,11 @@ func (s *graphQLServer) CreateGame(ctx context.Context, inputGame InputGame) (*G
 }
 
 func (s *graphQLServer) UpdateBoardState(ctx context.Context, bs InputBoardState) (*BoardState, error) {
-	fmt.Printf("hitting update board state")
 	updated := boardStateFromInput(bs)
 	s.mutex.Lock()
-	fmt.Printf("updating boardstate: %+v\n", bs)
 	s.boardStates[bs.User.Username] <- updated
 	s.mutex.Unlock()
-	fmt.Printf("returning updated; %+v\n", updated)
+	pushBoardStateUpdate(ctx, s.observers, bs)
 	return updated, nil
 }
 
@@ -121,6 +154,25 @@ func pushBoardStateUpdate(ctx context.Context, observers []Observer, input Input
 		fmt.Printf("observer: %+v\n", obs)
 		fmt.Printf("board state updated: %+v\n", input)
 	}
+}
+
+func gameFromInput(game InputGame) *Game {
+	players := []*BoardState{}
+	for _, p := range game.Players {
+		players = append(players, boardStateFromInput(*p))
+	}
+	out := &Game{
+		ID:     game.ID,
+		Handle: game.Handle,
+		Turn: &Turn{
+			Player: game.Turn.Player,
+			Phase:  game.Turn.Phase,
+			Number: game.Turn.Number,
+		},
+		Players: players,
+	}
+
+	return out
 }
 
 func boardStateFromInput(bs InputBoardState) *BoardState {
