@@ -1,23 +1,23 @@
 <template id="">
   <div class="player state">
-    <div class="row">
-      <div class="graveyard col-sm">
-        <p class="text-center bg-secondary text-white">Battlefield</p>
+    <div class="columns">
+      <div class="battlefield column">
+        <p class="title is-5">Battlefield</p>
       </div>
-      <div class="library col-sm">
-        <p class="text-center bg-secondary text-white">Libarary</p>
+      <div class="library column">
+        <p class="title is-5">Libarary</p>
       </div>
-      <div class="exiled col-sm">
-        <p class="text-center bg-secondary text-white">Exiled</p>
+      <div class="exiled column">
+        <p class="title is-5">Exiled</p>
       </div>
-      <div class="hand col-sm">
-        <p class="text-center bg-secondary text-white">Graveyard</p>
+      <div class="graveyard column">
+        <p class="title is-5">Graveyard</p>
       </div>
-      <div class="revealed col-sm">
-        <p class="text-center bg-secondary text-white">Revealed</p>
+      <div class="revealed column">
+        <p class="title is-5">Revealed</p>
       </div>
-      <div class="emblems col-sm">
-        <p class="text-center bg-secondary text-white">Emblems/Counters</p>
+      <div class="emblems column">
+        <p class="title is-5">Emblems/Counters</p>
       </div>
     </div>
   </div>

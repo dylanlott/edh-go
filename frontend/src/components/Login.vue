@@ -1,65 +1,47 @@
 <template>
-  <div class="row">
-    <form class="col-12 form"
-          v-on:submit.prevent="onLoginClick">
-
-          <div>
-            <h1>Signup for EDH Go</h1>
-          </div>
-      <div class="input-group">
-        <input type="text"
-               class="form-control"
-               :class="{'is-invalid': !isInputValid}"
-               placeholder="Username..."
-               v-model.trim="userName"
-               required>
+  <section class="container">
+    <div class="columns is-centered">
+      <div class="column is-4">
+        <form >
+          <h1 class="title">Login</h1>
+          <b-field label="Login">
+            <b-input 
+              v-on:keyup.enter="onLoginClick()"
+              v-model="username"></b-input>
+          </b-field>
+          <b-field label="Password">
+            <b-input 
+              v-on:keyup.enter="onLoginClick()"
+              v-model="password"></b-input>
+          </b-field>
+          <b-button 
+            v-on:keyup.enter="onLoginClick()"
+            @click="onLoginClick()"
+            type="submit"
+            class="is-primary"
+          >Log In</b-button>
+         </form>
       </div>
-      <div class="input-group">
-        <input type="text"
-          class="form-control"
-          placeholder="Password"
-          v-model.trim="password"
-        >
-        <div class="input-group-append">
-          <button class="btn btn-secondary"
-                  type="submit">Log in</button>
-        </div>
-      </div>
-      <hr>
-      <div>
-        <h2>Sign up if you haven't already</h2>
-        <div class="input-group">
-          <input type="text"
-          class="form-control"
-          placeholder="Email">
-          <input type="text"
-          class="form-control"
-          placeholder="Password">
-        </div>
-      </div>
-
-    </form>
-  </div>
+    </div>
+  </section>
 </template>
-
 <script>
 export default {
   data() {
     return {
-      userName: '',
+      username: '',
       password: '',
-      email: ''
     };
   },
   computed: {
     isInputValid() {
-      return this.userName.length > 0;
+      return this.username.length > 0;
     },
   },
   methods: {
     onLoginClick() {
       if (this.isInputValid) {
-        this.$setCurrentUser(this.userName);
+        this.$setCurrentUser(this.username);
         this.$router.push({ path: '/games' });
       }
     },

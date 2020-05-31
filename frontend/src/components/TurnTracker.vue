@@ -1,27 +1,22 @@
 <template>
-  <div class="turn-tracker">
-    <div class="row">
-      <div class="col-10">
-        <b>{{ players[turn.player]['username'] }}
+  <div class="turn-tracker shell">
+    <div class="columns">
+      <section class="column is-12 is-mobile">
+        <p class="has-text-primary">
+          {{ players[turn.player]['username'] }}
           Phase: {{ phases[turn.phase] }}
-        </b>
-      </div>
-      <div class="col-2">
-        <button
+        </p>
+        <b-progress :value="progress" size="is-medium" show-value>
+        </b-progress>
+      </section>
+      <section class="column is-2">
+        <b-button
           type="button"
           @click="tick()"
-          class="button is-success">
+          class="is-success">
           Next Phase
-        </button>
-      </div>
-    </div>
-    <div class="progress">
-      <div class="progress-bar bg-success"
-      role="progressbar"
-      :style="progress"
-      :aria-valuenow="progress"
-      aria-valuemin="0"
-      aria-valuemax="100"></div>
+        </b-button>
+      </section>
     </div>
   </div>
 </template>
@@ -67,7 +62,7 @@ export default {
       const total = this.phases.length
       const current = this.turn.phase
       const v = ((current / total) * 100)
-      return `width: ${v}%`
+      return v 
     }
   },
   methods: {
@@ -95,5 +90,8 @@ export default {
 <style media="screen">
   .progress {
     margin: 0.5rem 0rem;
+  }
+  .turn-tracker {
+    margin: 0.25rem;
   }
 </style>

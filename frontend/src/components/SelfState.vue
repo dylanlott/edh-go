@@ -1,26 +1,32 @@
 <template>
   <div>
-    <div class="row">
-      <div class="col-lg">
-        <p class="bg-dark text-center text-white">Battlefield</p>
-        <draggable
-        class="col-sm card-wrapper"
-        v-model="boardstate.battlefield"
-        group="people"
-        @start="drag=true"
-        @end="drag=false">
-           <div v-for="card in boardstate.battlefield" :key="card.id"
-           class="row">
-             <Card v-bind="card"/>
-           </div>
-        </draggable>
+    <div class="columns">
+      <div class="column">
+        <div class="columns">
+          <div class="column is-10">
+            <p class="title is-5">Battlefield</p>
+            <draggable
+              class="card-wrapper"
+              v-model="boardstate.battlefield"
+              group="people"
+              @start="drag=true"
+              @end="drag=false">
+              <div 
+                v-for="card in boardstate.battlefield" 
+                :key="card.id"
+                class="columns">
+                <Card v-bind="card"/>
+              </div>
+            </draggable>
+          </div>
+        </div>
       </div>
     </div>
-    <div class="row">
-      <div class="col-sm">
-        <p class="bg-dark text-center text-white">Exiled</p>
+    <div class="columns">
+      <div class="column">
+        <p class="title is-5">Exiled</p>
         <draggable
-        class="col-sm card-wrapper"
+        class="column card-wrapper"
         v-model="boardstate.exiled"
         group="people"
         @start="drag=true"
@@ -30,10 +36,10 @@
            </div>
         </draggable>
       </div>
-      <div class="col-sm">
-        <p class="bg-dark text-center text-white">Graveyard</p>
+      <div class="column">
+        <p class="title is-5">Graveyard</p>
         <draggable
-        class="col-sm card-wrapper"
+        class="column card-wrapper"
         v-model="boardstate.graveyard"
         group="people"
         @start="drag=true"
@@ -43,10 +49,10 @@
            </div>
         </draggable>
       </div>
-      <div class="col-sm">
-        <p class="bg-dark text-center text-white">Revealed</p>
+      <div class="column">
+        <p class="title is-5">Revealed</p>
         <draggable
-        class="col-sm card-wrapper"
+        class="column card-wrapper"
         v-model="boardstate.revealed"
         group="people"
         @start="drag=true"
@@ -56,10 +62,10 @@
            </div>
         </draggable>
       </div>
-      <div class="col-sm">
-        <p class="bg-dark text-center text-white">Emblems/Counters</p>
+      <div class="column">
+        <p class="title is-5">Emblems/Counters</p>
         <draggable
-        class="col-sm card-wrapper"
+        class="column card-wrapper"
         v-model="boardstate.emblems"
         group="people"
         @start="drag=true"
@@ -69,10 +75,10 @@
            </div>
         </draggable>
       </div>
-      <div class="col-sm library" @click="draw()">
-        <p class="bg-dark text-center text-white">Library</p>
+      <div class="column library" @click="draw()">
+        <p class="title is-5">Library</p>
         <draggable
-        class="col-sm card-wrapper"
+        class="column card-wrapper"
         v-model="boardstate.library"
         group="people"
         @start="drag=true"
@@ -85,17 +91,18 @@
     </div>
     <hr>
     <div class="container shell">
-      <h3>Hand</h3>
-      <div class="col-sm">
+      <p class="title is-4">Hand</p>
+      <div class="columns">
         <draggable
-        class="row card-wrapper"
+        class="columns card-wrapper"
         v-model="boardstate.hand"
         group="people"
         @start="drag=true"
         @end="drag=false">
-           <div class="mtg-card"
-           v-for="card in boardstate.hand"
-           :key="card.id">
+           <div 
+            class="column mtg-card"
+            v-for="card in boardstate.hand"
+            :key="card.id">
             <Card v-bind="card"></Card>
            </div>
         </draggable>

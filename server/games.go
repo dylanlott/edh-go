@@ -2,7 +2,6 @@ package server
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"time"
 
@@ -48,7 +47,7 @@ func (s *graphQLServer) GameUpdated(ctx context.Context, game InputGame) (<-chan
 
 	games := make(chan *Game, 1)
 	s.mutex.Lock()
-	fmt.Printf("\n - hitting GameUpdated method: %+v\n", game)
+	log.Printf("emitting updated game event: %+v\n", game)
 	s.gameChannels[game.ID] = games
 	s.mutex.Unlock()
 
@@ -113,17 +112,17 @@ func (s *graphQLServer) CreateGame(ctx context.Context, inputGame InputGame) (*G
 		g.Players = append(g.Players, bs)
 		// assign boardstates to directory
 		s.mutex.Lock()
-		fmt.Printf("pushing boardstate to boardStates[%s]: %+v\n", player.User.Username, bs)
+		log.Printf("pushing boardstate to boardStates[%s]: %+v\n", player.User.Username, bs)
 		// instantiate player boardstate channel for updates
 		// NB: Username's must be unique.
 		s.boardStates[player.User.Username] = make(chan *BoardState, 1)
-		fmt.Printf("pushed boardstate successfully")
+		log.Printf("pushed player boardstate successfully: %+v\n", player)
 		s.mutex.Unlock()
 	}
 
 	// Set game in directory for access
 	s.mutex.Lock()
-	fmt.Printf("setting gameID in directory")
+	log.Printf("setting gameID in directory")
 	s.gameChannels[g.ID] = make(chan *Game, 1)
 	s.Directory[g.ID] = g
 	s.mutex.Unlock()
@@ -136,7 +135,6 @@ func (s *graphQLServer) CreateGame(ctx context.Context, inputGame InputGame) (*G
 		}
 	}
 
-	fmt.Printf("returning game; %+v\n", g)
 	return g, nil
 }
 
@@ -151,8 +149,8 @@ func (s *graphQLServer) UpdateBoardState(ctx context.Context, bs InputBoardState
 
 func pushBoardStateUpdate(ctx context.Context, observers []Observer, input InputBoardState) {
 	for _, obs := range observers {
-		fmt.Printf("observer: %+v\n", obs)
-		fmt.Printf("board state updated: %+v\n", input)
+		log.Printf("observers being notified: %+v\n", obs)
+		log.Printf("board state updated: %+v\n", input)
 	}
 }
 

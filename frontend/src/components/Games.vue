@@ -1,27 +1,26 @@
 <template>
-  <div class="" v-if="gameID == ''">
+  <div class="games" v-if="gameID == ''">
     <h1>Welcome, {{ username }}</h1>
     <hr>
-    <div class="jumbotron">
+    <div class="hero">
       <div class="container">
-        <h2>Pick your Commander.</h2>
-        <div class="input-group">
-          <input type="text" class="form-control"
-          v-model="deck.commander">
-        </div>
+        <b-field label="Pick your Commander.">
+          <b-input v-model="deck.commander"></b-input>
+        </b-field>
         <h3>Add the 99.</h3>
           <p>Note: There must be exactly 99 cards in this list, they need to be spelled exactly correct,
             and there can't be duplicates. Standard EDH rules and banlist applies. We recommend using
             <a href="www.archidekt.com">Archidekt</a> to generate your decklists so that spelling errors
             and quantities aren't an issue.
           </p>
-          <div class="form-group">
-            <label for="exampleFormControlTextarea1">Add the rest of your 99 cards.</label>
-            <textarea class="form-control" id="exampleFormControlTextarea1" rows="3"></textarea>
+          <div>
+            <b-field label="Add the other 99 cards.">
+              <b-input maxlength="200" v-model="deck.library" type="textarea"></b-input>
+            </b-field>
           </div>
-          <button @click="handleCreateGame()"
+          <b-button @click="handleCreateGame()"
           type="button"
-          class="btn btn-success">Start a new game</button>
+          class="is-success">Start a new game</b-button>
       </div>
     </div>
 
@@ -29,15 +28,14 @@
       <h2>Or join an existing game</h2>
       <p>Enter the game code below and your deck and you'll be
       joined into the game</p>
-      <div class="input-group">
-        <input type="text"
-        class="form-control"
+      <div class="">
+        <b-input type="text"
         v-model="joinGameID"
-        placeholder="Game ID">
+        placeholder="Game ID"></b-input>
       </div>
-      <button @click="handleJoinGame()"
+      <b-button @click="handleJoinGame()"
       type="button"
-      class="btn btn-secondary">Join Game</button>
+      class="is-primary">Join Game</b-button>
     </div>
   </div>
 </template>
@@ -74,8 +72,8 @@ export default {
         id: 'player1',
         username: 'player1',
         deck: {
-          library: [],
           commander: [],
+          library: [],
         }
       }]
     },
@@ -86,7 +84,31 @@ export default {
   methods: {
     handleCreateGame() {
       this.$apollo.mutate({
-        mutation: gql``,
+        mutation: gql`mutation {
+          createGame(input: {
+            Players:[
+              {
+                Deck: {
+                  name: "Karlov",
+                  commander:"Karlov of the Ghost Council",
+                  cards: [
+                    "Teysa, Envoy of Ghosts"
+                  ]
+                },
+                Username: "shakezula"
+              }
+            ]
+          }){
+           	id
+            created_at3
+        		players {
+              GameID
+              Commander {
+                Name
+              }
+            }
+          }
+        }`,
         variables: {
           inputGame: {
             players: [{

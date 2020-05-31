@@ -1,22 +1,24 @@
 <template>
-  <div class="board">
-    <h1 class="display-5">{{ gameID }}</h1>
+  <div class="board shell">
+    <h1 class="title">{{ gameID }}</h1>
     <TurnTracker gameID="gameID"/>
     <div class="opponents">
-      <div v-for="o in opponents" class="shell">
-        <h1>{{ o.username }}</h1>
+      <div :key="o.id" v-for="o in opponents" class="shell">
+        <h1 class="title">{{ o.username }}</h1>
         <PlayerState v-bind="o.boardstate"></PlayerState>
       </div >
     </div>
     <hr>
     <div class="self shell">
-      <h1>{{ self.username }}</h1>
+      <h1 class="title">{{ self.username }}</h1>
       <SelfState></SelfState>
     </div>
-    <div class="container controlpanel columns">
-      <div class="column">
-        <button class="button is-small is-primary">Collapse All</button>
-        <button class="button is-small is-primary">Untap</button>
+    <div class="shell controlpanel columns">
+      <div class="columns">
+        <div class="column">
+          <button class="button is-small is-primary">Collapse All</button>
+          <button class="button is-small is-primary">Untap</button>
+        </div>
       </div>
     </div>
   </div>
@@ -87,7 +89,8 @@ export default {
     PlayerState,
     SelfState,
     Card
-  }
+  },
+
 }
 </script>
 <style media="screen" scoped>

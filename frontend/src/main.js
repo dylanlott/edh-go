@@ -8,7 +8,7 @@ import { WebSocketLink } from 'apollo-link-ws';
 import { getMainDefinition } from 'apollo-utilities';
 
 // TODO: Remove bootstrap cause it sucks
-import 'bootstrap';
+// import 'bootstrap';
 
 // Buefy
 import Buefy from 'buefy'
