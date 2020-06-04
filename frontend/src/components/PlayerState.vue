@@ -2,22 +2,22 @@
   <div class="player state">
     <div class="columns">
       <div class="battlefield column">
-        <p class="title is-5">Battlefield</p>
+        <span class="tag is-dark">Battlefield</span>
       </div>
       <div class="library column">
-        <p class="title is-5">Libarary</p>
+        <span class="tag is-dark">Library</span>
       </div>
       <div class="exiled column">
-        <p class="title is-5">Exiled</p>
+        <span class="tag is-dark">Exiled</span>
       </div>
       <div class="graveyard column">
-        <p class="title is-5">Graveyard</p>
+        <span class="tag is-dark">Graveyard</span>
       </div>
       <div class="revealed column">
-        <p class="title is-5">Revealed</p>
+        <span class="tag is-dark">Revealed</span>
       </div>
       <div class="emblems column">
-        <p class="title is-5">Emblems/Counters</p>
+        <span class="tag is-dark">Emblems/Counters</span>
       </div>
     </div>
   </div>

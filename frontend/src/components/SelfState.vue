@@ -1,25 +1,21 @@
 <template>
   <div>
     <div class="columns">
-      <div class="column">
-        <div class="columns">
-          <div class="column is-10">
-            <p class="title is-5">Battlefield</p>
-            <draggable
-              class="card-wrapper"
-              v-model="boardstate.battlefield"
-              group="people"
-              @start="drag=true"
-              @end="drag=false">
-              <div 
-                v-for="card in boardstate.battlefield" 
-                :key="card.id"
-                class="columns">
-                <Card v-bind="card"/>
-              </div>
-            </draggable>
+      <div class="column is-10">
+        <p class="title is-5">Battlefield</p>
+        <draggable
+          class="card-wrapper"
+          v-model="boardstate.battlefield"
+          group="people"
+          @start="drag=true"
+          @end="drag=false">
+          <div 
+            v-for="card in boardstate.battlefield" 
+            :key="card.id"
+            class="columns">
+            <Card v-bind="card"/>
           </div>
-        </div>
+        </draggable>
       </div>
     </div>
     <div class="columns">
@@ -89,10 +85,9 @@
         </draggable>
       </div>
     </div>
-    <hr>
-    <div class="container shell">
-      <p class="title is-4">Hand</p>
-      <div class="columns">
+    <div class="columns">
+      <div class="column">
+        <p class="title is-4">Hand</p>
         <draggable
         class="columns card-wrapper"
         v-model="boardstate.hand"
@@ -108,12 +103,14 @@
         </draggable>
       </div>
     </div>
+    <hr>
     <!-- <code>{{ boardstate }}</code> -->
   </div>
 </template>
 <script>
 import draggable from 'vuedraggable'
 import Card from '@/components/Card'
+import gql from 'graphql-tag';
 
 const testCard = {
   id: '1',
@@ -141,13 +138,67 @@ const testCard2 = {
   counters: {}
 }
 
+const updateBoardStateQuery = gql`
+  mutation ($boardState: InputBoardState!) {
+    updateBoardState(input: $boardState) {
+      User {
+        username
+      }
+      GameID
+      Commander {
+        Name
+      }
+      Library {
+        Name
+      }
+      Graveyard {
+        Name
+      }
+      Exiled {
+        Name
+      }
+      Revealed {
+        Name
+      }
+    }
+  }
+`
+
+ // TODO: This needs to be updated in gql schema
+const addDeckMutation = gql`
+  mutation ($deck: InputDeck) {
+    createDeck(input: $deck) {
+       User {
+        username
+      }
+      GameID
+      Commander {
+        Name
+      }
+      Library {
+        Name
+      }
+      Graveyard {
+        Name
+      }
+      Exiled {
+        Name
+      }
+      Revealed {
+        Name
+      } 
+    }
+  }
+`
+
 export default {
   name: 'selfstate',
   data () {
     return {
+      gameID: this.$route.params.id,
       boardstate: {
         graveyard: [],
-        library: [testCard2, testCard],
+        library: [],
         exiled: [],
         hand: [],
         battlefield: [],
@@ -162,8 +213,20 @@ export default {
         // TODO: Emit event here to graphQL that records boardstate mutations
         console.log('newState: ', newState)
         console.log('oldState: ', oldState)
+        this.$apollo.mutate({
+          // TODO: This mutation needs to have variables added in.
+          mutation: updateBoardStateQuery,
+          variables() {
+            const boardState = {
+             // TODO: Get newState into BoardState object here 
+            }
+            return boardState 
+          },
+          update: () => {}
+        })
       },
-      deep: true
+      deep: true,
+      immediate: true
     }
   },
   methods: {

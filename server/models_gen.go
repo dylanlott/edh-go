@@ -21,8 +21,21 @@ type BoardState struct {
 }
 
 type Card struct {
-	Name string `json:"Name"`
-	ID   string `json:"ID"`
+	Name          string `json:"Name"`
+	ID            string `json:"ID"`
+	Colors        string `json:"Colors"`
+	ColorIdentity string `json:"ColorIdentity"`
+	Cmc           string `json:"CMC"`
+	ManaCost      string `json:"ManaCost"`
+	UUID          string `json:"UUID"`
+	Power         string `json:"Power"`
+	Toughness     string `json:"Toughness"`
+	Types         string `json:"Types"`
+	Subtypes      string `json:"Subtypes"`
+	Supertypes    string `json:"Supertypes"`
+	IsTextless    string `json:"IsTextless"`
+	Text          string `json:"Text"`
+	Tcgid         string `json:"TCGID"`
 }
 
 type Counter struct {

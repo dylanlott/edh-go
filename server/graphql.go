@@ -11,13 +11,12 @@ import (
 	"time"
 
 	"github.com/99designs/gqlgen/handler"
+	"github.com/dylanlott/edh-go/persistence"
 	"github.com/go-redis/redis"
 	"github.com/gorilla/websocket"
 	"github.com/rs/cors"
 	"github.com/segmentio/ksuid"
 	"github.com/tinrab/retry"
-
-	"github.com/dylanlott/edh-go/persistence"
 )
 
 type contextKey string
@@ -166,7 +165,6 @@ func (s *graphQLServer) Messages(ctx context.Context) ([]*Message, error) {
 }
 
 func (s *graphQLServer) Users(ctx context.Context) ([]string, error) {
-	// TODO: Make this persist via SQLite
 	cmd := s.redisClient.SMembers("users")
 	if cmd.Err() != nil {
 		log.Println(cmd.Err())

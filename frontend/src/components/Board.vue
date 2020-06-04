@@ -1,6 +1,6 @@
 <template>
   <div class="board shell">
-    <h1 class="title">{{ gameID }}</h1>
+    <h1 class="title shell">{{ gameID }}</h1>
     <TurnTracker gameID="gameID"/>
     <div class="opponents">
       <div :key="o.id" v-for="o in opponents" class="shell">
@@ -17,7 +17,15 @@
       <div class="columns">
         <div class="column">
           <button class="button is-small is-primary">Collapse All</button>
+        </div>
+        <div class="column">
           <button class="button is-small is-primary">Untap</button>
+        </div>
+        <div class="column">
+          <button class="button is-small is-primary">Draw</button>
+        </div>
+        <div class="column">
+          <button class="button is-small is-primary">Shuffle</button>
         </div>
       </div>
     </div>
@@ -34,6 +42,7 @@ const testCard = {
   id: '1',
   name: 'Karlov of the Ghost Council',
   convertedManaCost: '3',
+  manaCost: "3 B W",
   colorIdentity: 'BU',
   power: '7',
   toughness: '8',

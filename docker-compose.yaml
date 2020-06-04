@@ -1,7 +1,7 @@
 version: "3.7"
 
 services:
-  app:
+  server:
     build: .
     environment:
       REDIS_URL: redis:6379
@@ -11,6 +11,13 @@ services:
     image: redis:5.0.7
     volumes:
       - redis-data:/data
-      
+  ui:
+    build:
+      context: ./frontend 
+      dockerfile: ./frontend/Dockerfile
+    ports:
+      - 8085:80
+    links:
+      - server:server
 volumes:
   redis-data:

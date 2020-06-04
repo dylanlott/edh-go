@@ -12,8 +12,12 @@
     -->
     <div class="card-body">
       <p class="card-title"><b>{{ name }}</b></p>
+      <p class="card-text">{{ convertedManaCost }} - {{ manaCost }} </p>
       <p class="card-text">{{ types }}</p>
       <p class="card-text">{{ text }}</p>
+      <div class="columns">
+        <div class="column">{{ power }} / {{ toughness }}</div>
+      </div>
     </div>
   </div>
 </template>

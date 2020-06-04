@@ -1,5 +1,5 @@
 <template>
-  <section class="container">
+  <section class="shell">
     <div class="columns is-centered">
       <div class="column is-4">
         <form >

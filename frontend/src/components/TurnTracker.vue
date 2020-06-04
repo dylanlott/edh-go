@@ -1,20 +1,19 @@
 <template>
   <div class="turn-tracker shell">
     <div class="columns">
-      <section class="column is-12 is-mobile">
+      <section class="column is-11 is-mobile">
         <p class="has-text-primary">
-          {{ players[turn.player]['username'] }}
-          Phase: {{ phases[turn.phase] }}
+          <b> {{ players[turn.player]['username'] }} - {{ phases[turn.phase] }} </b>
         </p>
         <b-progress :value="progress" size="is-medium" show-value>
         </b-progress>
       </section>
-      <section class="column is-2">
+      <section class="column is-1">
         <b-button
           type="button"
           @click="tick()"
           class="is-success">
-          Next Phase
+          Next 
         </b-button>
       </section>
     </div>
@@ -92,6 +91,6 @@ export default {
     margin: 0.5rem 0rem;
   }
   .turn-tracker {
-    margin: 0.25rem;
+    margin: 0.5rem;
   }
 </style>
