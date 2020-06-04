@@ -128,7 +128,8 @@ type ComplexityRoot struct {
 
 	Query struct {
 		Boardstates func(childComplexity int, gameID string, userID *string) int
-		Cards       func(childComplexity int, name string, id *string) int
+		Card        func(childComplexity int, name string, id *string) int
+		Cards       func(childComplexity int, list []string) int
 		Decks       func(childComplexity int, userID string) int
 		Games       func(childComplexity int) int
 		Messages    func(childComplexity int) int
@@ -174,7 +175,8 @@ type QueryResolver interface {
 	Games(ctx context.Context) ([]*Game, error)
 	Boardstates(ctx context.Context, gameID string, userID *string) ([]*BoardState, error)
 	Decks(ctx context.Context, userID string) ([]*Deck, error)
-	Cards(ctx context.Context, name string, id *string) ([]*Card, error)
+	Card(ctx context.Context, name string, id *string) ([]*Card, error)
+	Cards(ctx context.Context, list []string) ([]*Card, error)
 }
 type SubscriptionResolver interface {
 	MessagePosted(ctx context.Context, user string) (<-chan *Message, error)
@@ -604,6 +606,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.Boardstates(childComplexity, args["gameID"].(string), args["userID"].(*string)), true
 
+	case "Query.card":
+		if e.complexity.Query.Card == nil {
+			break
+		}
+
+		args, err := ec.field_Query_card_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.Card(childComplexity, args["name"].(string), args["id"].(*string)), true
+
 	case "Query.cards":
 		if e.complexity.Query.Cards == nil {
 			break
@@ -614,7 +628,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.Cards(childComplexity, args["name"].(string), args["id"].(*string)), true
+		return e.complexity.Query.Cards(childComplexity, args["list"].([]string)), true
 
 	case "Query.decks":
 		if e.complexity.Query.Decks == nil {
@@ -868,7 +882,8 @@ type Query {
   games: [Game!]!
   boardstates(gameID: String!, userID: String): [BoardState!]!
   decks(userID: String!): [Deck!]
-  cards(name: String!, id: String): [Card!]
+  card(name: String!, id: String): [Card!]
+  cards(list: [String!]): [Card!]!
 }
 
 type Subscription {
@@ -1192,7 +1207,7 @@ func (ec *executionContext) field_Query_boardstates_args(ctx context.Context, ra
 	return args, nil
 }
 
-func (ec *executionContext) field_Query_cards_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+func (ec *executionContext) field_Query_card_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
 	var arg0 string
@@ -1211,6 +1226,20 @@ func (ec *executionContext) field_Query_cards_args(ctx context.Context, rawArgs 
 		}
 	}
 	args["id"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_cards_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 []string
+	if tmp, ok := rawArgs["list"]; ok {
+		arg0, err = ec.unmarshalOString2ᚕstringᚄ(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["list"] = arg0
 	return args, nil
 }
 
@@ -3340,6 +3369,44 @@ func (ec *executionContext) _Query_decks(ctx context.Context, field graphql.Coll
 	return ec.marshalODeck2ᚕᚖgithubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐDeckᚄ(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Query_card(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "Query",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Query_card_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	rctx.Args = args
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp := ec._fieldMiddleware(ctx, nil, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().Card(rctx, args["name"].(string), args["id"].(*string))
+	})
+
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*Card)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalOCard2ᚕᚖgithubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐCardᚄ(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Query_cards(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	ctx = ec.Tracer.StartFieldExecution(ctx, field)
 	defer func() {
@@ -3366,16 +3433,19 @@ func (ec *executionContext) _Query_cards(ctx context.Context, field graphql.Coll
 	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
 	resTmp := ec._fieldMiddleware(ctx, nil, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Cards(rctx, args["name"].(string), args["id"].(*string))
+		return ec.resolvers.Query().Cards(rctx, args["list"].([]string))
 	})
 
 	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
 	res := resTmp.([]*Card)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalOCard2ᚕᚖgithubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐCardᚄ(ctx, field.Selections, res)
+	return ec.marshalNCard2ᚕᚖgithubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐCardᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query___type(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -5801,6 +5871,17 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 				res = ec._Query_decks(ctx, field)
 				return res
 			})
+		case "card":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_card(ctx, field)
+				return res
+			})
 		case "cards":
 			field := field
 			out.Concurrently(i, func() (res graphql.Marshaler) {
@@ -5810,6 +5891,9 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_cards(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
 				return res
 			})
 		case "__type":

@@ -22,7 +22,8 @@ type Query {
   games: [Game!]!
   boardstates(gameID: String!, userID: String): [BoardState!]!
   decks(userID: String!): [Deck!]
-  cards(name: String!, id: String): [Card!]
+  card(name: String!, id: String): [Card!]
+  cards(list: [String!]): [Card!]!
 }
 
 type Subscription {
