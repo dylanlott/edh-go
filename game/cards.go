@@ -5,9 +5,8 @@ import (
 	"math/rand"
 	"strings"
 
-	"github.com/zeebo/errs"
-
 	"github.com/dylanlott/edh-go/persistence"
+	"github.com/zeebo/errs"
 )
 
 // Card tracks the properties of a Card in a given Game. Cards can have their

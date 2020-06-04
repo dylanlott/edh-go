@@ -2,20 +2,22 @@ package server
 
 import (
 	"context"
+	"fmt"
 	"log"
+	"strconv"
 
 	"github.com/zeebo/errs"
 )
 
 func (s *graphQLServer) Cards(
 	ctx context.Context,
+	name string,
 	id *string,
-	name *string,
-) ([]Card, error) {
-	if name == nil {
+) ([]*Card, error) {
+	if name == "" {
 		return nil, errs.New("must provide name for card")
 	}
-
+	fmt.Printf("id: %+v \n name: %+v", id, name)
 	rows, err := s.cardDB.Query(`SELECT "id", "name", "colors", "colorIdentity",
 		"convertedManaCost", "manaCost", "uuid", "power", "toughness", "types",
 		"subtypes", "supertypes", "isTextless", "text", "tcgplayerProductId"
@@ -24,8 +26,7 @@ func (s *graphQLServer) Cards(
 		return nil, errs.New("failed to run query: %s", err)
 	}
 
-	cards := []Card{}
-
+	cards := []*Card{}
 	for rows.Next() {
 		var (
 			id                 *int
@@ -53,25 +54,37 @@ func (s *graphQLServer) Cards(
 			continue
 		}
 
-		// Add the data to a map for returning
-		data := make()
-		data["name"] = *name
-		data["id"] = *id
-		data["colors"] = *colors
-		data["colorIdentity"] = *colorIdentity
-		data["convertedManaCost"] = *convertedManaCost
-		data["manaCost"] = *manaCost
+		parsedID := strconv.Itoa(*id)
 
-		card := Card{
-			Name: *name,
-			Data: data,
+		card := &Card{
+			ID:            parsedID,
+			Name:          *name,
+			Colors:        *colors,
+			ColorIdentity: *colorIdentity,
+			Cmc:           *convertedManaCost,
+			ManaCost:      *manaCost,
+			UUID:          *uuid,
+			Power:         *power,
+			Toughness:     *toughness,
+			Types:         *types,
+			Subtypes:      *subtypes,
+			Supertypes:    *supertypes,
+			IsTextless:    string(*isTextless),
+			Text:          *text,
 		}
-
 		cards = append(cards, card)
 	}
 	// TODO: return card with given id if *id is passed to args
 
-	return cards[0], err
+	if id != nil {
+		for _, c := range cards {
+			if c.ID == *id {
+				return []*Card{c}, nil
+			}
+		}
+	}
+
+	return cards, err
 }
 
 func (s *graphQLServer) Save(ctx context.Context, list []Card) ([]Card, error) {

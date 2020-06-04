@@ -128,7 +128,7 @@ type ComplexityRoot struct {
 
 	Query struct {
 		Boardstates func(childComplexity int, gameID string, userID *string) int
-		Cards       func(childComplexity int, cardID *string, name *string) int
+		Cards       func(childComplexity int, name string, id *string) int
 		Decks       func(childComplexity int, userID string) int
 		Games       func(childComplexity int) int
 		Messages    func(childComplexity int) int
@@ -174,7 +174,7 @@ type QueryResolver interface {
 	Games(ctx context.Context) ([]*Game, error)
 	Boardstates(ctx context.Context, gameID string, userID *string) ([]*BoardState, error)
 	Decks(ctx context.Context, userID string) ([]*Deck, error)
-	Cards(ctx context.Context, cardID *string, name *string) ([]*Card, error)
+	Cards(ctx context.Context, name string, id *string) ([]*Card, error)
 }
 type SubscriptionResolver interface {
 	MessagePosted(ctx context.Context, user string) (<-chan *Message, error)
@@ -614,7 +614,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.Cards(childComplexity, args["cardID"].(*string), args["name"].(*string)), true
+		return e.complexity.Query.Cards(childComplexity, args["name"].(string), args["id"].(*string)), true
 
 	case "Query.decks":
 		if e.complexity.Query.Decks == nil {
@@ -868,7 +868,7 @@ type Query {
   games: [Game!]!
   boardstates(gameID: String!, userID: String): [BoardState!]!
   decks(userID: String!): [Deck!]
-  cards(cardID: String, name: String): [Card!]
+  cards(name: String!, id: String): [Card!]
 }
 
 type Subscription {
@@ -1195,22 +1195,22 @@ func (ec *executionContext) field_Query_boardstates_args(ctx context.Context, ra
 func (ec *executionContext) field_Query_cards_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 *string
-	if tmp, ok := rawArgs["cardID"]; ok {
-		arg0, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
+	var arg0 string
+	if tmp, ok := rawArgs["name"]; ok {
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["cardID"] = arg0
+	args["name"] = arg0
 	var arg1 *string
-	if tmp, ok := rawArgs["name"]; ok {
+	if tmp, ok := rawArgs["id"]; ok {
 		arg1, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["name"] = arg1
+	args["id"] = arg1
 	return args, nil
 }
 
@@ -3366,7 +3366,7 @@ func (ec *executionContext) _Query_cards(ctx context.Context, field graphql.Coll
 	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
 	resTmp := ec._fieldMiddleware(ctx, nil, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Cards(rctx, args["cardID"].(*string), args["name"].(*string))
+		return ec.resolvers.Query().Cards(rctx, args["name"].(string), args["id"].(*string))
 	})
 
 	if resTmp == nil {
