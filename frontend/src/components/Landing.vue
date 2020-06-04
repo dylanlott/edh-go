@@ -1,7 +1,7 @@
 <template>
 <div>
   <!-- Page Content -->
-  <div class="shell">
+  <div class="shell landing">
     <!-- Jumbotron Header -->
     <section class="hero is-medium is-primary is-bold welcome">
       <div class="hero-body">
@@ -92,14 +92,22 @@
         </article>
       </div>
     </section>
-    <section class="columns level">
+    <section class="columns level screenshot">
       <div class="column">
         <article class="box levels">
-          <h3 class="title">
+          <h1 class="title is-2 level-item">
           EDH-Go is the first Magic: The Gathering board state tracker of its kind.
-          </h3>
-          <!-- TODO: Add image of the app here -->
-          <img class="level-item" src="http://www.placehold.it/1500x900" alt="">
+          </h1>
+          <img class="level-item screen" src="https://i.imgur.com/1YUGzki.png" alt="">
+          <p class="level-item what-is-edhgo">
+            <h1 class="title is-2 has-text-centered">What is EDH-Go?</h1>
+            <h1 class="title is-5 has-text-centered">
+              EDH-Go is a board state tracker that puts the power to control the game in the players hands.
+              We don't try to handle all the logic of every single card interaction in the game.
+              Instead, we leave that up to the players and focus on tracking those changes in the cleanest, most efficient way possible.
+              This allows us to serve mobile users with a robust platform that's still performant even on limited internet connections.
+            </h1>
+          </p>
         </article>
       </div>
     </section>
@@ -122,7 +130,9 @@ export default {
   }
 }
 </script>
-<style type="text/css" scoped>
+<style type="text/css" lang="scss" scoped>
+@import "@/scss/custom.scss";
+
 #mc_embed_signup{clear:left; font:14px Helvetica,Arial,sans-serif; width:100%;}
 .signup-button {
   margin: .75rem 0rem;
@@ -135,5 +145,18 @@ export default {
 }
 .footer {
   width: 100%;
+}
+.benefits {
+  margin: .25rem;
+}
+.screenshot {
+  margin: .25rem;
+}
+.screen {
+  border: solid 2px $primary;
+  border-radius: 5px;
+}
+.what-is-edhgo {
+  margin: 1rem;
 }
 </style>

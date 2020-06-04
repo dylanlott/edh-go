@@ -133,6 +133,8 @@ func (s *graphQLServer) Cards(ctx context.Context, list []string) ([]*Card, erro
 		}
 
 		parsedID := strconv.Itoa(*id)
+		fmt.Printf("parsed ID: %+v\n", parsedID)
+		fmt.Printf("power: %+v\n toughness %+v\n", power, toughness)
 
 		card := &Card{
 			ID:            parsedID,
@@ -142,8 +144,8 @@ func (s *graphQLServer) Cards(ctx context.Context, list []string) ([]*Card, erro
 			Cmc:           *convertedManaCost,
 			ManaCost:      *manaCost,
 			UUID:          *uuid,
-			Power:         *power,
-			Toughness:     *toughness,
+			Power:         string(*power),
+			Toughness:     string(*toughness),
 			Types:         *types,
 			Subtypes:      *subtypes,
 			Supertypes:    *supertypes,
