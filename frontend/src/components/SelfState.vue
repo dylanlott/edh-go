@@ -164,6 +164,14 @@ const updateBoardStateQuery = gql`
   }
 `
 
+const getBoardstate = gql`
+
+`
+
+const boardstateSubscription = gql`
+
+`
+
  // TODO: This needs to be updated in gql schema
 const addDeckMutation = gql`
   mutation ($deck: InputDeck) {
@@ -207,27 +215,24 @@ export default {
       },
     }
   },
-  watch: {
-    boardstate: {
-      handler(newState, oldState) {
-        // TODO: Emit event here to graphQL that records boardstate mutations
-        console.log('newState: ', newState)
-        console.log('oldState: ', oldState)
-        this.$apollo.mutate({
-          // TODO: This mutation needs to have variables added in.
-          mutation: updateBoardStateQuery,
-          variables() {
-            const boardState = {
-             // TODO: Get newState into BoardState object here 
-            }
-            return boardState 
+  apollo: {
+    boardstate() {
+      return {
+        // TODO: Check the query 
+        query: getBoardstate,
+        subscribeToMore: {
+          // TODO: check the subscription
+          document: boardstateSubscription,
+          variables: () => ({
+            // TODO: check the variables
+          }),
+          updateQuery: (prev, { subscriptionData }) => {
+            console.log('selfstate # prev: ', prev)
+            console.log('selfstate # subscription data: ', subscriptionData)
+            return Object.assign({}, prev, subscriptionData)
           },
-          update: () => {}
-        })
-      },
-      deep: true,
-      immediate: true
-    }
+      }
+    } 
   },
   methods: {
     draw () {

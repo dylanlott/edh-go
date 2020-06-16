@@ -135,7 +135,11 @@ export default {
 <style type="text/css" lang="scss" scoped>
 @import "@/scss/custom.scss";
 
-#mc_embed_signup{clear:left; font:14px Helvetica,Arial,sans-serif; width:100%;}
+#mc_embed_signup{
+  clear:left; 
+  font:14px Helvetica,Arial,sans-serif; 
+  width:100%;
+}
 .signup-button {
   margin: .75rem 0rem;
 }
