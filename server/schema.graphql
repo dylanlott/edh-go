@@ -21,6 +21,7 @@ type Query {
   users: [String!]!
   games: [Game!]!
   boardstates(gameID: String!, userID: String): [BoardState!]!
+  boardstate(gameID: String!, userID: String!): BoardState!
   decks(userID: String!): [Deck!]
   card(name: String!, id: String): [Card!]
   cards(list: [String!]): [Card!]!

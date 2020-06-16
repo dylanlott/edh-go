@@ -14,13 +14,27 @@ func (s *graphQLServer) Games(ctx context.Context) ([]*Game, error) {
 	for _, game := range s.Directory {
 		games = append(games, game)
 	}
+
+	// TODO: Sort games here.
 	return games, nil
+}
+
+func (s *graphQLServer) Boardstate(ctx context.Context, gameID string, userID string) (*BoardState, error) {
+	game, ok := s.Directory[gameID]
+	if !ok {
+		return nil, errs.New("game with ID of %s does not exist", gameID)
+	}
+
+	log.Printf("found game: %+v", game)
+
+	return &BoardState{
+		GameID: gameID,
+	}, nil
 }
 
 func (s *graphQLServer) Boardstates(ctx context.Context, gameID string, userID *string) ([]*BoardState, error) {
 	game, ok := s.Directory[gameID]
 
-	// if no userID provided, send all board states
 	if userID == nil {
 		if !ok {
 			return nil, errs.New("game does not exist with ID of %s", gameID)
@@ -70,6 +84,7 @@ func (s *graphQLServer) BoardUpdate(ctx context.Context, bs InputBoardState) (<-
 	boardstates := make(chan *BoardState, 1)
 	s.mutex.Lock()
 	s.boardStates[bs.User.Username] = boardstates
+	// TODO: persist board state update here.
 	s.mutex.Unlock()
 
 	go func() {
@@ -107,14 +122,23 @@ func (s *graphQLServer) CreateGame(ctx context.Context, inputGame InputGame) (*G
 				ID:       uuid.New().String(),
 				Username: player.User.Username,
 			},
-			GameID: g.ID,
+			GameID:     g.ID,
+			Commander:  getCards(player.Commander),
+			Library:    getCards(player.Library),
+			Hand:       getCards(player.Hand),
+			Exiled:     getCards(player.Exiled),
+			Revealed:   getCards(player.Revealed),
+			Field:      getCards(player.Field),
+			Controlled: getCards(player.Controlled),
 		}
+		log.Printf("PUSHING PLAYER BOARDSTATE %+v\n", bs)
 		g.Players = append(g.Players, bs)
+
 		// assign boardstates to directory
 		s.mutex.Lock()
 		log.Printf("pushing boardstate to boardStates[%s]: %+v\n", player.User.Username, bs)
 		// instantiate player boardstate channel for updates
-		// NB: Username's must be unique.
+		// NB: Username's must be unique. We probably want to make this specific to each room.
 		s.boardStates[player.User.Username] = make(chan *BoardState, 1)
 		log.Printf("pushed player boardstate successfully: %+v\n", player)
 		s.mutex.Unlock()
@@ -122,18 +146,10 @@ func (s *graphQLServer) CreateGame(ctx context.Context, inputGame InputGame) (*G
 
 	// Set game in directory for access
 	s.mutex.Lock()
-	log.Printf("setting gameID in directory")
 	s.gameChannels[g.ID] = make(chan *Game, 1)
+	log.Printf("Game added: %+v\n", s.gameChannels[g.ID])
 	s.Directory[g.ID] = g
 	s.mutex.Unlock()
-
-	// Alert observers
-	for _, obs := range s.observers {
-		_, err := obs.Joined(ctx, g)
-		if err != nil {
-			log.Printf("error alerting observers: %+v", err)
-		}
-	}
 
 	return g, nil
 }
@@ -224,4 +240,22 @@ func boardStateFromInput(bs InputBoardState) *BoardState {
 	}
 
 	return out
+}
+
+func getCards(inputCards []*InputCard) []*Card {
+	cardList := []*Card{}
+
+	for _, card := range inputCards {
+		c := &Card{
+			Name: card.Name,
+		}
+
+		if card.ID != nil {
+			c.ID = *card.ID
+		}
+
+		cardList = append(cardList, c)
+	}
+
+	return cardList
 }
