@@ -114,6 +114,20 @@ func (s *graphQLServer) CreateGame(ctx context.Context, inputGame InputGame) (*G
 		ID:        uuid.New().String(),
 		CreatedAt: time.Now(),
 		Players:   []*BoardState{},
+		// NB: Turns get added once the game has "started".
+		// This is after roll for turn and mulligans happen.
+		Turn: nil,
+		// NB: We're only supporting EDH at this time. We will add more flexible validation later.
+		Rules: []*Rule{
+			{
+				Name:  "format",
+				Value: "EDH",
+			},
+			{
+				Name: "deck_size",
+				Value: "99",
+			}
+		},
 	}
 
 	for _, player := range inputGame.Players {
@@ -131,14 +145,14 @@ func (s *graphQLServer) CreateGame(ctx context.Context, inputGame InputGame) (*G
 			Field:      getCards(player.Field),
 			Controlled: getCards(player.Controlled),
 		}
-		log.Printf("PUSHING PLAYER BOARDSTATE %+v\n", bs)
+		log.Printf("pushing player board %+v\n", bs)
 		g.Players = append(g.Players, bs)
 
-		// assign boardstates to directory
+		// assign boardstates to directory for easier searching
 		s.mutex.Lock()
 		log.Printf("pushing boardstate to boardStates[%s]: %+v\n", player.User.Username, bs)
 		// instantiate player boardstate channel for updates
-		// NB: Username's must be unique. We probably want to make this specific to each room.
+		// NB: This means Username's must be unique per game. We probably want to make this specific to each room.
 		s.boardStates[player.User.Username] = make(chan *BoardState, 1)
 		log.Printf("pushed player boardstate successfully: %+v\n", player)
 		s.mutex.Unlock()
@@ -147,9 +161,10 @@ func (s *graphQLServer) CreateGame(ctx context.Context, inputGame InputGame) (*G
 	// Set game in directory for access
 	s.mutex.Lock()
 	s.gameChannels[g.ID] = make(chan *Game, 1)
-	log.Printf("Game added: %+v\n", s.gameChannels[g.ID])
 	s.Directory[g.ID] = g
 	s.mutex.Unlock()
+
+	log.Printf("Game added to directory: %+v\n", s.gameChannels[g.ID])
 
 	return g, nil
 }
