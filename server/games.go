@@ -116,7 +116,11 @@ func (s *graphQLServer) CreateGame(ctx context.Context, inputGame InputGame) (*G
 		Players:   []*BoardState{},
 		// NB: Turns get added once the game has "started".
 		// This is after roll for turn and mulligans happen.
-		Turn: nil,
+		Turn: &Turn{
+			Player: inputGame.Turn.Player,
+			Phase:  inputGame.Turn.Phase,
+			Number: inputGame.Turn.Number,
+		},
 		// NB: We're only supporting EDH at this time. We will add more flexible validation later.
 		Rules: []*Rule{
 			{
@@ -124,9 +128,9 @@ func (s *graphQLServer) CreateGame(ctx context.Context, inputGame InputGame) (*G
 				Value: "EDH",
 			},
 			{
-				Name: "deck_size",
+				Name:  "deck_size",
 				Value: "99",
-			}
+			},
 		},
 	}
 

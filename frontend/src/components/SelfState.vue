@@ -139,8 +139,8 @@ const testCard2 = {
 }
 
 const updateBoardStateQuery = gql`
-  mutation ($boardState: InputBoardState!) {
-    updateBoardState(input: $boardState) {
+  mutation ($boardstate: InputBoardState!) {
+    updateBoardState(input: $boardstate) {
       User {
         username
       }
@@ -165,13 +165,46 @@ const updateBoardStateQuery = gql`
 `
 
 const getBoardstate = gql`
-  query {
-    boardstates(gameID: "$gameID")
+  query($gameID: String!) {
+    boardstates(gameID: $gameID) {
+      User {
+        username
+        id
+      }
+      Library {
+        Name
+        ID
+      }
+      Graveyard {
+        Name
+        ID
+      }
+      Exiled {
+        Name
+        ID
+      }
+      Field {
+        Name
+        ID
+      }
+      Hand {
+        Name
+        ID
+      }
+      Revealed {
+        Name
+        ID
+      }
+      Controlled {
+        Name
+        ID
+      }
+    }
   }
 `
 
 const boardstateSubscription = gql`
-  subscription {
+  subscription ($boardstate: InputBoardState!) {
     boardUpdate(boardstate: $boardstate) {
       GameID
       User {
@@ -227,14 +260,17 @@ export default {
   apollo: {
     boardstate() {
       return {
-        // TODO: Check the query 
         query: getBoardstate,
         subscribeToMore: {
-          // TODO: check the subscription
           document: boardstateSubscription,
-          variables: () => ({
-            // TODO: check the variables
-          }),
+          variables: {
+            boardstate: {
+              User: {
+                username: this.$currentUser()
+              },
+              GameID: this.$route.params.id,
+            }
+          },
           updateQuery: (prev, { subscriptionData }) => {
             console.log('selfstate # prev: ', prev)
             console.log('selfstate # subscription data: ', subscriptionData)

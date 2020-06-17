@@ -90,37 +90,75 @@ export default {
     username () {
       return this.$currentUser()
     },
+    commander () {
+      const trimmed = this.deck.commander.trim()
+      const list = [{
+        Name: trimmed
+      }]
+      console.log('returning commander: ', list)
+      return list 
+    },
+    library () {
+      const split = this.deck.library.split('\n')
+      console.log('split: ', split)
+      const lib = split.map((card) => { 
+        return { Name: card }
+      })
+      console.log('returning library: ', lib)
+      return lib
+    }
   },
   methods: {
     handleCreateGame() {
       console.log('creating game with deck: ', this.deck)
       this.$apollo.mutate({
-        mutation: gql`mutation ($input: InputGame!) {
-          createGame(inputGame: $input){
+        mutation: gql`mutation ($inputGame: InputGame!) {
+          createGame(input: $inputGame){
            	id
             created_at
+            turn {
+              Number
+              Player
+              Phase
+            }
         		players {
               GameID
               Commander {
                 Name
+                ID
               }
             }
           }
         }`,
         variables: {
           inputGame: {
+            ID: "",
+            Turn: {
+              Player: this.$currentUser(),
+              Phase: "setup",
+              Number: 0
+            },
             Players: [{
-              Username: 'shakezula',
-              Commander: [ ...this.deck.commander ],
-              Library: [ ...this.deck.library ]
+              GameID: "",
+              User: {
+                Username: this.$currentUser()
+              },
+              Commander: this.commander,
+              Library: this.library,
+              Graveyard: [],
+              Exiled: [],
+              Field: [],
+              Hand: [],
+              Revealed: [],
+              Controlled: []
             }]
           }
         }
       })
-      .then((data) => {
-        console.log('GOT DATA!!!: ', data)
-        $id = '1234' // TODO get id from response $gameID 
-        router.push({ path: `/games/${id}` })
+      .then((res) => {
+        console.log('GOT DATA!!!: ', res)
+        const id = res.data.id // TODO get id from response $gameID 
+        router.push({ path: `/games/${res.data.createGame.id}` })
       })
       .catch((err) => {
         console.error('got error back: ', err)
