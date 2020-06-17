@@ -228,10 +228,6 @@ export default {
         battlefield: [],
         emblems: [],
         revealed: [],
-        // commander: [{
-        //   Name: this.boardstate.Commander.Name,
-        //   ID: this.boardstate.Commander.ID
-        // }]
       },
     }
   },
@@ -268,17 +264,16 @@ export default {
   },
   methods: {
     draw () {
-      if (this.boardstate.library.length == 0) {
+      console.log('this.boardstates: ', this.boardstates)
+      if (this.boardstates[0].Library.length == 0) {
         return
       }
 
-      const card = this.boardstate.library.shift()
-      this.boardstate.hand.push(card)
+      const card = this.boardstates[0].Library.shift()
+      this.boardstates[0].Hand.push(card)
     },
     shuffle () {
-      console.log('shuffling deck')
-      // TODO: This should trigger a shuffle on the server and update the
-      // library on the client side
+      console.log('TODO')
     },
   },
   components: {
