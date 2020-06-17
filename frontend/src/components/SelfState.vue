@@ -110,7 +110,7 @@
 <script>
 import draggable from 'vuedraggable'
 import Card from '@/components/Card'
-import gql from 'graphql-tag';
+import gql from 'graphql-tag'
 
 const testCard = {
   id: '1',
@@ -165,11 +165,20 @@ const updateBoardStateQuery = gql`
 `
 
 const getBoardstate = gql`
-
+  query {
+    boardstates(gameID: "$gameID")
+  }
 `
 
 const boardstateSubscription = gql`
-
+  subscription {
+    boardUpdate(boardstate: $boardstate) {
+      GameID
+      User {
+        username
+      }
+    }
+  }
 `
 
  // TODO: This needs to be updated in gql schema
@@ -231,6 +240,7 @@ export default {
             console.log('selfstate # subscription data: ', subscriptionData)
             return Object.assign({}, prev, subscriptionData)
           },
+        }
       }
     } 
   },
@@ -251,7 +261,7 @@ export default {
   },
   components: {
     Card,
-    draggable,
+    draggable
   }
 }
 </script>
