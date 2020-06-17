@@ -5,12 +5,12 @@
         <p class="title is-5">Battlefield</p>
         <draggable
           class="card-wrapper"
-          v-model="boardstate.battlefield"
+          v-model="boardstate.field"
           group="people"
           @start="drag=true"
           @end="drag=false">
           <div 
-            v-for="card in boardstate.battlefield" 
+            v-for="card in boardstate.field" 
             :key="card.id"
             class="columns">
             <Card v-bind="card"/>
@@ -104,7 +104,7 @@
       </div>
     </div>
     <hr>
-    <!-- <code>{{ boardstate }}</code> -->
+    <code>{{ boardstates }}</code>
   </div>
 </template>
 <script>
@@ -214,38 +214,12 @@ const boardstateSubscription = gql`
   }
 `
 
- // TODO: This needs to be updated in gql schema
-const addDeckMutation = gql`
-  mutation ($deck: InputDeck) {
-    createDeck(input: $deck) {
-       User {
-        username
-      }
-      GameID
-      Commander {
-        Name
-      }
-      Library {
-        Name
-      }
-      Graveyard {
-        Name
-      }
-      Exiled {
-        Name
-      }
-      Revealed {
-        Name
-      } 
-    }
-  }
-`
-
 export default {
   name: 'selfstate',
   data () {
     return {
       gameID: this.$route.params.id,
+      boardstates: [],
       boardstate: {
         graveyard: [],
         library: [],
@@ -253,30 +227,42 @@ export default {
         hand: [],
         battlefield: [],
         emblems: [],
-        revealed: []
+        revealed: [],
+        // commander: [{
+        //   Name: this.boardstate.Commander.Name,
+        //   ID: this.boardstate.Commander.ID
+        // }]
       },
     }
   },
   apollo: {
-    boardstate() {
+    boardstates() {
       return {
         query: getBoardstate,
-        subscribeToMore: {
-          document: boardstateSubscription,
-          variables: {
-            boardstate: {
-              User: {
-                username: this.$currentUser()
-              },
-              GameID: this.$route.params.id,
-            }
-          },
-          updateQuery: (prev, { subscriptionData }) => {
-            console.log('selfstate # prev: ', prev)
-            console.log('selfstate # subscription data: ', subscriptionData)
-            return Object.assign({}, prev, subscriptionData)
-          },
+        variables() {
+          return {
+            gameID: this.$route.params.id 
+          }
         }
+        // subscribeToMore: {
+        //   document: boardstateSubscription,
+        //   variables: {
+        //     boardstate: {
+        //       User: {
+        //         Username: this.$currentUser()
+        //       },
+        //       Commander: [{
+        //         Name: this.boardstate.Commander.Name
+        //       }],
+        //       GameID: this.$route.params.id,
+        //     }
+        //   },
+        //   updateQuery: (prev, { subscriptionData }) => {
+        //     console.log('selfstate # prev: ', prev)
+        //     console.log('selfstate # subscription data: ', subscriptionData)
+        //     return Object.assign({}, prev, subscriptionData)
+        //   },
+        // }
       }
     } 
   },
@@ -303,6 +289,6 @@ export default {
 </script>
 <style media="screen">
   .library {
-    hidden: true;
+    visibility: true;
   }
 </style>
