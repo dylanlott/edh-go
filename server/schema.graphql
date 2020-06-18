@@ -37,19 +37,21 @@ type Subscription {
 type Card {
   Name: String!
   ID: String!
-  Colors: String!
-  ColorIdentity: String!
-  CMC: String!
-  ManaCost: String!
-  UUID: String!
-  Power: String!
-  Toughness: String!
-  Types: String!
-  Subtypes: String!
-  Supertypes: String!
-  IsTextless: String!
-  Text: String!
-  TCGID: String!
+  Quantity: Int,
+  Colors: String
+  ColorIdentity: String
+  CMC: String
+  ManaCost: String
+  UUID: String
+  Power: String
+  Toughness: String
+  Types: String
+  Subtypes: String
+  Supertypes: String
+  IsTextless: String
+  Text: String
+  TCGID: String
+  ScryfallID: String,
 }
 
 type User {
@@ -114,6 +116,8 @@ type BoardState {
 input InputCard {
   ID: String
   Name: String!
+  Counters: [InputCounter]
+  Labels: [InputLabel]
 }
 
 input InputCounter {
@@ -125,6 +129,7 @@ input InputCounter {
 input InputBoardState {
   User: InputUser!
   GameID: String!
+  Decklist: String,
   Commander: [InputCard!]!
   Library: [InputCard]!
   Graveyard: [InputCard]!
@@ -170,4 +175,10 @@ input InputDeck {
   name: String
   commander: [String!]
   cards: [String!]
+}
+
+input InputLabel {
+  name: String!
+  value: String!
+  assigned_by: String!
 }
