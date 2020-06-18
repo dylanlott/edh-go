@@ -5,12 +5,26 @@ services:
     build: .
     environment:
       REDIS_URL: redis:6379
+      POSTGRES_URL: postgres:5432
     ports:
       - 8080:8080
+    links:
+      - redis:redis
+      - postgres:postgres
   redis:
     image: redis:5.0.7
     volumes:
       - redis-data:/data
+  postgres:
+    image: bitnami/postgresql
+    volumes:
+      - postgres-data:/bitnami/postgresql
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRESQL_USERNAME=edhgo
+      - POSTGRESQL_PASSWORD=edhgo
+      - POSTGRESQL_DATABASE=edhgo
   ui:
     build:
       context: ./frontend 
@@ -21,3 +35,4 @@ services:
       - server:server
 volumes:
   redis-data:
+  postgres-data:
