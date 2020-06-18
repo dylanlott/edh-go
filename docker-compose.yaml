@@ -28,7 +28,7 @@ services:
   ui:
     build:
       context: ./frontend 
-      dockerfile: ./frontend/Dockerfile
+      dockerfile: Dockerfile
     ports:
       - 8085:80
     links:
