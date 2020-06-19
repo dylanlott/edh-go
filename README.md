@@ -16,3 +16,6 @@ Run Vue app:
 $ cd frontend
 $ npm run start
 ```
+
+# Postgres 
+https://stackoverflow.com/questions/37694987/connecting-to-postgresql-in-a-docker-container-from-outside
