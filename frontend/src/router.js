@@ -6,6 +6,7 @@ import Login from '@/components/Login.vue';
 import Games from '@/components/Games.vue';
 import Board from '@/components/Board.vue';
 import Card from '@/components/Card.vue';
+import Score from '@/components/Score.vue';
 
 Vue.use(Router);
 
@@ -15,7 +16,7 @@ export default new Router({
     {
       path: '/',
       name: 'home',
-        component: Landing,
+      component: Landing,
     },
     {
       path: '/login',
@@ -25,7 +26,7 @@ export default new Router({
     {
       path: '/games',
       name: 'games',
-      component: Games
+      component: Games,
     },
     {
       path: '/games/:id',
@@ -33,9 +34,14 @@ export default new Router({
       component: Board,
     },
     {
+      path: '/games/:id/score',
+      name: 'score_screen',
+      component: Score,
+    },
+    {
       path: '/card/:id',
       name: 'card',
       component: Card,
-    }
+    },
   ],
 });
