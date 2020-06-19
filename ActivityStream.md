@@ -18,3 +18,9 @@ It will be a sensitive feature that could break easily, so I want to document it
 - Other players get their updated board states sent to them
 
 ## 4. ActivityStream item is added and pushed to players as well with new boardstate.
+
+# Alternative: Push Diff calculation to the client 
+https://stackoverflow.com/questions/8572826/generic-deep-diff-between-two-objects
+
+If we make the client handle the diffing, we can essentially act as just a storage layer for actions.
+This would take the burden off of us, but at the cost of being less secure - the baord states could be faked (technically).
