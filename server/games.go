@@ -320,7 +320,7 @@ func (s *graphQLServer) createLibraryFromDecklist(ctx context.Context, decklist 
 		}
 		if err != nil {
 			// handle error path
-			return nil, errs.New("failed to parse CSV:", err)
+			return nil, errs.New("failed to parse CSV: %s", err)
 		}
 
 		fmt.Printf("record: %+v\n", record)
