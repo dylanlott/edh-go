@@ -63,7 +63,8 @@ export default {
       joinGameID: '',
       deck: {
         library: '',
-        commander: ''
+        commander: '',
+        decklist: ''
       },
     }
   },
@@ -77,6 +78,7 @@ export default {
   apollo: {
   },
   computed: {
+    // NB: We use computed values to run validation and sanitization
     players () {
       return [{
         id: 'player1',
@@ -95,7 +97,6 @@ export default {
       const list = [{
         Name: trimmed
       }]
-      console.log('returning commander: ', list)
       return list 
     },
     library () {
@@ -104,13 +105,16 @@ export default {
       const lib = split.map((card) => { 
         return { Name: card }
       })
-      console.log('returning library: ', lib)
       return lib
+    },
+    decklist () {
+      return this.deck.library
     }
   },
   methods: {
     handleCreateGame() {
       console.log('creating game with deck: ', this.deck)
+      console.log('using decklist: ', this.decklist)
       this.$apollo.mutate({
         mutation: gql`mutation ($inputGame: InputGame!) {
           createGame(input: $inputGame){
@@ -144,7 +148,8 @@ export default {
                 Username: this.$currentUser()
               },
               Commander: this.commander,
-              Library: this.library,
+              Library: [],
+              Decklist: this.decklist,
               Graveyard: [],
               Exiled: [],
               Field: [],
@@ -156,8 +161,8 @@ export default {
         }
       })
       .then((res) => {
-        console.log('GOT DATA!!!: ', res)
-        const id = res.data.id // TODO get id from response $gameID 
+        console.log('@ Create Game Response: ', console.table(res))
+        const id = res.data.id
         router.push({ path: `/games/${res.data.createGame.id}` })
       })
       .catch((err) => {
@@ -165,10 +170,6 @@ export default {
       })
     },
     handleJoinGame() {
-      // this.$apollo.mutate({
-      //   mutation: gql``,
-      //   variables: {}
-      // })
       router.push({ name: 'board', params: { id: this.joinGameID }})
     }
   },

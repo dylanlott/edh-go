@@ -21,21 +21,23 @@ type BoardState struct {
 }
 
 type Card struct {
-	Name          string `json:"Name"`
-	ID            string `json:"ID"`
-	Colors        string `json:"Colors"`
-	ColorIdentity string `json:"ColorIdentity"`
-	Cmc           string `json:"CMC"`
-	ManaCost      string `json:"ManaCost"`
-	UUID          string `json:"UUID"`
-	Power         string `json:"Power"`
-	Toughness     string `json:"Toughness"`
-	Types         string `json:"Types"`
-	Subtypes      string `json:"Subtypes"`
-	Supertypes    string `json:"Supertypes"`
-	IsTextless    string `json:"IsTextless"`
-	Text          string `json:"Text"`
-	Tcgid         string `json:"TCGID"`
+	Name          string  `json:"Name"`
+	ID            string  `json:"ID"`
+	Quantity      *int    `json:"Quantity"`
+	Colors        *string `json:"Colors"`
+	ColorIdentity *string `json:"ColorIdentity"`
+	Cmc           *string `json:"CMC"`
+	ManaCost      *string `json:"ManaCost"`
+	UUID          *string `json:"UUID"`
+	Power         *string `json:"Power"`
+	Toughness     *string `json:"Toughness"`
+	Types         *string `json:"Types"`
+	Subtypes      *string `json:"Subtypes"`
+	Supertypes    *string `json:"Supertypes"`
+	IsTextless    *string `json:"IsTextless"`
+	Text          *string `json:"Text"`
+	Tcgid         *string `json:"TCGID"`
+	ScryfallID    *string `json:"ScryfallID"`
 }
 
 type Counter struct {
@@ -69,6 +71,7 @@ type Game struct {
 type InputBoardState struct {
 	User       *InputUser      `json:"User"`
 	GameID     string          `json:"GameID"`
+	Decklist   *string         `json:"Decklist"`
 	Commander  []*InputCard    `json:"Commander"`
 	Library    []*InputCard    `json:"Library"`
 	Graveyard  []*InputCard    `json:"Graveyard"`
@@ -82,8 +85,10 @@ type InputBoardState struct {
 }
 
 type InputCard struct {
-	ID   *string `json:"ID"`
-	Name string  `json:"Name"`
+	ID       *string         `json:"ID"`
+	Name     string          `json:"Name"`
+	Counters []*InputCounter `json:"Counters"`
+	Labels   []*InputLabel   `json:"Labels"`
 }
 
 type InputCounter struct {
@@ -111,6 +116,12 @@ type InputGame struct {
 	Players []*InputBoardState `json:"Players"`
 }
 
+type InputLabel struct {
+	Name       string `json:"name"`
+	Value      string `json:"value"`
+	AssignedBy string `json:"assigned_by"`
+}
+
 type InputSignup struct {
 	Username string `json:"Username"`
 	Email    string `json:"Email"`
@@ -133,6 +144,8 @@ type Message struct {
 	User      string    `json:"user"`
 	CreatedAt time.Time `json:"createdAt"`
 	Text      string    `json:"text"`
+	GameID    string    `json:"gameID"`
+	Channel   *string   `json:"channel"`
 }
 
 type Rule struct {

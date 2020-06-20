@@ -2,7 +2,12 @@ package server
 
 import (
 	"context"
+	"encoding/csv"
+	"fmt"
+	"io"
 	"log"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -135,20 +140,45 @@ func (s *graphQLServer) CreateGame(ctx context.Context, inputGame InputGame) (*G
 	}
 
 	for _, player := range inputGame.Players {
+		// Init default boardstate
 		bs := &BoardState{
 			User: &User{
 				ID:       uuid.New().String(),
 				Username: player.User.Username,
 			},
 			GameID:     g.ID,
-			Commander:  getCards(player.Commander),
-			Library:    getCards(player.Library),
 			Hand:       getCards(player.Hand),
 			Exiled:     getCards(player.Exiled),
 			Revealed:   getCards(player.Revealed),
 			Field:      getCards(player.Field),
 			Controlled: getCards(player.Controlled),
 		}
+
+		var decklist string
+		if inputGame.Players[0].Decklist != nil {
+			decklist = string(*inputGame.Players[0].Decklist)
+		}
+		fmt.Printf("intaking decklist: %+v\n", decklist)
+		library, err := s.createLibraryFromDecklist(ctx, decklist)
+		if err != nil {
+			// Fail gracefully and still populate basic cards
+			log.Printf("error creating library from decklist: %+v", err)
+			bs.Library = getCards(player.Library)
+		} else {
+			// Happy path
+			log.Printf("setting library: %+v", library)
+			bs.Library = library
+		}
+
+		commander, err := s.Card(ctx, player.Commander[0].Name, nil)
+		if err != nil {
+			log.Printf("error getting commander for deck: %+v", err)
+			bs.Commander = getCards(player.Commander)
+		} else {
+			log.Printf("setting commander: %+v", commander)
+			bs.Commander = commander
+		}
+
 		log.Printf("pushing player board %+v\n", bs)
 		g.Players = append(g.Players, bs)
 
@@ -277,4 +307,56 @@ func getCards(inputCards []*InputCard) []*Card {
 	}
 
 	return cardList
+}
+
+func (s *graphQLServer) createLibraryFromDecklist(ctx context.Context, decklist string) ([]*Card, error) {
+	r := csv.NewReader(strings.NewReader(decklist))
+	cards := []*Card{}
+
+	for {
+		record, err := r.Read()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			// handle error path
+			return nil, errs.New("failed to parse CSV:", err)
+		}
+
+		fmt.Printf("record: %+v\n", record)
+		quantity, err := strconv.ParseInt(record[0], 0, 64)
+		if err != nil {
+			// handle error
+			fmt.Printf("error parsing quantity: %+v\n", err)
+			// assume quantity = 1
+			quantity = 1
+		}
+
+		name := record[1]
+		card, err := s.Card(ctx, name, nil)
+		if err != nil {
+			// handle lookup error
+			fmt.Printf("error looking up card: %+v\n", err)
+			// fail gracefully even if we can't find the card
+			cards = append(cards, &Card{
+				Name: name,
+			})
+			continue
+		}
+
+		// happy path
+		var num int64
+		for num <= quantity {
+			// add the first card that's returned from the database
+			fmt.Printf("adding card: %+v\n", card[0])
+			cards = append(cards, card[0])
+			num++
+		}
+
+		continue
+	}
+
+	fmt.Printf("created library: %+v\n", cards)
+
+	return cards, nil
 }

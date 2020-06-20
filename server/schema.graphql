@@ -1,12 +1,5 @@
 scalar Time
 
-type Message {
-  id: String!
-  user: String!
-  createdAt: Time!
-  text: String!
-}
-
 type Mutation {
   signup(input: InputSignup): User!
   postMessage(user: String!, text: String!): Message
@@ -34,6 +27,15 @@ type Subscription {
   boardUpdate(boardstate: InputBoardState!): BoardState!
 }
 
+type Message {
+  id: String!
+  user: String!
+  createdAt: Time!
+  text: String!
+  gameID: String!
+  channel: String
+}
+
 type Card {
   Name: String!
   ID: String!
@@ -51,7 +53,7 @@ type Card {
   IsTextless: String
   Text: String
   TCGID: String
-  ScryfallID: String,
+  ScryfallID: String
 }
 
 type User {
@@ -121,7 +123,7 @@ input InputCard {
 }
 
 input InputCounter {
-  card: InputCard!
+  card: InputCard
   name: String!
   value: String!
 }
