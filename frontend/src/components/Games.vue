@@ -10,21 +10,19 @@
         <div class="columns">
           <div class="column">
             <p class="title is-4">Pick your commander</p>
-            <p class="content"><b>Selected:</b> {{ selected }}</p>
-            <b-field label="Find a JS framework">
+            <p class="content" v-if="!!selected"><b>Selected:</b> {{ selected }}</p>
+            <b-field label="Select a Commander">
               <b-autocomplete 
-              rounded 
-              v-model="deck.commander" 
-              :data="commanderSearch" 
-              placeholder="e.g. Jarad, Golgari Lich Lord" 
-              icon="magnify"
+              :data="data"
+              v-model="deck.commander"
               clearable 
+              field="name"
+              placeholder="e.g. Jarad, Golgari Lich Lord" 
+              @typing="queryCommanders"
               @select="option => selected = option">
                 <template slot="empty">No results found</template>
               </b-autocomplete>
             </b-field>
-            <b-input v-model="deck.commander"></b-input>
-            <br></br>
             <h3 class="title is-4">Add the 99.</h3>
             <p>We recommend using
               <a href="www.archidekt.com">Archidekt</a> to generate your decklists so that spelling errors
@@ -55,12 +53,15 @@ export default {
       id: '',
       gameID: '',
       joinGameID: '',
-      selected: {},
+      selected: '',
+      results: [],
+      loading: false,
       deck: {
         library: '',
         commander: '',
         decklist: ''
       },
+      data: []
     }
   },
   beforeRouteEnter(to, from, next) {
@@ -70,9 +71,15 @@ export default {
       }
     });
   },
-  apollo: {
-  },
   computed: {
+    commanderList() {
+      this.queryCommanders()
+        .then((data) => {
+          console.log("commanderList: ", data)
+          return data
+        })
+        .catch((err) => console.error(err))
+    },
     // NB: We use computed values to run validation and sanitization
     players () {
       return [{
@@ -94,30 +101,8 @@ export default {
       }]
       return list 
     },
-    commanderSearch () {
-      this.$apollo.query({
-        query: gql`query($name: String!) {
-         search(name: $name) {
-            Name
-            ID
-            Colors
-            ColorIdentity
-            CMC
-            ManaCost
-         }
-        }`,
-        variables: {
-          name: this.deck.commander,
-        }
-      })
-      .then((response) => {
-        console.log('@ commander search response.data: ', response.data)
-        return response.data
-      })
-    },
     library () {
       const split = this.deck.library.split('\n')
-      console.log('split: ', split)
       const lib = split.map((card) => { 
         return { Name: card }
       })
@@ -129,8 +114,6 @@ export default {
   },
   methods: {
     handleCreateGame() {
-      console.log('creating game with deck: ', this.deck)
-      console.log('using decklist: ', this.decklist)
       this.$apollo.mutate({
         mutation: gql`mutation ($inputGame: InputGame!) {
           createGame(input: $inputGame){
@@ -177,7 +160,6 @@ export default {
         }
       })
       .then((res) => {
-        console.log('@ Create Game Response: ', console.table(res))
         const id = res.data.id
         router.push({ path: `/games/${res.data.createGame.id}` })
       })
@@ -187,7 +169,59 @@ export default {
     },
     handleJoinGame() {
       router.push({ name: 'board', params: { id: this.joinGameID }})
+    },
+    queryCommanders() {
+      this.$apollo.query({
+        query: gql`query($name: String!) {
+         search(name: $name) {
+            Name
+            ID
+            Colors
+            ColorIdentity
+            CMC
+            ManaCost
+         }
+        }`,
+        variables: {
+          name: this.deck.commander,
+        }
+      })
+      .then((resp) => {
+        this.data = resp.data.search.map((item) => {
+          return ({ name: item.Name })
+        })
+        return this.data
+      })
+      .catch((err) => {
+        console.error('error querying commanders: ', err)
+        return err
+      })
+      .finally(() => {
+        this.loading = false
+      })
     }
   },
 }
+
+function debounce(callback, wait, immediate = false) {
+  let timeout = null 
+  
+  return function() {
+    const callNow = immediate && !timeout
+    const next = () => callback.apply(this, arguments)
+    
+    clearTimeout(timeout)
+    timeout = setTimeout(next, wait)
+
+    if (callNow) {
+      next()
+    }
+  }
+}
+
 </script>
+<style>
+  .shell {
+    margin: 0.5rem;
+  }
+</style>

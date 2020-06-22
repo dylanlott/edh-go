@@ -33,6 +33,12 @@ services:
       - 8085:80
     links:
       - server:server
+  nginx-ui:
+    image: schenkd/nginx-ui:latest
+    ports:
+      - 7070:8080
+    volumes:
+      - nginx:/etc/nginx
 volumes:
   redis-data:
   postgres-data:
