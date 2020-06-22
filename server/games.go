@@ -320,14 +320,14 @@ func (s *graphQLServer) createLibraryFromDecklist(ctx context.Context, decklist 
 		}
 		if err != nil {
 			// handle error path
+			log.Printf("error reading record: %+v", err)
 			return nil, errs.New("failed to parse CSV: %s", err)
 		}
 
-		fmt.Printf("record: %+v\n", record)
 		quantity, err := strconv.ParseInt(record[0], 0, 64)
 		if err != nil {
 			// handle error
-			fmt.Printf("error parsing quantity: %+v\n", err)
+			log.Printf("error parsing quantity: %+v\n", err)
 			// assume quantity = 1
 			quantity = 1
 		}
@@ -336,8 +336,7 @@ func (s *graphQLServer) createLibraryFromDecklist(ctx context.Context, decklist 
 		card, err := s.Card(ctx, name, nil)
 		if err != nil {
 			// handle lookup error
-			fmt.Printf("error looking up card: %+v\n", err)
-			// fail gracefully even if we can't find the card
+			log.Printf("error looking up card: %+v\n", err)
 			cards = append(cards, &Card{
 				Name: name,
 			})
@@ -348,15 +347,12 @@ func (s *graphQLServer) createLibraryFromDecklist(ctx context.Context, decklist 
 		var num int64
 		for num <= quantity {
 			// add the first card that's returned from the database
-			fmt.Printf("adding card: %+v\n", card[0])
 			cards = append(cards, card[0])
 			num++
 		}
 
 		continue
 	}
-
-	fmt.Printf("created library: %+v\n", cards)
 
 	return cards, nil
 }

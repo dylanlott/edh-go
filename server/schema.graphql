@@ -18,6 +18,7 @@ type Query {
   decks(userID: String!): [Deck!]
   card(name: String!, id: String): [Card!]
   cards(list: [String!]): [Card!]!
+  search(name: String, colors: String, colorIdentity: String, keywords: [String]): [Card]
 }
 
 type Subscription {

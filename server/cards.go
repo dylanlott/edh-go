@@ -158,6 +158,41 @@ func (s *graphQLServer) Cards(ctx context.Context, list []string) ([]*Card, erro
 	return cards, nil
 }
 
-func (s *graphQLServer) Save(ctx context.Context, list []Card) ([]Card, error) {
-	return nil, errs.New("not impl")
+// Search will search for card names in the database.
+func (s *graphQLServer) Search(ctx context.Context, name string) ([]*Card, error) {
+	name = fmt.Sprintf("%%%s%%", name)
+	fmt.Printf("searching for name: %s", name)
+	rows, err := s.cardDB.Query("SELECT id, name, colors FROM cards WHERE name LIKE ?", name)
+	if err != nil {
+		log.Printf("error querying database: %s", err)
+		return nil, errs.New("failed to search cardDB", err)
+	}
+
+	cards := []*Card{}
+
+	for rows.Next() {
+		var (
+			id     *int
+			name   *string
+			colors *string
+		)
+
+		if err := rows.Scan(&id, &name, &colors); err != nil {
+			log.Printf("failed to scan card into struct: %s", err)
+			continue
+		}
+
+		parsedID := strconv.Itoa(*id)
+		card := &Card{
+			ID:     parsedID,
+			Name:   *name,
+			Colors: colors,
+		}
+
+		fmt.Printf("searched card: %+v\n", card)
+
+		cards = append(cards, card)
+	}
+
+	return cards, nil
 }
