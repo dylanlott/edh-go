@@ -2,7 +2,7 @@
   <section class="shell">
     <div class="columns is-centered">
       <div class="column is-4">
-        <form >
+        <form v-on:keyup.enter="onLoginClick()">
           <h1 class="title">Login</h1>
           <b-field label="Login">
             <b-input 
