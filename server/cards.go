@@ -160,6 +160,9 @@ func (s *graphQLServer) Cards(ctx context.Context, list []string) ([]*Card, erro
 
 // Search will search for card names in the database.
 func (s *graphQLServer) Search(ctx context.Context, name string) ([]*Card, error) {
+	if name == "" {
+		return nil, nil
+	}
 	name = fmt.Sprintf("%%%s%%", name)
 	fmt.Printf("searching for name: %s", name)
 	rows, err := s.cardDB.Query("SELECT id, name, colors FROM cards WHERE name LIKE ?", name)
