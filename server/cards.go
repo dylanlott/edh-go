@@ -168,7 +168,7 @@ func (s *graphQLServer) Search(ctx context.Context, name string) ([]*Card, error
 	rows, err := s.cardDB.Query("SELECT id, name, colors FROM cards WHERE name LIKE ?", name)
 	if err != nil {
 		log.Printf("error querying database: %s", err)
-		return nil, errs.New("failed to search cardDB", err)
+		return nil, errs.New("failed to search cardDB: %s", err)
 	}
 
 	cards := []*Card{}
