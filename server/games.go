@@ -40,6 +40,8 @@ func (s *graphQLServer) Boardstate(ctx context.Context, gameID string, userID st
 func (s *graphQLServer) Boardstates(ctx context.Context, gameID string, userID *string) ([]*BoardState, error) {
 	game, ok := s.Directory[gameID]
 
+	// TODO: if not in directory, check storage
+
 	if userID == nil {
 		if !ok {
 			return nil, errs.New("game does not exist with ID of %s", gameID)
@@ -158,7 +160,6 @@ func (s *graphQLServer) CreateGame(ctx context.Context, inputGame InputGame) (*G
 		if inputGame.Players[0].Decklist != nil {
 			decklist = string(*inputGame.Players[0].Decklist)
 		}
-		fmt.Printf("intaking decklist: %+v\n", decklist)
 		library, err := s.createLibraryFromDecklist(ctx, decklist)
 		if err != nil {
 			// Fail gracefully and still populate basic cards
@@ -170,10 +171,14 @@ func (s *graphQLServer) CreateGame(ctx context.Context, inputGame InputGame) (*G
 			bs.Library = library
 		}
 
+		// TODO: Remove duplicates here, and make sure that decks are only getting
+		// one copy of each non-basic land card
+
 		commander, err := s.Card(ctx, player.Commander[0].Name, nil)
 		if err != nil {
 			log.Printf("error getting commander for deck: %+v", err)
-			bs.Commander = getCards(player.Commander)
+			defaultCards := getCards(player.Commander)
+			bs.Commander = []*Card{defaultCards[0]}
 		} else {
 			log.Printf("setting commander: %+v", commander)
 			bs.Commander = commander
@@ -344,8 +349,9 @@ func (s *graphQLServer) createLibraryFromDecklist(ctx context.Context, decklist 
 		}
 
 		// happy path
-		var num int64
+		var num int64 = 1
 		for num <= quantity {
+			fmt.Printf("adding card %+v\n", card[0])
 			// add the first card that's returned from the database
 			cards = append(cards, card[0])
 			num++
