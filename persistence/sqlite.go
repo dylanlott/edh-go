@@ -2,18 +2,29 @@ package persistence
 
 import (
 	"database/sql"
-	"fmt"
+	"log"
 
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/zeebo/errs"
 )
 
+// NewSQLite returns a DB object to persist data for the application.
 func NewSQLite(path string) (*DB, error) {
+	log.Printf("opening database connection at %s\n", path)
 	db, err := sql.Open("sqlite3", path)
 	if err != nil {
-		fmt.Printf("error opening database: %+v\n", err)
+		log.Printf("error opening sqlite3 database: %+v\n", err)
 		return nil, errs.Wrap(err)
 	}
+
+	err = db.Ping()
+	if err != nil {
+		log.Printf("error pinging database: %s", err)
+		return nil, errs.Wrap(err)
+	}
+
+	log.Printf("database connection established: %+v\n", db)
+
 	return &DB{
 		db: db,
 	}, nil
