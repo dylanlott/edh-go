@@ -4,11 +4,12 @@
       <div class="container">
         <div class="columns">
           <div class="column">
-            <h1 class="title is-1">Welcome, {{ username }}</h1>
           </div>
         </div>
         <div class="columns">
-          <div class="column">
+          <div class="column is-one-quarter"></div>
+          <div class="column is-half">
+            <h1 class="title is-1">Welcome, {{ username }}</h1>
             <p class="title is-4">Pick your commander</p>
             <p class="content" v-if="!!selected"><b>Selected:</b> {{ selected }}</p>
             <b-field label="Select a Commander">
@@ -35,9 +36,13 @@
             <b-field label="Add the other 99 cards.">
               <b-input maxlength="200000" v-model="deck.library" type="textarea"></b-input>
             </b-field>
+
+            <b-button 
+              @click="handleCreateGame()" 
+              type="button" 
+              class="is-success">Start a new game</b-button>
           </div>
         </div>
-        <b-button @click="handleCreateGame()" type="button" class="is-success">Start a new game</b-button>
       </div>
     </div>
   </div>
