@@ -27,6 +27,7 @@ func (s *graphQLServer) Games(ctx context.Context) ([]*Game, error) {
 func (s *graphQLServer) Boardstate(ctx context.Context, gameID string, userID string) (*BoardState, error) {
 	game, ok := s.Directory[gameID]
 	if !ok {
+		log.Printf("game with ID of %s does not exist", gameID)
 		return nil, errs.New("game with ID of %s does not exist", gameID)
 	}
 
@@ -171,29 +172,23 @@ func (s *graphQLServer) CreateGame(ctx context.Context, inputGame InputGame) (*G
 			bs.Library = library
 		}
 
-		// TODO: Remove duplicates here, and make sure that decks are only getting
-		// one copy of each non-basic land card
-
 		commander, err := s.Card(ctx, player.Commander[0].Name, nil)
 		if err != nil {
 			log.Printf("error getting commander for deck: %+v", err)
 			defaultCards := getCards(player.Commander)
 			bs.Commander = []*Card{defaultCards[0]}
 		} else {
-			log.Printf("setting commander: %+v", commander)
-			bs.Commander = commander
+			bs.Commander = []*Card{commander[0]}
 		}
 
-		log.Printf("pushing player board %+v\n", bs)
 		g.Players = append(g.Players, bs)
 
 		// assign boardstates to directory for easier searching
 		s.mutex.Lock()
-		log.Printf("pushing boardstate to boardStates[%s]: %+v\n", player.User.Username, bs)
 		// instantiate player boardstate channel for updates
 		// NB: This means Username's must be unique per game. We probably want to make this specific to each room.
 		s.boardStates[player.User.Username] = make(chan *BoardState, 1)
-		log.Printf("pushed player boardstate successfully: %+v\n", player)
+		log.Printf("pushed player boardstate successfully: %+v\n", bs)
 		s.mutex.Unlock()
 	}
 
