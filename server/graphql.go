@@ -215,11 +215,11 @@ func (s *graphQLServer) UserJoined(ctx context.Context, user string, gameID stri
 	users := make(chan string, 1)
 	s.mutex.Lock()
 
-	// userChannels is a map of usernames to
+	// userChannels is a map of usernames to the channel we just created
 	s.userChannels[user] = users
 	s.mutex.Unlock()
 
-	// Delete channel when done
+	// Wait for the Done event to fire, then clean up.
 	go func() {
 		<-ctx.Done()
 		s.mutex.Lock()
@@ -227,6 +227,7 @@ func (s *graphQLServer) UserJoined(ctx context.Context, user string, gameID stri
 		s.mutex.Unlock()
 	}()
 
+	// Return the channel we created loaded with its cleanup instructions.
 	return users, nil
 }
 

@@ -112,32 +112,6 @@ import draggable from 'vuedraggable'
 import Card from '@/components/Card'
 import gql from 'graphql-tag'
 
-const testCard = {
-  id: '1',
-  name: 'Karlov of the Ghost Council',
-  convertedManaCost: '3',
-  colorIdentity: 'BU',
-  power: '7',
-  toughness: '8',
-  text: 'When this card enters the battlefield, make Brenden mill 10 cards.',
-  types: 'Legendary Creature Wizard',
-  image: '',
-  counters: {}
-}
-
-const testCard2 = {
-  id: '2',
-  name: 'Ghost Council of Orzhova',
-  convertedManaCost: '3',
-  colorIdentity: 'BU',
-  power: '7',
-  toughness: '8',
-  text: 'When this card enters the battlefield, make Brenden mill 10 cards.',
-  types: 'Legendary Creature Wizard',
-  image: '',
-  counters: {}
-}
-
 const updateBoardStateQuery = gql`
   mutation ($boardstate: InputBoardState!) {
     updateBoardState(input: $boardstate) {
@@ -168,7 +142,6 @@ const getBoardstate = gql`
   query($gameID: String!) {
     boardstates(gameID: $gameID) {
       User {
-        username
         id
       }
       Library {
@@ -232,35 +205,7 @@ export default {
     }
   },
   apollo: {
-    boardstates() {
-      return {
-        query: getBoardstate,
-        variables() {
-          return {
-            gameID: this.$route.params.id 
-          }
-        }
-        // subscribeToMore: {
-        //   document: boardstateSubscription,
-        //   variables: {
-        //     boardstate: {
-        //       User: {
-        //         Username: this.$currentUser()
-        //       },
-        //       Commander: [{
-        //         Name: this.boardstate.Commander.Name
-        //       }],
-        //       GameID: this.$route.params.id,
-        //     }
-        //   },
-        //   updateQuery: (prev, { subscriptionData }) => {
-        //     console.log('selfstate # prev: ', prev)
-        //     console.log('selfstate # subscription data: ', subscriptionData)
-        //     return Object.assign({}, prev, subscriptionData)
-        //   },
-        // }
-      }
-    } 
+
   },
   methods: {
     draw () {
@@ -275,6 +220,9 @@ export default {
     shuffle () {
       console.log('TODO')
     },
+    handleBoardUpdate() {
+      console.log('TODO')
+    }
   },
   components: {
     Card,

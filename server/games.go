@@ -62,6 +62,7 @@ func (s *graphQLServer) Boardstates(ctx context.Context, gameID string, userID *
 }
 
 func (s *graphQLServer) GameUpdated(ctx context.Context, game InputGame) (<-chan *Game, error) {
+	log.Printf("GameUpdated hit: %+v\n", game)
 	_, ok := s.gameChannels[game.ID]
 	if !ok {
 		return nil, errs.New("game does not exist with ID of %s", game.ID)
@@ -84,15 +85,20 @@ func (s *graphQLServer) GameUpdated(ctx context.Context, game InputGame) (<-chan
 }
 
 func (s *graphQLServer) BoardUpdate(ctx context.Context, bs InputBoardState) (<-chan *BoardState, error) {
-	_, ok := s.boardStates[bs.User.Username]
-	if !ok {
-		return nil, errs.New("no boardstate exists for that user: %s", bs.User.Username)
-	}
+	log.Printf("BoardUpdate hit: %+v", bs)
 
+	// NB: boardstates are stored by username. This should probably be updated
+	// to include game ID's
+	// _, ok := s.boardStates[bs.User.Username]
+	// if !ok {
+	// 	return nil, errs.New("no boardstate exists for that user: %s", bs.User.Username)
+	// }
+
+	// Make a boardstates channel to emit all the events on, and assign it to 
+	// the user who submitted to the update.
 	boardstates := make(chan *BoardState, 1)
 	s.mutex.Lock()
 	s.boardStates[bs.User.Username] = boardstates
-	// TODO: persist board state update here.
 	s.mutex.Unlock()
 
 	go func() {
@@ -102,6 +108,7 @@ func (s *graphQLServer) BoardUpdate(ctx context.Context, bs InputBoardState) (<-
 		s.mutex.Unlock()
 	}()
 
+	log.Printf("Returning BoardStates: %+v\n", boardstates)
 	return boardstates, nil
 }
 
@@ -175,8 +182,9 @@ func (s *graphQLServer) CreateGame(ctx context.Context, inputGame InputGame) (*G
 		commander, err := s.Card(ctx, player.Commander[0].Name, nil)
 		if err != nil {
 			log.Printf("error getting commander for deck: %+v", err)
-			defaultCards := getCards(player.Commander)
-			bs.Commander = []*Card{defaultCards[0]}
+			// fail gracefully and use their card name so they can still play a game
+			inputCard := getCards(player.Commander)
+			bs.Commander = []*Card{inputCard[0]}
 		} else {
 			bs.Commander = []*Card{commander[0]}
 		}
@@ -204,8 +212,10 @@ func (s *graphQLServer) CreateGame(ctx context.Context, inputGame InputGame) (*G
 }
 
 func (s *graphQLServer) UpdateBoardState(ctx context.Context, bs InputBoardState) (*BoardState, error) {
+	log.Printf("UpdateBoardState hit: %+v", bs)
 	updated := boardStateFromInput(bs)
 	s.mutex.Lock()
+	log.Printf("pushing updated boardstate across channels: %+v", updated)
 	s.boardStates[bs.User.Username] <- updated
 	s.mutex.Unlock()
 	pushBoardStateUpdate(ctx, s.observers, bs)

@@ -2,12 +2,7 @@
   <div class="games shell container" v-if="gameID == ''">
     <div class="hero">
       <div class="container">
-        <div class="columns">
-          <div class="column">
-          </div>
-        </div>
-        <div class="columns">
-          <div class="column is-one-quarter"></div>
+        <div class="columns is-mobile is-centered">
           <div class="column is-half">
             <h1 class="title is-1">Welcome, {{ username }}</h1>
             <p class="title is-4">Pick your commander</p>
@@ -80,7 +75,6 @@ export default {
     commanderList() {
       this.queryCommanders()
         .then((data) => {
-          console.log("commanderList: ", data)
           return data
         })
         .catch((err) => console.error(err))
@@ -170,12 +164,17 @@ export default {
       })
       .catch((err) => {
         console.error('got error back: ', err)
+        return err
       })
     },
     handleJoinGame() {
       router.push({ name: 'board', params: { id: this.joinGameID }})
     },
     queryCommanders() {
+      if (this.deck.commander === "") {
+        return 
+      }
+
       this.$apollo.query({
         query: gql`query($name: String!) {
          search(name: $name) {

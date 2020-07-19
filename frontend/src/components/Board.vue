@@ -3,8 +3,8 @@
     <h1 class="title shell">{{ gameID }}</h1>
     <TurnTracker gameID="gameID"/>
     <div class="opponents">
-      <div :key="o.id" v-for="o in opponents" class="shell">
-        <h1 class="title">{{ o.username }}</h1>
+      <div :key="b.id" v-for="b in boardstates" class="shell">
+        <h1 class="title">{{ b.username }}</h1>
         <PlayerState v-bind="o.boardstate"></PlayerState>
       </div >
     </div>
@@ -32,35 +32,12 @@
   </div>
 </template>
 <script>
+import gql from 'graphql-tag';
 import PlayerState from '@/components/PlayerState.vue'
 import SelfState from '@/components/SelfState.vue'
 import Card from '@/components/Card.vue'
 import TurnTracker from '@/components/TurnTracker.vue'
 import draggable from 'vuedraggable'
-
-const testCard = {
-  id: '1',
-  name: 'Karlov of the Ghost Council',
-  convertedManaCost: '3',
-  manaCost: "3 B W",
-  colorIdentity: 'BU',
-  power: '7',
-  toughness: '8',
-  text: 'When this card enters the battlefield, make Brenden mill 10 cards.',
-  types: 'Legendary Creature Wizard',
-  image: '',
-  counters: {
-    "Skithiryx": {
-      type: "poison",
-      count: 2
-    },
-    "Glory of Warfare": {
-      type: "+1/+1",
-      count: "1"
-    }
-  },
-  labels: ["test label", "countered by Teysa"]
-}
 
 export default {
   name: 'board',
@@ -68,29 +45,100 @@ export default {
     return {
       // TODO: This needs to be modeled after BoardState
       gameID: this.$route.params.id,
+      locked: false,  // `locked` is set to true once the players and turn order are decided.
+      mulligan: true, // `mulligan` is set to true until no one is mulling anymore.
       self: {
-        id: 4,
-        username: "shakezula",
+        username: this.$currentUser(),
         boardstate: {
+          commander: [],
           library: [],
           graveyard: [],
           exiled: [],
           battlefield: [],
           hand: [],
           controlled: [],
+          revealed: [],
         }
       },
-      opponents: [{
-        id: 1,
-        username: "player1",
-        boardstate: {
-          library: [testCard],
-          graveyard: [testCard],
-          exiled: [testCard],
-          battlefield: [testCard],
-          controlled: [testCard],
+    }
+  },
+  computed: {
+    username: (state) => this.$currentUser()
+  },
+  apollo: {
+    boardstates() {
+      // get gameID and userID here so they're not tied to `self` 
+      return {
+        query: gql`
+          query($gameID: String!) {
+            boardstates(gameID: $gameID) {
+              Commander{ Name }
+              Library { Name }
+              Graveyard { Name }
+              Exiled { Name }
+              Field { Name }
+              Hand { Name }
+              Revealed { Name }
+              Controlled { Name } 
+            }
+          }
+        `,
+        variables: ({ gameID: this.$route.params.id }),
+        subscribeToMore: {
+          document: gql`
+            subscription($boardstate: InputBoardState!) {
+              boardUpdate(boardstate: $boardstate) {
+                GameID
+                Commander{ Name }
+                Library { Name }
+                Graveyard { Name }
+                Exiled { Name }
+                Field { Name }
+                Hand { Name }
+                Revealed { Name }
+                Controlled { Name } 
+              }
+            }
+          `,
+          variables: () => {
+            console.log('this.route: ', this.$route.params.id)
+            const vars = {
+              boardstate: {
+                User: {
+                  Username: this.$currentUser()
+                },
+                GameID: this.$route.params.id,
+                Commander: [ ...this.self.boardstate.commander ],
+                Library: [ ...this.self.boardstate.library ],
+                Graveyard: [ ...this.self.boardstate.graveyard ],
+                Exiled: [...this.self.boardstate.exiled ],
+                Field: [...this.self.boardstate.battlefield ],
+                Hand: [...this.self.boardstate.hand ],
+                Revealed: [...this.self.boardstate.revealed ],
+                Controlled: [...this.self.boardstate.controlled]
+              },
+            }
+
+            console.log('opponents#variables: ', vars)
+            console.log(vars.boardstate.GameID)
+            return vars
+          },
+          updateQuery: (prev, { subscriptionData }) => {
+            console.log('opponents()#previous: ', prev)
+            console.log('opponents()#subscriptionData: ', subscriptionData)
+          }
+        },
+        error(err) {
+          console.log('error getting boardstates: ', err)
+          const notif = this.$buefy.notification.open({
+            duration: 5000,
+            message: `Error occurred when fetching opponents boardstates. Check your game ID and try again.`,
+            position: 'is-top-right',
+            type: 'is-danger',
+            hasIcon: true
+          })
         }
-      }]
+      }
     }
   },
   components: {
