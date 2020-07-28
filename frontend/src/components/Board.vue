@@ -5,13 +5,15 @@
     <div class="opponents">
       <div :key="b.id" v-for="b in boardstates" class="shell">
         <h1 class="title">{{ b.username }}</h1>
-        <PlayerState v-bind="o.boardstate"></PlayerState>
+        <PlayerState v-bind="b"></PlayerState>
       </div >
     </div>
     <hr>
     <div class="self shell">
       <h1 class="title">{{ self.username }}</h1>
-      <SelfState></SelfState>
+      <SelfState
+        :boardstate="self.boardstate"
+      ></SelfState>
     </div>
     <div class="shell controlpanel columns">
       <div class="columns">
@@ -35,9 +37,7 @@
 import gql from 'graphql-tag';
 import PlayerState from '@/components/PlayerState.vue'
 import SelfState from '@/components/SelfState.vue'
-import Card from '@/components/Card.vue'
 import TurnTracker from '@/components/TurnTracker.vue'
-import draggable from 'vuedraggable'
 
 export default {
   name: 'board',
@@ -63,9 +63,35 @@ export default {
     }
   },
   computed: {
-    username: (state) => this.$currentUser()
+    username: (state) => this.$currentUser(),
   },
   apollo: {
+    selfstate() {
+      return {
+        query: gql`
+          query($gameID: String!, $userID: String) {
+            boardstates(gameID: $gameID, userID: $userID) {
+              Commander{ Name }
+              Library { Name }
+              Graveyard { Name }
+              Exiled { Name }
+              Field { Name }
+              Hand { Name }
+              Revealed { Name }
+              Controlled { Name } 
+            }
+          }
+        `,
+        variables: ({ 
+          gameID: this.$route.params.id,
+          userID: this.$currentUser()
+        }),
+        update(data) {
+          this.selfstate = data.boardstates[0]
+          console.table(this.selfstate)
+        }
+      }
+    },
     boardstates() {
       // get gameID and userID here so they're not tied to `self` 
       return {
@@ -101,7 +127,6 @@ export default {
             }
           `,
           variables: () => {
-            console.log('this.route: ', this.$route.params.id)
             const vars = {
               boardstate: {
                 User: {
@@ -118,9 +143,6 @@ export default {
                 Controlled: [...this.self.boardstate.controlled]
               },
             }
-
-            console.log('opponents#variables: ', vars)
-            console.log(vars.boardstate.GameID)
             return vars
           },
           updateQuery: (prev, { subscriptionData }) => {
@@ -145,7 +167,6 @@ export default {
     TurnTracker,
     PlayerState,
     SelfState,
-    Card
   },
 
 }
