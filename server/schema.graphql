@@ -133,14 +133,14 @@ input InputBoardState {
   User: InputUser!
   GameID: String!
   Decklist: String,
-  Commander: [InputCard!]!
-  Library: [InputCard]!
-  Graveyard: [InputCard]!
-  Exiled: [InputCard]!
-  Field: [InputCard]!
-  Hand: [InputCard]!
-  Revealed: [InputCard]!
-  Controlled: [InputCard]!
+  Commander: [InputCard]
+  Library: [InputCard]
+  Graveyard: [InputCard]
+  Exiled: [InputCard]
+  Field: [InputCard]
+  Hand: [InputCard]
+  Revealed: [InputCard]
+  Controlled: [InputCard]
   Counters: [InputCounter]
   Emblems: [InputEmblem]
 }

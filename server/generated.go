@@ -138,7 +138,7 @@ type ComplexityRoot struct {
 		Decks       func(childComplexity int, userID string) int
 		Games       func(childComplexity int) int
 		Messages    func(childComplexity int) int
-		Search      func(childComplexity int, name string) int
+		Search      func(childComplexity int, name *string, colors *string, colorIdentity *string, keywords []*string) int
 		Users       func(childComplexity int) int
 	}
 
@@ -184,7 +184,7 @@ type QueryResolver interface {
 	Decks(ctx context.Context, userID string) ([]*Deck, error)
 	Card(ctx context.Context, name string, id *string) ([]*Card, error)
 	Cards(ctx context.Context, list []string) ([]*Card, error)
-	Search(ctx context.Context, name string) ([]*Card, error)
+	Search(ctx context.Context, name *string, colors *string, colorIdentity *string, keywords []*string) ([]*Card, error)
 }
 type SubscriptionResolver interface {
 	MessagePosted(ctx context.Context, user string) (<-chan *Message, error)
@@ -714,7 +714,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.Search(childComplexity, args["name"].(string)), true
+		return e.complexity.Query.Search(childComplexity, args["name"].(*string), args["colors"].(*string), args["colorIdentity"].(*string), args["keywords"].([]*string)), true
 
 	case "Query.users":
 		if e.complexity.Query.Users == nil {
@@ -938,7 +938,7 @@ type Query {
   decks(userID: String!): [Deck!]
   card(name: String!, id: String): [Card!]
   cards(list: [String!]): [Card!]!
-  search(name: String!): [Card]
+  search(name: String, colors: String, colorIdentity: String, keywords: [String]): [Card]
 }
 
 type Subscription {
@@ -1053,14 +1053,14 @@ input InputBoardState {
   User: InputUser!
   GameID: String!
   Decklist: String,
-  Commander: [InputCard!]!
-  Library: [InputCard]!
-  Graveyard: [InputCard]!
-  Exiled: [InputCard]!
-  Field: [InputCard]!
-  Hand: [InputCard]!
-  Revealed: [InputCard]!
-  Controlled: [InputCard]!
+  Commander: [InputCard]
+  Library: [InputCard]
+  Graveyard: [InputCard]
+  Exiled: [InputCard]
+  Field: [InputCard]
+  Hand: [InputCard]
+  Revealed: [InputCard]
+  Controlled: [InputCard]
   Counters: [InputCounter]
   Emblems: [InputEmblem]
 }
@@ -1356,14 +1356,38 @@ func (ec *executionContext) field_Query_decks_args(ctx context.Context, rawArgs 
 func (ec *executionContext) field_Query_search_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 string
+	var arg0 *string
 	if tmp, ok := rawArgs["name"]; ok {
-		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		arg0, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
 	args["name"] = arg0
+	var arg1 *string
+	if tmp, ok := rawArgs["colors"]; ok {
+		arg1, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["colors"] = arg1
+	var arg2 *string
+	if tmp, ok := rawArgs["colorIdentity"]; ok {
+		arg2, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["colorIdentity"] = arg2
+	var arg3 []*string
+	if tmp, ok := rawArgs["keywords"]; ok {
+		arg3, err = ec.unmarshalOString2ᚕᚖstring(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["keywords"] = arg3
 	return args, nil
 }
 
@@ -3713,7 +3737,7 @@ func (ec *executionContext) _Query_search(ctx context.Context, field graphql.Col
 	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
 	resTmp := ec._fieldMiddleware(ctx, nil, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Search(rctx, args["name"].(string))
+		return ec.resolvers.Query().Search(rctx, args["name"].(*string), args["colors"].(*string), args["colorIdentity"].(*string), args["keywords"].([]*string))
 	})
 
 	if resTmp == nil {
@@ -5347,49 +5371,49 @@ func (ec *executionContext) unmarshalInputInputBoardState(ctx context.Context, o
 			}
 		case "Commander":
 			var err error
-			it.Commander, err = ec.unmarshalNInputCard2ᚕᚖgithubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐInputCardᚄ(ctx, v)
+			it.Commander, err = ec.unmarshalOInputCard2ᚕᚖgithubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐInputCard(ctx, v)
 			if err != nil {
 				return it, err
 			}
 		case "Library":
 			var err error
-			it.Library, err = ec.unmarshalNInputCard2ᚕᚖgithubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐInputCard(ctx, v)
+			it.Library, err = ec.unmarshalOInputCard2ᚕᚖgithubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐInputCard(ctx, v)
 			if err != nil {
 				return it, err
 			}
 		case "Graveyard":
 			var err error
-			it.Graveyard, err = ec.unmarshalNInputCard2ᚕᚖgithubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐInputCard(ctx, v)
+			it.Graveyard, err = ec.unmarshalOInputCard2ᚕᚖgithubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐInputCard(ctx, v)
 			if err != nil {
 				return it, err
 			}
 		case "Exiled":
 			var err error
-			it.Exiled, err = ec.unmarshalNInputCard2ᚕᚖgithubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐInputCard(ctx, v)
+			it.Exiled, err = ec.unmarshalOInputCard2ᚕᚖgithubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐInputCard(ctx, v)
 			if err != nil {
 				return it, err
 			}
 		case "Field":
 			var err error
-			it.Field, err = ec.unmarshalNInputCard2ᚕᚖgithubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐInputCard(ctx, v)
+			it.Field, err = ec.unmarshalOInputCard2ᚕᚖgithubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐInputCard(ctx, v)
 			if err != nil {
 				return it, err
 			}
 		case "Hand":
 			var err error
-			it.Hand, err = ec.unmarshalNInputCard2ᚕᚖgithubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐInputCard(ctx, v)
+			it.Hand, err = ec.unmarshalOInputCard2ᚕᚖgithubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐInputCard(ctx, v)
 			if err != nil {
 				return it, err
 			}
 		case "Revealed":
 			var err error
-			it.Revealed, err = ec.unmarshalNInputCard2ᚕᚖgithubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐInputCard(ctx, v)
+			it.Revealed, err = ec.unmarshalOInputCard2ᚕᚖgithubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐInputCard(ctx, v)
 			if err != nil {
 				return it, err
 			}
 		case "Controlled":
 			var err error
-			it.Controlled, err = ec.unmarshalNInputCard2ᚕᚖgithubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐInputCard(ctx, v)
+			it.Controlled, err = ec.unmarshalOInputCard2ᚕᚖgithubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐInputCard(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -6837,58 +6861,6 @@ func (ec *executionContext) unmarshalNInputBoardState2ᚖgithubᚗcomᚋdylanlot
 	return &res, err
 }
 
-func (ec *executionContext) unmarshalNInputCard2githubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐInputCard(ctx context.Context, v interface{}) (InputCard, error) {
-	return ec.unmarshalInputInputCard(ctx, v)
-}
-
-func (ec *executionContext) unmarshalNInputCard2ᚕᚖgithubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐInputCard(ctx context.Context, v interface{}) ([]*InputCard, error) {
-	var vSlice []interface{}
-	if v != nil {
-		if tmp1, ok := v.([]interface{}); ok {
-			vSlice = tmp1
-		} else {
-			vSlice = []interface{}{v}
-		}
-	}
-	var err error
-	res := make([]*InputCard, len(vSlice))
-	for i := range vSlice {
-		res[i], err = ec.unmarshalOInputCard2ᚖgithubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐInputCard(ctx, vSlice[i])
-		if err != nil {
-			return nil, err
-		}
-	}
-	return res, nil
-}
-
-func (ec *executionContext) unmarshalNInputCard2ᚕᚖgithubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐInputCardᚄ(ctx context.Context, v interface{}) ([]*InputCard, error) {
-	var vSlice []interface{}
-	if v != nil {
-		if tmp1, ok := v.([]interface{}); ok {
-			vSlice = tmp1
-		} else {
-			vSlice = []interface{}{v}
-		}
-	}
-	var err error
-	res := make([]*InputCard, len(vSlice))
-	for i := range vSlice {
-		res[i], err = ec.unmarshalNInputCard2ᚖgithubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐInputCard(ctx, vSlice[i])
-		if err != nil {
-			return nil, err
-		}
-	}
-	return res, nil
-}
-
-func (ec *executionContext) unmarshalNInputCard2ᚖgithubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐInputCard(ctx context.Context, v interface{}) (*InputCard, error) {
-	if v == nil {
-		return nil, nil
-	}
-	res, err := ec.unmarshalNInputCard2githubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐInputCard(ctx, v)
-	return &res, err
-}
-
 func (ec *executionContext) unmarshalNInputGame2githubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐInputGame(ctx context.Context, v interface{}) (InputGame, error) {
 	return ec.unmarshalInputInputGame(ctx, v)
 }
@@ -7516,6 +7488,26 @@ func (ec *executionContext) unmarshalOInputCard2githubᚗcomᚋdylanlottᚋedh�
 	return ec.unmarshalInputInputCard(ctx, v)
 }
 
+func (ec *executionContext) unmarshalOInputCard2ᚕᚖgithubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐInputCard(ctx context.Context, v interface{}) ([]*InputCard, error) {
+	var vSlice []interface{}
+	if v != nil {
+		if tmp1, ok := v.([]interface{}); ok {
+			vSlice = tmp1
+		} else {
+			vSlice = []interface{}{v}
+		}
+	}
+	var err error
+	res := make([]*InputCard, len(vSlice))
+	for i := range vSlice {
+		res[i], err = ec.unmarshalOInputCard2ᚖgithubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐInputCard(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
 func (ec *executionContext) unmarshalOInputCard2ᚖgithubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐInputCard(ctx context.Context, v interface{}) (*InputCard, error) {
 	if v == nil {
 		return nil, nil
@@ -7753,6 +7745,38 @@ func (ec *executionContext) marshalOString2ᚕstringᚄ(ctx context.Context, sel
 	ret := make(graphql.Array, len(v))
 	for i := range v {
 		ret[i] = ec.marshalNString2string(ctx, sel, v[i])
+	}
+
+	return ret
+}
+
+func (ec *executionContext) unmarshalOString2ᚕᚖstring(ctx context.Context, v interface{}) ([]*string, error) {
+	var vSlice []interface{}
+	if v != nil {
+		if tmp1, ok := v.([]interface{}); ok {
+			vSlice = tmp1
+		} else {
+			vSlice = []interface{}{v}
+		}
+	}
+	var err error
+	res := make([]*string, len(vSlice))
+	for i := range vSlice {
+		res[i], err = ec.unmarshalOString2ᚖstring(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) marshalOString2ᚕᚖstring(ctx context.Context, sel ast.SelectionSet, v []*string) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	for i := range v {
+		ret[i] = ec.marshalOString2ᚖstring(ctx, sel, v[i])
 	}
 
 	return ret
