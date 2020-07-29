@@ -28,22 +28,21 @@ export default {
   data () {
     return {
       gameID: this.$route.params.id,
-      turn: {
-        player: {},
-        phase: {}
-      },
-      props: {
-        library: Array,
-        graveyard: Array,
-        exiled: Array,
-        battlefield: Array,
-        controlled: Array
-      }
     }
   },
-  created () {
-    console.log('game id: ', this.$route.params.id)
+  props: {
+    library: Array,
+    hand: Array,
+    graveyard: Array,
+    exiled: Array,
+    battlefield: Array,
+    controlled: Array,
+    revealed: Array,
+    emblems: Array
   },
+  created () {
+    console.log('PlayerState#gameID: ', this.$route.params.id)
+  }
 }
 </script>
 <style media="screen">

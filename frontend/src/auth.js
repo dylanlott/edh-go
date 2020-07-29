@@ -5,7 +5,6 @@ const AuthPlugin = {
     };
     Vue.prototype.$currentUser = function () {
       const user = window.localStorage.getItem('user')
-      console.log('getting user: ', user)
       if (!user) {
         return undefined
       }

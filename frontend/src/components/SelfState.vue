@@ -1,33 +1,33 @@
 <template>
   <div>
     <div class="columns">
-      <div class="column is-10">
+      <!-- <div class="column is-10">
         <p class="title is-5">Battlefield</p>
         <draggable
           class="card-wrapper"
-          v-model="boardstate.field"
+          v-model="boardstate.Field"
           group="people"
           @start="drag=true"
           @end="drag=false">
           <div 
-            v-for="card in boardstate.field" 
+            v-for="card in boardstate.Field" 
             :key="card.id"
             class="columns">
             <Card v-bind="card"/>
           </div>
         </draggable>
-      </div>
+      </div> -->
     </div>
     <div class="columns">
-      <div class="column">
+      <!-- <div class="column">
         <p class="title is-5">Exiled</p>
         <draggable
         class="column card-wrapper"
-        v-model="boardstate.exiled"
+        v-model="boardstate.Exiled"
         group="people"
         @start="drag=true"
         @end="drag=false">
-           <div v-for="card in boardstate.exiled" :key="card.id">
+           <div v-for="card in boardstate.Exiled" :key="card.id">
              <Card v-bind="card"/>
            </div>
         </draggable>
@@ -36,11 +36,11 @@
         <p class="title is-5">Graveyard</p>
         <draggable
         class="column card-wrapper"
-        v-model="boardstate.graveyard"
+        v-model="boardstate.Graveyard"
         group="people"
         @start="drag=true"
         @end="drag=false">
-           <div v-for="card in boardstate.graveyard" :key="card.id">
+           <div v-for="card in boardstate.Graveyard" :key="card.id">
              <Card v-bind="card"/>
            </div>
         </draggable>
@@ -49,11 +49,11 @@
         <p class="title is-5">Revealed</p>
         <draggable
         class="column card-wrapper"
-        v-model="boardstate.revealed"
+        v-model="boardstate.Revealed"
         group="people"
         @start="drag=true"
         @end="drag=false">
-           <div v-for="card in boardstate.revealed" :key="card.id">
+           <div v-for="card in boardstate.Revealed" :key="card.id">
              <Card v-bind="card"/>
            </div>
         </draggable>
@@ -75,36 +75,36 @@
         <p class="title is-5">Library</p>
         <draggable
         class="column card-wrapper"
-        v-model="boardstate.library"
+        v-model="boardstate.Library"
         group="people"
         @start="drag=true"
         @end="drag=false">
-           <div v-for="card in boardstate.library" :key="card.id">
+           <div v-for="card in boardstate.Library" :key="card.id">
              <Card v-bind="card" hidden="true"/>
            </div>
         </draggable>
-      </div>
+      </div> -->
     </div>
     <div class="columns">
-      <div class="column">
+      <!-- <div class="column">
         <p class="title is-4">Hand</p>
         <draggable
         class="columns card-wrapper"
-        v-model="boardstate.hand"
+        v-model="boardstate.Hand"
         group="people"
         @start="drag=true"
         @end="drag=false">
            <div 
             class="column mtg-card"
-            v-for="card in boardstate.hand"
+            v-for="card in boardstate.Hand"
             :key="card.id">
             <Card v-bind="card"></Card>
            </div>
         </draggable>
-      </div>
+      </div> -->
     </div>
     <hr>
-    <code>{{ boardstates }}</code>
+    <code>{{ self }}</code>
   </div>
 </template>
 <script>
@@ -112,116 +112,34 @@ import draggable from 'vuedraggable'
 import Card from '@/components/Card'
 import gql from 'graphql-tag'
 
-const updateBoardStateQuery = gql`
-  mutation ($boardstate: InputBoardState!) {
-    updateBoardState(input: $boardstate) {
-      User {
-        username
-      }
-      GameID
-      Commander {
-        Name
-      }
-      Library {
-        Name
-      }
-      Graveyard {
-        Name
-      }
-      Exiled {
-        Name
-      }
-      Revealed {
-        Name
-      }
-    }
-  }
-`
-
-const getBoardstate = gql`
-  query($gameID: String!) {
-    boardstates(gameID: $gameID) {
-      User {
-        id
-      }
-      Library {
-        Name
-        ID
-      }
-      Graveyard {
-        Name
-        ID
-      }
-      Exiled {
-        Name
-        ID
-      }
-      Field {
-        Name
-        ID
-      }
-      Hand {
-        Name
-        ID
-      }
-      Revealed {
-        Name
-        ID
-      }
-      Controlled {
-        Name
-        ID
-      }
-    }
-  }
-`
-
-const boardstateSubscription = gql`
-  subscription ($boardstate: InputBoardState!) {
-    boardUpdate(boardstate: $boardstate) {
-      GameID
-      User {
-        username
-      }
-    }
-  }
-`
-
 export default {
   name: 'selfstate',
   data () {
     return {
       gameID: this.$route.params.id,
-      boardstates: [],
-      boardstate: {
-        graveyard: [],
-        library: [],
-        exiled: [],
-        hand: [],
-        battlefield: [],
-        emblems: [],
-        revealed: [],
-      },
     }
   },
-  apollo: {
-
-  },
+  props: ['self'],
   methods: {
     draw () {
-      console.log('this.boardstates: ', this.boardstates)
-      if (this.boardstates[0].Library.length == 0) {
-        return
-      }
-
-      const card = this.boardstates[0].Library.shift()
-      this.boardstates[0].Hand.push(card)
+      console.log('TODO')
     },
     shuffle () {
       console.log('TODO')
     },
     handleBoardUpdate() {
-      console.log('TODO')
+      console.log('handle board update')
+      this.$apollo.mutate({
+
+      })
+      .catch((res) => {
+        console.log('pushed updated board state: ', res)
+        return res
+      })
+      .catch((err) => {
+        console.log('error pushing board update: ', err)
+        return err
+      })
     }
   },
   components: {

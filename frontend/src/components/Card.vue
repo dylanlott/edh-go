@@ -3,7 +3,8 @@
     class="mtg-card card"
     v-bind:class="{
       'd-none': hidden,
-      'tapped': tapped
+      'tapped': tapped,
+      'flipped': flipped
     }"
   >
     <!-- # TODO: Get images working for cards, but for now text will do.
@@ -26,12 +27,13 @@ export default {
   name: 'Card',
   data () {
     return {
-      hidden: false,
-      tapped: false,
-      trackers: {},
-      labels: {},
-      counters: {},
-      reminders: {},
+      hidden: false, // if a card can be seen at all - visibility off
+      flipped: false, // if a card is upside down or not
+    //   tapped: false, // if a card is tapped 
+      trackers: {}, // player-assigned trackers 
+      labels: {}, // player assigned labels
+      counters: {}, // game-assigned counters such as poison or infect
+      reminders: {}, // untap effects, etb effect reminders, etc...
     }
   },
   props: [
@@ -48,6 +50,7 @@ export default {
     'subtypes',
     'types,',
     'image',
+    'tapped',
   ],
   methods: {
     addCounter (name) {

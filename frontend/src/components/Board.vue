@@ -12,7 +12,7 @@
     <div class="self shell">
       <h1 class="title">{{ self.username }}</h1>
       <SelfState
-        :boardstate="self.boardstate"
+        v-bind:self="self"
       ></SelfState>
     </div>
     <div class="shell controlpanel columns">
@@ -50,14 +50,14 @@ export default {
       self: {
         username: this.$currentUser(),
         boardstate: {
-          commander: [],
-          library: [],
-          graveyard: [],
-          exiled: [],
-          battlefield: [],
-          hand: [],
-          controlled: [],
-          revealed: [],
+          // commander: [],
+          // library: [],
+          // graveyard: [],
+          // exiled: [],
+          // battlefield: [],
+          // hand: [],
+          // controlled: [],
+          // revealed: [],
         }
       },
     }
@@ -87,8 +87,8 @@ export default {
           userID: this.$currentUser()
         }),
         update(data) {
-          this.selfstate = data.boardstates[0]
-          console.table(this.selfstate)
+          this.self.boardstate = data.boardstates[0]
+          console.table(this.self.boardstate)
         }
       }
     },
@@ -133,14 +133,14 @@ export default {
                   Username: this.$currentUser()
                 },
                 GameID: this.$route.params.id,
-                Commander: [ ...this.self.boardstate.commander ],
-                Library: [ ...this.self.boardstate.library ],
-                Graveyard: [ ...this.self.boardstate.graveyard ],
-                Exiled: [...this.self.boardstate.exiled ],
-                Field: [...this.self.boardstate.battlefield ],
-                Hand: [...this.self.boardstate.hand ],
-                Revealed: [...this.self.boardstate.revealed ],
-                Controlled: [...this.self.boardstate.controlled]
+                Commander: Object.assign({}, this.self.boardstate.Commander),
+                Library: Object.assign({}, this.self.boardstate.Library),
+                Graveyard: Object.assign({}, this.self.boardstate.Graveyard),
+                Exiled: Object.assign({}, this.self.boardstate.Exiled),
+                Field: Object.assign({}, this.self.boardstate.Field),
+                Hand: Object.assign({}, this.self.boardstate.Hand),
+                Revealed: Object.assign({}, this.self.boardstate.Revealed),
+                Controlled: Object.assign({}, this.self.boardstate.Controlled)
               },
             }
             return vars
