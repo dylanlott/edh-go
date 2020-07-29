@@ -49,16 +49,7 @@ export default {
       mulligan: true, // `mulligan` is set to true until no one is mulling anymore.
       self: {
         username: this.$currentUser(),
-        boardstate: {
-          // commander: [],
-          // library: [],
-          // graveyard: [],
-          // exiled: [],
-          // battlefield: [],
-          // hand: [],
-          // controlled: [],
-          // revealed: [],
-        }
+        boardstate: { }
       },
     }
   },
@@ -88,7 +79,7 @@ export default {
         }),
         update(data) {
           this.self.boardstate = data.boardstates[0]
-          console.table(this.self.boardstate)
+          console.table('update: ', this.self.boardstate)
         }
       }
     },
@@ -126,29 +117,33 @@ export default {
               }
             }
           `,
-          variables: () => {
-            const vars = {
-              boardstate: {
-                User: {
-                  Username: this.$currentUser()
-                },
-                GameID: this.$route.params.id,
-                Commander: Object.assign({}, this.self.boardstate.Commander),
-                Library: Object.assign({}, this.self.boardstate.Library),
-                Graveyard: Object.assign({}, this.self.boardstate.Graveyard),
-                Exiled: Object.assign({}, this.self.boardstate.Exiled),
-                Field: Object.assign({}, this.self.boardstate.Field),
-                Hand: Object.assign({}, this.self.boardstate.Hand),
-                Revealed: Object.assign({}, this.self.boardstate.Revealed),
-                Controlled: Object.assign({}, this.self.boardstate.Controlled)
+          variables: {
+            boardstate: {
+              User: {
+                Username: this.$currentUser()
               },
-            }
-            return vars
+              GameID: this.$route.params.id,
+              Commander: this.self.boardstate.Commander 
+                ? [...this.self.boardstate.Commander] : [],
+              Library: this.self.boardstate.Library 
+                ? [...this.self.boardstate.Library] : [],
+              Graveyard: this.self.boardstate.Graveyard
+                ? [...this.self.boardstate.Graveyard] : [],
+              Exiled: this.self.boardstate.Exiled
+                ? [...this.self.boardstate.Exiled] : [],
+              Field: this.self.boardstate.Field 
+                ? [...this.self.boardstate.Field] : [],
+              Hand: this.self.boardstate.Hand
+                ? [...this.self.boardstate.Hand] : [],
+              Revealed: this.self.boardstate.Revealed
+                ? [...this.self.boardstate.Revealed] : [],
+              Controlled: this.self.boardstate.Controlled 
+                ? [...this.self.boardstate.Controlled] : []
+            },
           },
-          updateQuery: (prev, { subscriptionData }) => {
-            console.log('opponents()#previous: ', prev)
-            console.log('opponents()#subscriptionData: ', subscriptionData)
-          }
+          results ({ data }) {
+            console.log('subscription results: ', data)
+          },
         },
         error(err) {
           console.log('error getting boardstates: ', err)
