@@ -3,7 +3,7 @@
     class="mtg-card card"
     v-bind:class="{
       'd-none': hidden,
-      'tapped': tapped,
+      'tapped': Tapped,
       'flipped': flipped
     }"
   >
@@ -12,12 +12,13 @@
       <img class="card-img-top" src="https://via.placeholder.com/1000x400.jpg">
     -->
     <div class="card-body">
-      <p class="card-title"><b>{{ name }}</b></p>
-      <p class="card-text">{{ convertedManaCost }} - {{ manaCost }} </p>
-      <p class="card-text">{{ types }}</p>
-      <p class="card-text">{{ text }}</p>
-      <div class="columns">
-        <div class="column">{{ power }} / {{ toughness }}</div>
+      <p class="card-title"><b>{{ Name }}</b></p>
+      <p class="card-text"
+        v-if="CMC || ManaCost">{{ CMC }} - {{ ManaCost }} </p>
+      <p class="card-text">{{ Types }} {{ Supertypes }} {{ Subtypes }}</p>
+      <p class="card-text">{{ Text }}</p>
+      <div class="columns" v-if="Power || Toughness">
+        <div class="column">{{ Power }} / {{ Toughness }}</div>
       </div>
     </div>
   </div>
@@ -37,20 +38,19 @@ export default {
     }
   },
   props: [
-    'id',
-    'name',
-    'convertedManaCost',
-    'manaCost',
+    'ID',
+    'Name',
+    'CMC',
+    'ManaCost',
     'colorIdentity',
-    'power',
-    'toughness',
-    'text',
-    'types',
-    'supertypes',
-    'subtypes',
-    'types,',
-    'image',
-    'tapped',
+    'Power',
+    'Toughness',
+    'Text',
+    'Types',
+    'Supertypes',
+    'Subtypes',
+    'ScryfallID',
+    'Tapped',
   ],
   methods: {
     addCounter (name) {
@@ -69,7 +69,7 @@ export default {
       this.labels.name
     },
     tap () {
-      this.tapped = !this.tapped
+      this.Tapped = !this.Tapped
     },
     moveTo (dst) {
     },

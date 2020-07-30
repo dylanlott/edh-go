@@ -1,4 +1,6 @@
-const updateBoardStateQuery = gql`
+import gql from 'graphql-tag';
+
+export const updateBoardStateQuery = gql`
   mutation ($boardstate: InputBoardState!) {
     updateBoardState(input: $boardstate) {
       User {
@@ -24,7 +26,7 @@ const updateBoardStateQuery = gql`
   }
 `
 
-const getBoardstate = gql`
+export const getBoardstate = gql`
   query($gameID: String!) {
     boardstates(gameID: $gameID) {
       User {
@@ -62,7 +64,7 @@ const getBoardstate = gql`
   }
 `
 
-const boardstateSubscription = gql`
+export const boardstateSubscription = gql`
   subscription ($boardstate: InputBoardState!) {
     boardUpdate(boardstate: $boardstate) {
       GameID
@@ -73,7 +75,145 @@ const boardstateSubscription = gql`
   }
 `
 
-// export all of the queries we defined.
-export default {
-  boardstateSubscription: boardstateSubscription
-}
+export const selfStateQuery = gql`
+  query($gameID: String!, $userID: String) {
+    boardstates(gameID: $gameID, userID: $userID) {
+      Commander { 
+        Name 
+        ID 
+        Colors 
+        ColorIdentity 
+        ManaCost 
+        Power 
+        Toughness 
+        CMC 
+        Text 
+        Types 
+        Subtypes 
+        Supertypes 
+        IsTextless 
+        TCGID 
+        ScryfallID 
+      }
+      Library { 
+        Name 
+        ID 
+        Colors 
+        ColorIdentity 
+        ManaCost 
+        Power 
+        Toughness 
+        CMC 
+        Text 
+        Types 
+        Subtypes 
+        Supertypes 
+        IsTextless 
+        TCGID 
+        ScryfallID 
+      }
+      Graveyard { 
+        Name 
+        ID 
+        Colors 
+        ColorIdentity 
+        ManaCost 
+        Power 
+        Toughness 
+        CMC 
+        Text 
+        Types 
+        Subtypes 
+        Supertypes 
+        IsTextless 
+        TCGID 
+        ScryfallID 
+      }
+      Exiled { 
+        Name 
+        ID 
+        Colors 
+        ColorIdentity 
+        ManaCost 
+        Power 
+        Toughness 
+        CMC 
+        Text 
+        Types 
+        Subtypes 
+        Supertypes 
+        IsTextless 
+        TCGID 
+        ScryfallID 
+      }
+      Field { 
+        Name 
+        ID 
+        Colors 
+        ColorIdentity 
+        ManaCost 
+        Power 
+        Toughness 
+        CMC 
+        Text 
+        Types 
+        Subtypes 
+        Supertypes 
+        IsTextless 
+        TCGID 
+        ScryfallID 
+      }
+      Hand { 
+        Name 
+        ID 
+        Colors 
+        ColorIdentity 
+        ManaCost 
+        Power 
+        Toughness 
+        CMC 
+        Text 
+        Types 
+        Subtypes 
+        Supertypes 
+        IsTextless 
+        TCGID 
+        ScryfallID 
+      }
+      Revealed { 
+        Name 
+        ID 
+        Colors 
+        ColorIdentity 
+        ManaCost 
+        Power 
+        Toughness 
+        CMC 
+        Text 
+        Types 
+        Subtypes 
+        Supertypes 
+        IsTextless 
+        TCGID 
+        ScryfallID 
+      }
+      Controlled { 
+        Name 
+        ID 
+        Colors 
+        ColorIdentity 
+        ManaCost 
+        Power 
+        Toughness 
+        CMC 
+        Text 
+        Types 
+        Subtypes 
+        Supertypes 
+        IsTextless 
+        TCGID 
+        ScryfallID 
+      } 
+    }
+  }
+`

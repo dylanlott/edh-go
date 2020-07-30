@@ -20,8 +20,8 @@ func (s *graphQLServer) Card(
 	}
 	rows, err := s.cardDB.Query(`SELECT "id", "name", "colors", "colorIdentity",
 		"convertedManaCost", "manaCost", "uuid", "power", "toughness", "types",
-		"subtypes", "supertypes", "isTextless", "text", "tcgplayerProductId"
-		FROM "cards" WHERE "name" = ?`, name)
+		"subtypes", "supertypes", "isTextless", "text", "tcgplayerProductId", 
+		"scryfallIllustrationId" FROM "cards" WHERE "name" = ?`, name)
 	if err != nil {
 		return nil, errs.New("failed to run query: %s", err)
 	}
@@ -29,27 +29,28 @@ func (s *graphQLServer) Card(
 	cards := []*Card{}
 	for rows.Next() {
 		var (
-			id                 *int
-			name               *string
-			colors             *string
-			colorIdentity      *string
-			convertedManaCost  *string
-			manaCost           *string
-			uuid               *string
-			power              *string
-			toughness          *string
-			types              *string
-			subtypes           *string
-			supertypes         *string
-			isTextless         *int
-			text               *string
-			tcgplayerProductId *int
+			id                     *int
+			name                   *string
+			colors                 *string
+			colorIdentity          *string
+			convertedManaCost      *string
+			manaCost               *string
+			uuid                   *string
+			power                  *string
+			toughness              *string
+			types                  *string
+			subtypes               *string
+			supertypes             *string
+			isTextless             *int
+			text                   *string
+			tcgplayerProductID     *int
+			scryfallIllustrationID *string
 		)
 
 		if err := rows.Scan(&id, &name, &colors, &colorIdentity,
 			&convertedManaCost, &manaCost, &uuid, &power, &toughness, &types,
 			&subtypes, &supertypes, &isTextless, &text,
-			&tcgplayerProductId); err != nil {
+			&tcgplayerProductID, &scryfallIllustrationID); err != nil {
 			log.Printf("error scanning rows for card query: %s", err)
 			continue
 		}
@@ -70,6 +71,7 @@ func (s *graphQLServer) Card(
 			Subtypes:      subtypes,
 			Supertypes:    supertypes,
 			Text:          text,
+			ScryfallID:    scryfallIllustrationID,
 		}
 		cards = append(cards, card)
 	}
