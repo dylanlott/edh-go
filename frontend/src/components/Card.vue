@@ -30,7 +30,6 @@ export default {
     return {
       hidden: false, // if a card can be seen at all - visibility off
       flipped: false, // if a card is upside down or not
-    //   tapped: false, // if a card is tapped 
       trackers: {}, // player-assigned trackers 
       labels: {}, // player assigned labels
       counters: {}, // game-assigned counters such as poison or infect

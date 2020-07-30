@@ -7,21 +7,142 @@ export const updateBoardStateQuery = gql`
         username
       }
       GameID
-      Commander {
-        Name
+      Commander { 
+        Name 
+        ID 
+        Colors 
+        ColorIdentity 
+        ManaCost 
+        Power 
+        Toughness 
+        CMC 
+        Text 
+        Types 
+        Subtypes 
+        Supertypes 
+        IsTextless 
+        TCGID 
+        ScryfallID 
       }
-      Library {
-        Name
+      Library { 
+        Name 
+        ID 
+        Colors 
+        ColorIdentity 
+        ManaCost 
+        Power 
+        Toughness 
+        CMC 
+        Text 
+        Types 
+        Subtypes 
+        Supertypes 
+        IsTextless 
+        TCGID 
+        ScryfallID 
       }
-      Graveyard {
-        Name
+      Graveyard { 
+        Name 
+        ID 
+        Colors 
+        ColorIdentity 
+        ManaCost 
+        Power 
+        Toughness 
+        CMC 
+        Text 
+        Types 
+        Subtypes 
+        Supertypes 
+        IsTextless 
+        TCGID 
+        ScryfallID 
       }
-      Exiled {
-        Name
+      Exiled { 
+        Name 
+        ID 
+        Colors 
+        ColorIdentity 
+        ManaCost 
+        Power 
+        Toughness 
+        CMC 
+        Text 
+        Types 
+        Subtypes 
+        Supertypes 
+        IsTextless 
+        TCGID 
+        ScryfallID 
       }
-      Revealed {
-        Name
+      Field { 
+        Name 
+        ID 
+        Colors 
+        ColorIdentity 
+        ManaCost 
+        Power 
+        Toughness 
+        CMC 
+        Text 
+        Types 
+        Subtypes 
+        Supertypes 
+        IsTextless 
+        TCGID 
+        ScryfallID 
       }
+      Hand { 
+        Name 
+        ID 
+        Colors 
+        ColorIdentity 
+        ManaCost 
+        Power 
+        Toughness 
+        CMC 
+        Text 
+        Types 
+        Subtypes 
+        Supertypes 
+        IsTextless 
+        TCGID 
+        ScryfallID 
+      }
+      Revealed { 
+        Name 
+        ID 
+        Colors 
+        ColorIdentity 
+        ManaCost 
+        Power 
+        Toughness 
+        CMC 
+        Text 
+        Types 
+        Subtypes 
+        Supertypes 
+        IsTextless 
+        TCGID 
+        ScryfallID 
+      }
+      Controlled { 
+        Name 
+        ID 
+        Colors 
+        ColorIdentity 
+        ManaCost 
+        Power 
+        Toughness 
+        CMC 
+        Text 
+        Types 
+        Subtypes 
+        Supertypes 
+        IsTextless 
+        TCGID 
+        ScryfallID 
+      } 
     }
   }
 `
@@ -78,6 +199,9 @@ export const boardstateSubscription = gql`
 export const selfStateQuery = gql`
   query($gameID: String!, $userID: String) {
     boardstates(gameID: $gameID, userID: $userID) {
+      User {
+        username
+      }
       Commander { 
         Name 
         ID 
