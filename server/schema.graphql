@@ -41,6 +41,8 @@ type Card {
   Name: String!
   ID: String!
   Quantity: Int,
+  Tapped: String
+  Counters: [Counter] 
   Colors: String
   ColorIdentity: String
   CMC: String
@@ -97,9 +99,8 @@ type Emblem {
 }
 
 type Counter {
-  card: Card!
-  name: String!
-  value: String!
+  Name: String!
+  Value: String!
 }
 
 type BoardState {
@@ -121,6 +122,22 @@ input InputCard {
   Name: String!
   Counters: [InputCounter]
   Labels: [InputLabel]
+  Tapped: String
+  Quantity: Int
+  Colors: String
+  ColorIdentity: String
+  CMC: String
+  ManaCost: String
+  UUID: String
+  Power: String
+  Toughness: String
+  Types: String
+  Subtypes: String
+  Supertypes: String
+  IsTextless: String
+  Text: String
+  TCGID: String
+  ScryfallID: String
 }
 
 input InputCounter {

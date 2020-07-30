@@ -68,6 +68,7 @@ type ComplexityRoot struct {
 		Cmc           func(childComplexity int) int
 		ColorIdentity func(childComplexity int) int
 		Colors        func(childComplexity int) int
+		Counters      func(childComplexity int) int
 		ID            func(childComplexity int) int
 		IsTextless    func(childComplexity int) int
 		ManaCost      func(childComplexity int) int
@@ -77,6 +78,7 @@ type ComplexityRoot struct {
 		ScryfallID    func(childComplexity int) int
 		Subtypes      func(childComplexity int) int
 		Supertypes    func(childComplexity int) int
+		Tapped        func(childComplexity int) int
 		Tcgid         func(childComplexity int) int
 		Text          func(childComplexity int) int
 		Toughness     func(childComplexity int) int
@@ -85,7 +87,6 @@ type ComplexityRoot struct {
 	}
 
 	Counter struct {
-		Card  func(childComplexity int) int
 		Name  func(childComplexity int) int
 		Value func(childComplexity int) int
 	}
@@ -306,6 +307,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Card.Colors(childComplexity), true
 
+	case "Card.Counters":
+		if e.complexity.Card.Counters == nil {
+			break
+		}
+
+		return e.complexity.Card.Counters(childComplexity), true
+
 	case "Card.ID":
 		if e.complexity.Card.ID == nil {
 			break
@@ -369,6 +377,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Card.Supertypes(childComplexity), true
 
+	case "Card.Tapped":
+		if e.complexity.Card.Tapped == nil {
+			break
+		}
+
+		return e.complexity.Card.Tapped(childComplexity), true
+
 	case "Card.TCGID":
 		if e.complexity.Card.Tcgid == nil {
 			break
@@ -404,21 +419,14 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Card.UUID(childComplexity), true
 
-	case "Counter.card":
-		if e.complexity.Counter.Card == nil {
-			break
-		}
-
-		return e.complexity.Counter.Card(childComplexity), true
-
-	case "Counter.name":
+	case "Counter.Name":
 		if e.complexity.Counter.Name == nil {
 			break
 		}
 
 		return e.complexity.Counter.Name(childComplexity), true
 
-	case "Counter.value":
+	case "Counter.Value":
 		if e.complexity.Counter.Value == nil {
 			break
 		}
@@ -961,6 +969,8 @@ type Card {
   Name: String!
   ID: String!
   Quantity: Int,
+  Tapped: String
+  Counters: [Counter] 
   Colors: String
   ColorIdentity: String
   CMC: String
@@ -1017,9 +1027,8 @@ type Emblem {
 }
 
 type Counter {
-  card: Card!
-  name: String!
-  value: String!
+  Name: String!
+  Value: String!
 }
 
 type BoardState {
@@ -1041,6 +1050,22 @@ input InputCard {
   Name: String!
   Counters: [InputCounter]
   Labels: [InputLabel]
+  Tapped: String
+  Quantity: Int
+  Colors: String
+  ColorIdentity: String
+  CMC: String
+  ManaCost: String
+  UUID: String
+  Power: String
+  Toughness: String
+  Types: String
+  Subtypes: String
+  Supertypes: String
+  IsTextless: String
+  Text: String
+  TCGID: String
+  ScryfallID: String
 }
 
 input InputCounter {
@@ -2003,6 +2028,68 @@ func (ec *executionContext) _Card_Quantity(ctx context.Context, field graphql.Co
 	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Card_Tapped(ctx context.Context, field graphql.CollectedField, obj *Card) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "Card",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp := ec._fieldMiddleware(ctx, obj, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Tapped, nil
+	})
+
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Card_Counters(ctx context.Context, field graphql.CollectedField, obj *Card) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "Card",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp := ec._fieldMiddleware(ctx, obj, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Counters, nil
+	})
+
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*Counter)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalOCounter2ᚕᚖgithubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐCounter(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Card_Colors(ctx context.Context, field graphql.CollectedField, obj *Card) (ret graphql.Marshaler) {
 	ctx = ec.Tracer.StartFieldExecution(ctx, field)
 	defer func() {
@@ -2437,41 +2524,7 @@ func (ec *executionContext) _Card_ScryfallID(ctx context.Context, field graphql.
 	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Counter_card(ctx context.Context, field graphql.CollectedField, obj *Counter) (ret graphql.Marshaler) {
-	ctx = ec.Tracer.StartFieldExecution(ctx, field)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-		ec.Tracer.EndFieldExecution(ctx)
-	}()
-	rctx := &graphql.ResolverContext{
-		Object:   "Counter",
-		Field:    field,
-		Args:     nil,
-		IsMethod: false,
-	}
-	ctx = graphql.WithResolverContext(ctx, rctx)
-	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
-	resTmp := ec._fieldMiddleware(ctx, obj, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Card, nil
-	})
-
-	if resTmp == nil {
-		if !ec.HasError(rctx) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(*Card)
-	rctx.Result = res
-	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalNCard2ᚖgithubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐCard(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _Counter_name(ctx context.Context, field graphql.CollectedField, obj *Counter) (ret graphql.Marshaler) {
+func (ec *executionContext) _Counter_Name(ctx context.Context, field graphql.CollectedField, obj *Counter) (ret graphql.Marshaler) {
 	ctx = ec.Tracer.StartFieldExecution(ctx, field)
 	defer func() {
 		if r := recover(); r != nil {
@@ -2505,7 +2558,7 @@ func (ec *executionContext) _Counter_name(ctx context.Context, field graphql.Col
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Counter_value(ctx context.Context, field graphql.CollectedField, obj *Counter) (ret graphql.Marshaler) {
+func (ec *executionContext) _Counter_Value(ctx context.Context, field graphql.CollectedField, obj *Counter) (ret graphql.Marshaler) {
 	ctx = ec.Tracer.StartFieldExecution(ctx, field)
 	defer func() {
 		if r := recover(); r != nil {
@@ -5465,6 +5518,102 @@ func (ec *executionContext) unmarshalInputInputCard(ctx context.Context, obj int
 			if err != nil {
 				return it, err
 			}
+		case "Tapped":
+			var err error
+			it.Tapped, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "Quantity":
+			var err error
+			it.Quantity, err = ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "Colors":
+			var err error
+			it.Colors, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "ColorIdentity":
+			var err error
+			it.ColorIdentity, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "CMC":
+			var err error
+			it.Cmc, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "ManaCost":
+			var err error
+			it.ManaCost, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "UUID":
+			var err error
+			it.UUID, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "Power":
+			var err error
+			it.Power, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "Toughness":
+			var err error
+			it.Toughness, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "Types":
+			var err error
+			it.Types, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "Subtypes":
+			var err error
+			it.Subtypes, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "Supertypes":
+			var err error
+			it.Supertypes, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "IsTextless":
+			var err error
+			it.IsTextless, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "Text":
+			var err error
+			it.Text, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "TCGID":
+			var err error
+			it.Tcgid, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "ScryfallID":
+			var err error
+			it.ScryfallID, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
 		}
 	}
 
@@ -5816,6 +5965,10 @@ func (ec *executionContext) _Card(ctx context.Context, sel ast.SelectionSet, obj
 			}
 		case "Quantity":
 			out.Values[i] = ec._Card_Quantity(ctx, field, obj)
+		case "Tapped":
+			out.Values[i] = ec._Card_Tapped(ctx, field, obj)
+		case "Counters":
+			out.Values[i] = ec._Card_Counters(ctx, field, obj)
 		case "Colors":
 			out.Values[i] = ec._Card_Colors(ctx, field, obj)
 		case "ColorIdentity":
@@ -5866,18 +6019,13 @@ func (ec *executionContext) _Counter(ctx context.Context, sel ast.SelectionSet, 
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Counter")
-		case "card":
-			out.Values[i] = ec._Counter_card(ctx, field, obj)
+		case "Name":
+			out.Values[i] = ec._Counter_Name(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
-		case "name":
-			out.Values[i] = ec._Counter_name(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		case "value":
-			out.Values[i] = ec._Counter_value(ctx, field, obj)
+		case "Value":
+			out.Values[i] = ec._Counter_Value(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
@@ -7404,6 +7552,50 @@ func (ec *executionContext) marshalOCard2ᚖgithubᚗcomᚋdylanlottᚋedhᚑgo�
 	return ec._Card(ctx, sel, v)
 }
 
+func (ec *executionContext) marshalOCounter2githubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐCounter(ctx context.Context, sel ast.SelectionSet, v Counter) graphql.Marshaler {
+	return ec._Counter(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalOCounter2ᚕᚖgithubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐCounter(ctx context.Context, sel ast.SelectionSet, v []*Counter) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		rctx := &graphql.ResolverContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithResolverContext(ctx, rctx)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalOCounter2ᚖgithubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐCounter(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+	return ret
+}
+
 func (ec *executionContext) marshalOCounter2ᚕᚖgithubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐCounterᚄ(ctx context.Context, sel ast.SelectionSet, v []*Counter) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
@@ -7442,6 +7634,13 @@ func (ec *executionContext) marshalOCounter2ᚕᚖgithubᚗcomᚋdylanlottᚋedh
 	}
 	wg.Wait()
 	return ret
+}
+
+func (ec *executionContext) marshalOCounter2ᚖgithubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐCounter(ctx context.Context, sel ast.SelectionSet, v *Counter) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._Counter(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalODeck2ᚕᚖgithubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐDeckᚄ(ctx context.Context, sel ast.SelectionSet, v []*Deck) graphql.Marshaler {

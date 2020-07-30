@@ -84,17 +84,10 @@ func (s *graphQLServer) GameUpdated(ctx context.Context, game InputGame) (<-chan
 	return games, nil
 }
 
+// BoardUpdate returns a channel that emits all the Boardstate's over it and then
+// listens for ctx.Done and then cleans up after itself.
 func (s *graphQLServer) BoardUpdate(ctx context.Context, bs InputBoardState) (<-chan *BoardState, error) {
-	log.Printf("BoardUpdate hit: %+v", bs)
-
-	// NB: boardstates are stored by username. This should probably be updated
-	// to include game ID's
-	// _, ok := s.boardStates[bs.User.Username]
-	// if !ok {
-	// 	return nil, errs.New("no boardstate exists for that user: %s", bs.User.Username)
-	// }
-
-	// Make a boardstates channel to emit all the events on, and assign it to 
+	// Make a boardstates channel to emit all the events on, and assign it to
 	// the user who submitted to the update.
 	boardstates := make(chan *BoardState, 1)
 	s.mutex.Lock()
@@ -188,6 +181,8 @@ func (s *graphQLServer) CreateGame(ctx context.Context, inputGame InputGame) (*G
 		} else {
 			bs.Commander = []*Card{commander[0]}
 		}
+
+		// NB: check deck for errors like duplicates and color identity issues
 
 		g.Players = append(g.Players, bs)
 

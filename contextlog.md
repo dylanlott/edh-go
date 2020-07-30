@@ -48,3 +48,14 @@ Once we have the cards showing correctly, we can focus on getting board updates 
 Working on getting Card data to be shown correctly. Card art is going to be a consideration now. Need to figure out the best way to download the card art on the client side without pushing that heavy-lifting to the server.
 
 - NB: Need to make sure that I'm pulling back ScryfallID from the database for card art images. EDHREC uses the same scryfall ID format so I think that will work for my use case.
+
+Cards are now being populated with data from the server and I fixed the draggable issues.
+Commanders are still able to be added to the 99, so that needs to be fixed.
+
+_TODO_:
+
+- [x] Fix card dragging on board view
+- [ ] Wire up Scryfall client for card art eventually
+- [ ] Add the join-game flow from the perspective of the 2nd, 3rd, and 4th players.
+- [ ] Handle attaching equipment and auras to cards.
+- [ ] Incorporate vuex into the app for better state management
