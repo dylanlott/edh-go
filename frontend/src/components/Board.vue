@@ -211,10 +211,16 @@ export default {
     handleUpdateState() {
       const self = this
       console.log('updating state: ', self)
-      _.throttle(this.mutateBoardState, 500)
+      // _.throttle(this.mutateBoardState, 500)
+      this.mutateBoardState()
     },
     mutateBoardState() {
       const self = this
+      self.self.boardstate.User = {
+        Username: this.$currentUser()
+      }
+      self.self.boardstate.GameID = this.$route.params.id
+
       this.$apollo.mutate({
         mutation: updateBoardStateQuery,
         variables: {

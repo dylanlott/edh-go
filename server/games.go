@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 	"encoding/csv"
+	"encoding/json"
 	"fmt"
 	"io"
 	"log"
@@ -48,13 +49,36 @@ func (s *graphQLServer) Boardstates(ctx context.Context, gameID string, userID *
 			return nil, errs.New("game does not exist with ID of %s", gameID)
 		}
 
-		return game.Players, nil
+		var boardstates []*BoardState
+		for _, p := range game.Players {
+			var board BoardState
+			boardKey := BoardStateKey(game.ID, p.User.Username)
+			err := s.Get(boardKey, &board)
+			if err != nil {
+				log.Printf("error fetching boardstate from redis: %s", err)
+				continue
+			}
+			fmt.Printf("got boardstate from redis: %+v\n", board)
+			boardstates = append(boardstates, &board)
+		}
+
+		fmt.Printf("returning boardstates: %+v\n", boardstates)
+
+		return boardstates, nil
 	}
 
 	// userID not nil, so send only that boardstate
+	var boardstates []*BoardState
 	for _, player := range game.Players {
 		if player.User.Username == *userID {
-			return []*BoardState{player}, nil
+			boardKey := BoardStateKey(game.ID, player.User.Username)
+			var board BoardState
+			err := s.Get(boardKey, &board)
+			if err != nil {
+				log.Printf("error fetching user boardstate from redis: %s", err)
+			}
+			boardstates = append(boardstates, &board)
+			return boardstates, nil
 		}
 	}
 
@@ -91,13 +115,13 @@ func (s *graphQLServer) BoardUpdate(ctx context.Context, bs InputBoardState) (<-
 	// the user who submitted to the update.
 	boardstates := make(chan *BoardState, 1)
 	s.mutex.Lock()
-	s.boardStates[bs.User.Username] = boardstates
+	s.boardChannels[bs.User.Username] = boardstates
 	s.mutex.Unlock()
 
 	go func() {
 		<-ctx.Done()
 		s.mutex.Lock()
-		delete(s.boardStates, bs.User.Username)
+		delete(s.boardChannels, bs.User.Username)
 		s.mutex.Unlock()
 	}()
 
@@ -185,14 +209,19 @@ func (s *graphQLServer) CreateGame(ctx context.Context, inputGame InputGame) (*G
 		// NB: check deck for errors like duplicates and color identity issues
 
 		g.Players = append(g.Players, bs)
+		boardKey := BoardStateKey(g.ID, bs.User.Username)
+		err = s.Set(boardKey, bs)
+		if err != nil {
+			log.Printf("error persisting boardstate into redis: %s", err)
+			return nil, err
+		}
 
-		// assign boardstates to directory for easier searching
+		// save the baordChannels to the same key format of <gameID:username>
 		s.mutex.Lock()
-		// instantiate player boardstate channel for updates
-		// NB: This means Username's must be unique per game. We probably want to make this specific to each room.
-		s.boardStates[player.User.Username] = make(chan *BoardState, 1)
-		log.Printf("pushed player boardstate successfully: %+v\n", bs)
+		s.boardChannels[boardKey] = make(chan *BoardState, 1)
 		s.mutex.Unlock()
+
+		log.Printf("pushed player boardstate successfully: %+v\n", bs)
 	}
 
 	// Set game in directory for access
@@ -211,7 +240,7 @@ func (s *graphQLServer) UpdateBoardState(ctx context.Context, bs InputBoardState
 	updated := boardStateFromInput(bs)
 	s.mutex.Lock()
 	log.Printf("pushing updated boardstate across channels: %+v", updated)
-	s.boardStates[bs.User.Username] <- updated
+	s.boardChannels[bs.User.Username] <- updated
 	s.mutex.Unlock()
 	pushBoardStateUpdate(ctx, s.observers, bs)
 	return updated, nil
@@ -361,4 +390,32 @@ func (s *graphQLServer) createLibraryFromDecklist(ctx context.Context, decklist 
 	}
 
 	return cards, nil
+}
+
+// BoardStateKey formats a board state key for boardstate to user mapping.
+func BoardStateKey(gameID, username string) string {
+	return fmt.Sprintf("%s:%s", gameID, username)
+}
+
+// Set will set a value into the Redis client and returns an error, if any
+func (s *graphQLServer) Set(key string, value interface{}) error {
+	exp, err := time.ParseDuration("12h")
+	if err != nil {
+		exp = 0
+	}
+	p, err := json.Marshal(value)
+	if err != nil {
+		return err
+	}
+
+	return s.redisClient.Set(key, p, exp).Err()
+}
+
+// Get returns a value from Redis client to `dest` and returns an error, if any
+func (s *graphQLServer) Get(key string, dest interface{}) error {
+	p, err := s.redisClient.Get(key).Result()
+	if err != nil {
+		return err
+	}
+	return json.Unmarshal([]byte(p), dest)
 }

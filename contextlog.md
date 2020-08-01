@@ -59,3 +59,16 @@ _TODO_:
 - [ ] Add the join-game flow from the perspective of the 2nd, 3rd, and 4th players.
 - [ ] Handle attaching equipment and auras to cards.
 - [ ] Incorporate vuex into the app for better state management
+
+### 31 July 2020
+Figured out that the issue is that we are querying boardstates from the Directory but only updating boardstates from the mutation in the channels, so we need to update boardstates in redis and query them from redis. 
+
+This means I'll have to edit the game creation logic to store the initial boardstate in Redis and have the Game object reference that pointer instead of storing the player boardstate there. 
+
+TODO: 
+- [ ] persist board states to redis
+- [ ] query board states from redis
+- [ ] edit game creation logic to store boardstate in redis so that refreshing the page doens't result in losing board state
+
+* NB: We should probably log mutations from the server side instead of having the client send those mutations over the wire for the activity log
+

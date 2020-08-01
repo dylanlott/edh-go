@@ -49,7 +49,7 @@ type graphQLServer struct {
 
 	// Channels per resource to achieve realtime
 	gameChannels    map[string]chan *Game
-	boardStates     map[string]chan *BoardState
+	boardChannels   map[string]chan *BoardState
 	messageChannels map[string]chan *Message
 	userChannels    map[string]chan string
 
@@ -87,7 +87,7 @@ func NewGraphQLServer(
 		messageChannels: map[string]chan *Message{},
 		userChannels:    map[string]chan string{},
 		gameChannels:    map[string]chan *Game{},
-		boardStates:     map[string]chan *BoardState{},
+		boardChannels:   map[string]chan *BoardState{},
 		Directory:       make(map[string]*Game),
 		observers:       []Observer{},
 	}, nil
