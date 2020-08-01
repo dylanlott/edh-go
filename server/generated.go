@@ -132,7 +132,6 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		Boardstate  func(childComplexity int, gameID string, userID string) int
 		Boardstates func(childComplexity int, gameID string, userID *string) int
 		Card        func(childComplexity int, name string, id *string) int
 		Cards       func(childComplexity int, list []string) int
@@ -181,7 +180,6 @@ type QueryResolver interface {
 	Users(ctx context.Context) ([]string, error)
 	Games(ctx context.Context) ([]*Game, error)
 	Boardstates(ctx context.Context, gameID string, userID *string) ([]*BoardState, error)
-	Boardstate(ctx context.Context, gameID string, userID string) (*BoardState, error)
 	Decks(ctx context.Context, userID string) ([]*Deck, error)
 	Card(ctx context.Context, name string, id *string) ([]*Card, error)
 	Cards(ctx context.Context, list []string) ([]*Card, error)
@@ -638,18 +636,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.UpdateGame(childComplexity, args["input"].(InputGame)), true
 
-	case "Query.boardstate":
-		if e.complexity.Query.Boardstate == nil {
-			break
-		}
-
-		args, err := ec.field_Query_boardstate_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Query.Boardstate(childComplexity, args["gameID"].(string), args["userID"].(string)), true
-
 	case "Query.boardstates":
 		if e.complexity.Query.Boardstates == nil {
 			break
@@ -942,7 +928,6 @@ type Query {
   users: [String!]!
   games: [Game!]!
   boardstates(gameID: String!, userID: String): [BoardState!]!
-  boardstate(gameID: String!, userID: String!): BoardState!
   decks(userID: String!): [Deck!]
   card(name: String!, id: String): [Card!]
   cards(list: [String!]): [Card!]!
@@ -1281,28 +1266,6 @@ func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs
 		}
 	}
 	args["name"] = arg0
-	return args, nil
-}
-
-func (ec *executionContext) field_Query_boardstate_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 string
-	if tmp, ok := rawArgs["gameID"]; ok {
-		arg0, err = ec.unmarshalNString2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["gameID"] = arg0
-	var arg1 string
-	if tmp, ok := rawArgs["userID"]; ok {
-		arg1, err = ec.unmarshalNString2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["userID"] = arg1
 	return args, nil
 }
 
@@ -3604,47 +3567,6 @@ func (ec *executionContext) _Query_boardstates(ctx context.Context, field graphq
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
 	return ec.marshalNBoardState2ᚕᚖgithubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐBoardStateᚄ(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _Query_boardstate(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	ctx = ec.Tracer.StartFieldExecution(ctx, field)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-		ec.Tracer.EndFieldExecution(ctx)
-	}()
-	rctx := &graphql.ResolverContext{
-		Object:   "Query",
-		Field:    field,
-		Args:     nil,
-		IsMethod: true,
-	}
-	ctx = graphql.WithResolverContext(ctx, rctx)
-	rawArgs := field.ArgumentMap(ec.Variables)
-	args, err := ec.field_Query_boardstate_args(ctx, rawArgs)
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	rctx.Args = args
-	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
-	resTmp := ec._fieldMiddleware(ctx, nil, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Boardstate(rctx, args["gameID"].(string), args["userID"].(string))
-	})
-
-	if resTmp == nil {
-		if !ec.HasError(rctx) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(*BoardState)
-	rctx.Result = res
-	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalNBoardState2ᚖgithubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐBoardState(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_decks(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -6324,20 +6246,6 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_boardstates(ctx, field)
-				if res == graphql.Null {
-					atomic.AddUint32(&invalids, 1)
-				}
-				return res
-			})
-		case "boardstate":
-			field := field
-			out.Concurrently(i, func() (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Query_boardstate(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}

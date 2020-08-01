@@ -25,20 +25,7 @@ func (s *graphQLServer) Games(ctx context.Context) ([]*Game, error) {
 	return games, nil
 }
 
-func (s *graphQLServer) Boardstate(ctx context.Context, gameID string, userID string) (*BoardState, error) {
-	game, ok := s.Directory[gameID]
-	if !ok {
-		log.Printf("game with ID of %s does not exist", gameID)
-		return nil, errs.New("game with ID of %s does not exist", gameID)
-	}
-
-	log.Printf("found game: %+v", game)
-
-	return &BoardState{
-		GameID: gameID,
-	}, nil
-}
-
+// Boardstates queries Redis for different boardstates per player or game
 func (s *graphQLServer) Boardstates(ctx context.Context, gameID string, userID *string) ([]*BoardState, error) {
 	game, ok := s.Directory[gameID]
 
@@ -167,7 +154,9 @@ func (s *graphQLServer) CreateGame(ctx context.Context, inputGame InputGame) (*G
 	}
 
 	for _, player := range inputGame.Players {
-		// Init default boardstate
+		// TODO: Deck validation should happen here.
+
+		// Init default boardstate minus library and commander
 		bs := &BoardState{
 			User: &User{
 				ID:       uuid.New().String(),
@@ -192,7 +181,6 @@ func (s *graphQLServer) CreateGame(ctx context.Context, inputGame InputGame) (*G
 			bs.Library = getCards(player.Library)
 		} else {
 			// Happy path
-			log.Printf("setting library: %+v", library)
 			bs.Library = library
 		}
 
@@ -205,8 +193,6 @@ func (s *graphQLServer) CreateGame(ctx context.Context, inputGame InputGame) (*G
 		} else {
 			bs.Commander = []*Card{commander[0]}
 		}
-
-		// NB: check deck for errors like duplicates and color identity issues
 
 		g.Players = append(g.Players, bs)
 		boardKey := BoardStateKey(g.ID, bs.User.Username)
@@ -229,6 +215,12 @@ func (s *graphQLServer) CreateGame(ctx context.Context, inputGame InputGame) (*G
 	s.gameChannels[g.ID] = make(chan *Game, 1)
 	s.Directory[g.ID] = g
 	s.mutex.Unlock()
+
+	// persist it to Redis
+	err := s.Set(g.ID, g)
+	if err != nil {
+		log.Printf("error setting Game to redis: %+v\n", err)
+	}
 
 	log.Printf("Game added to directory: %+v\n", s.gameChannels[g.ID])
 
