@@ -15,6 +15,16 @@ import (
 	"github.com/zeebo/errs"
 )
 
+// IPersistence defines the persistence interface for the server.
+// This interface stores Game and BoardStates for realtime interaction.
+type IPersistence interface {
+	Set(key string, value interface{}) error
+	Get(key string, dest interface{}) error
+}
+
+var _ IPersistence = (&graphQLServer{})
+
+// Games returns a list of Games.
 func (s *graphQLServer) Games(ctx context.Context) ([]*Game, error) {
 	games := []*Game{}
 	for _, game := range s.Directory {
@@ -28,14 +38,17 @@ func (s *graphQLServer) Games(ctx context.Context) ([]*Game, error) {
 // Boardstates queries Redis for different boardstates per player or game
 func (s *graphQLServer) Boardstates(ctx context.Context, gameID string, userID *string) ([]*BoardState, error) {
 	game, ok := s.Directory[gameID]
+	if game == nil {
+		return nil, errs.New("game does not exist")
+	}
+
+	if !ok {
+		return nil, errs.New("game does not exist")
+	}
 
 	// TODO: if not in directory, check storage
 
 	if userID == nil {
-		if !ok {
-			return nil, errs.New("game does not exist with ID of %s", gameID)
-		}
-
 		var boardstates []*BoardState
 		for _, p := range game.Players {
 			var board BoardState
@@ -56,6 +69,7 @@ func (s *graphQLServer) Boardstates(ctx context.Context, gameID string, userID *
 
 	// userID not nil, so send only that boardstate
 	var boardstates []*BoardState
+
 	for _, player := range game.Players {
 		if player.User.Username == *userID {
 			boardKey := BoardStateKey(game.ID, player.User.Username)
@@ -229,7 +243,14 @@ func (s *graphQLServer) CreateGame(ctx context.Context, inputGame InputGame) (*G
 
 func (s *graphQLServer) UpdateBoardState(ctx context.Context, bs InputBoardState) (*BoardState, error) {
 	log.Printf("UpdateBoardState hit: %+v", bs)
+	log.Printf("updated boardstate cards: %+v\n", *bs.Hand[0])
 	updated := boardStateFromInput(bs)
+	boardKey := BoardStateKey(bs.GameID, bs.User.Username)
+	err := s.Set(boardKey, updated)
+	if err != nil {
+		log.Printf("error updating boardstate in redis: %s", err)
+	}
+
 	s.mutex.Lock()
 	log.Printf("pushing updated boardstate across channels: %+v", updated)
 	s.boardChannels[bs.User.Username] <- updated
@@ -369,13 +390,26 @@ func (s *graphQLServer) createLibraryFromDecklist(ctx context.Context, decklist 
 			continue
 		}
 
+		if card == nil {
+			fmt.Printf("failed to find card: %s", name)
+		}
+
 		// happy path
 		var num int64 = 1
 		for num <= quantity {
-			fmt.Printf("adding card %+v\n", card[0])
-			// add the first card that's returned from the database
-			cards = append(cards, card[0])
-			num++
+			// Fail gracefully if we can't find the card
+			if len(card) == 0 {
+				fmt.Printf("failed to find card- adding dummy card instead")
+				cards = append(cards, &Card{
+					Name: name,
+				})
+				num++
+			} else {
+				// add the first card that's returned from the database
+				// NB: This is going to need to be handled eventually
+				cards = append(cards, card[0])
+				num++
+			}
 		}
 
 		continue
