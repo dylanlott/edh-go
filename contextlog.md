@@ -52,8 +52,7 @@ Working on getting Card data to be shown correctly. Card art is going to be a co
 Cards are now being populated with data from the server and I fixed the draggable issues.
 Commanders are still able to be added to the 99, so that needs to be fixed.
 
-_TODO_:
-
+- TO DO:
 - [x] Fix card dragging on board view
 - [ ] Wire up Scryfall client for card art eventually
 - [ ] Add the join-game flow from the perspective of the 2nd, 3rd, and 4th players.
@@ -61,14 +60,22 @@ _TODO_:
 - [ ] Incorporate vuex into the app for better state management
 
 ### 31 July 2020
-Figured out that the issue is that we are querying boardstates from the Directory but only updating boardstates from the mutation in the channels, so we need to update boardstates in redis and query them from redis. 
 
-This means I'll have to edit the game creation logic to store the initial boardstate in Redis and have the Game object reference that pointer instead of storing the player boardstate there. 
+Figured out that the issue is that we are querying boardstates from the Directory but only updating boardstates from the mutation in the channels, so we need to update boardstates in redis and query them from redis.
 
-TODO: 
-- [ ] persist board states to redis
-- [ ] query board states from redis
-- [ ] edit game creation logic to store boardstate in redis so that refreshing the page doens't result in losing board state
+This means I'll have to edit the game creation logic to store the initial boardstate in Redis and have the Game object reference that pointer instead of storing the player boardstate there.
 
-* NB: We should probably log mutations from the server side instead of having the client send those mutations over the wire for the activity log
+- TO DO:
+- [x] persist board states to redis
+- [x] query board states from redis
+- [x] edit game creation logic to store boardstate in redis so that refreshing the page doens't result in losing board state
 
+- NB: We should probably log mutations from the server side instead of having the client send those mutations over the wire for the activity log
+
+### 2 August 2020
+
+There's an issue with board refreshes where the update mutation causes the card data to be lost and only card Name's to be persisted. I think it's an issue with how the board state mutation is passing info back and forth.
+
+Board states are persisting and being fetched from Redis now. There's an interface that each GraphQLServer struct must fulfill called IPersistence that has two purposefully broad functions: `Get` and `Set`.
+
+I wrote it this way so that board states can be persisted in any interface with no changes.
