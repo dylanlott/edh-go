@@ -1,12 +1,11 @@
 <template>
-  <div class="games shell container" v-if="gameID == ''">
-    <div class="hero">
+  <div class="" v-if="gameID == ''">
       <div class="container">
         <div class="columns is-mobile is-centered">
           <div class="column is-half">
             <h1 class="title is-1">Welcome, {{ username }}</h1>
             <p class="title is-4">Pick your commander</p>
-            <p class="content" v-if="!!selected"><b>Selected:</b> {{ selected }}</p>
+            <!-- <p class="content" v-if="!!selected"><b>Commander:</b> {{ selected.name }}</p> -->
             <b-field label="Select a Commander">
               <b-autocomplete 
               :data="data"
@@ -23,12 +22,14 @@
             <p>We recommend using
               <a href="www.archidekt.com">Archidekt</a> to generate your decklists so that spelling errors
               and quantities aren't an issue. Select "CSV" on Export.</p>
+              <br>
             <p><b>Note</b>: There must be exactly 99 cards in this list, they need to be spelled exactly correct,
               and there can't be duplicates except for Basic Lands.
             </p>
-            <p>Standard EDH rules and banlist applies.</p> 
+            <br>
             <p>Enter cards in CSV Format: <code>1, Card Name</code></p>
-            <b-field label="Add the other 99 cards.">
+            <br>
+            <b-field label="Paste your decklist here.">
               <b-input maxlength="200000" v-model="deck.library" type="textarea"></b-input>
             </b-field>
 
@@ -39,7 +40,6 @@
           </div>
         </div>
       </div>
-    </div>
   </div>
 </template>
 <script>
