@@ -171,6 +171,7 @@ import {
   selfStateQuery, 
   updateBoardStateQuery 
 } from '@/gqlQueries';
+import router from '@/router'
 
 export default {
   name: 'board',
@@ -229,6 +230,7 @@ export default {
       })
       .then((data) => {
         console.log('successfully mutated state: ', data)
+        this.self.boardstate = data.updateBoardStateQuery
       })
     },
     handleActivity(val) {
@@ -255,7 +257,7 @@ export default {
         },
         update(data) {
           this.self.boardstate = data.boardstates[0];
-          console.table('selfstate#update: ', this.self.boardstate);
+          console.log('selfstate#update: ', this.self.boardstate);
         },
       };
     },
@@ -346,6 +348,10 @@ export default {
           console.log('subscription results: ', data);
         },
         error(err) {
+          if (err == "Error: GraphQL error: game does not exist")  {
+            // push to error page 
+            router.push({ name: 'GameDoesNotExist'})
+          }
           console.log('error getting boardstates: ', err);
           const notif = this.$buefy.notification.open({
             duration: 5000,
