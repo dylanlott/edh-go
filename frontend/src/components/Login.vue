@@ -4,13 +4,14 @@
       <div class="column is-4">
         <form v-on:keyup.enter="onLoginClick()">
           <h1 class="title">Login</h1>
-          <b-field label="Login">
+          <b-field label="Username">
             <b-input 
               v-on:keyup.enter="onLoginClick()"
               v-model="username"></b-input>
           </b-field>
           <b-field label="Password">
             <b-input 
+              type="password"
               v-on:keyup.enter="onLoginClick()"
               v-model="password"></b-input>
           </b-field>
