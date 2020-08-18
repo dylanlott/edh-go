@@ -4,6 +4,7 @@ import Router from 'vue-router';
 import Landing from '@/components/Landing.vue';
 import Login from '@/components/Login.vue';
 import Games from '@/components/Games.vue';
+import GameDoesNotExist from '@/components/GameDoesNotExist.vue';
 import Board from '@/components/Board.vue';
 import Card from '@/components/Card.vue';
 import Score from '@/components/Score.vue';
@@ -27,6 +28,11 @@ export default new Router({
       path: '/games',
       name: 'games',
       component: Games,
+    },
+    {
+      path: '/games/404',
+      name: 'GameDoesNotExist',
+      component: GameDoesNotExist
     },
     {
       path: '/games/:id',
