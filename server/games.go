@@ -285,6 +285,8 @@ func gameFromInput(game InputGame) *Game {
 	return out
 }
 
+// TODO: there is a bug here - need to figure it out .
+// This breaks when handling boardstate updates
 func boardStateFromInput(bs InputBoardState) *BoardState {
 	out := &BoardState{
 		User: &User{
@@ -379,6 +381,8 @@ func (s *graphQLServer) createLibraryFromDecklist(ctx context.Context, decklist 
 			quantity = 1
 		}
 
+		// NB: In the future, this should be optimized to be one query for all the cards
+		// instead of a query for each card in the deck.
 		name := record[1]
 		card, err := s.Card(ctx, name, nil)
 		if err != nil {

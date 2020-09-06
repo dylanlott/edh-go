@@ -16,7 +16,9 @@
     <div class="self shell">
       <h1 class="title">
         {{ self.boardstate.User.username }}
-        <p class="subtitle">{{ self.boardstate.Commander[0].Name || undefined }}</p>
+        <p class="subtitle">{{ 
+          self.boardstate.Commander ? self.boardstate.Commander[0].Name : ""
+        }}</p>
       </h1>
 
       <div>
@@ -188,9 +190,9 @@ export default {
           User: {
             username: this.$currentUser(),
           },
-          Commander: [],
-          Library: [],
-          Field: [],
+          // Commander: [],
+          // Library: [],
+          // Field: [],
         },
       },
     };
@@ -213,6 +215,9 @@ export default {
       const self = this
       console.log('updating state: ', self)
       // _.throttle(this.mutateBoardState, 500)
+
+      // stuff is assigned to `self.boardstates` somewhere but mutateBoardState
+      // tries to access `self.boardstate` so that's probably causing some of our issues.
       this.mutateBoardState()
     },
     mutateBoardState() {
@@ -222,6 +227,7 @@ export default {
       }
       self.self.boardstate.GameID = this.$route.params.id
 
+  // This is 
       this.$apollo.mutate({
         mutation: updateBoardStateQuery,
         variables: {

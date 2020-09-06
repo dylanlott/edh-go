@@ -79,3 +79,11 @@ There's an issue with board refreshes where the update mutation causes the card 
 Board states are persisting and being fetched from Redis now. There's an interface that each GraphQLServer struct must fulfill called IPersistence that has two purposefully broad functions: `Get` and `Set`.
 
 I wrote it this way so that board states can be persisted in any interface with no changes.
+
+### 26 August 2020 
+
+Figured out what the bugs are with the refresh of state - I think the issue has several factors. 
+* The InputBoardState conversion function I wrote on the backend isn't properly converting and maintaining card properties from the input to the output. 
+* The client implementation references both `boardstate` and `boardstates` at different points in the cycle. This is a code smell that we need to clean up the handling of the `self` component so that the separation between the `self` boardstate and the other player boardstates is clearer. I think this is the cause of the `ReferenceError` issues I keep having whenever an update occurs on the board. 
+  
+Fixing these two issues should give us the proper boardstate maintenance and persistence that we're looking for.
