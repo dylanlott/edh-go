@@ -114,6 +114,7 @@ type BoardState {
   Revealed: [Card!]!
   Controlled: [Card!]!
   Counters: [Counter!]
+  Errors: [String]
 }
 
 input InputCard {

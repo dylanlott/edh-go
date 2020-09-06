@@ -18,6 +18,7 @@ type BoardState struct {
 	Revealed   []*Card    `json:"Revealed"`
 	Controlled []*Card    `json:"Controlled"`
 	Counters   []*Counter `json:"Counters"`
+	Errors     []*string  `json:"Errors"`
 }
 
 type Card struct {

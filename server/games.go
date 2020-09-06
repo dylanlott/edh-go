@@ -146,9 +146,9 @@ func (s *graphQLServer) CreateGame(ctx context.Context, inputGame InputGame) (*G
 				ID:       uuid.New().String(),
 				Username: player.User.Username,
 			},
-			GameID:     g.ID,
-			Hand:       getCards(player.Hand),
-			Exiled:     getCards(player.Exiled),
+			GameID: g.ID,
+			Hand:   getCards(player.Hand),
+
 			Revealed:   getCards(player.Revealed),
 			Field:      getCards(player.Field),
 			Controlled: getCards(player.Controlled),
@@ -161,9 +161,8 @@ func (s *graphQLServer) CreateGame(ctx context.Context, inputGame InputGame) (*G
 		fmt.Printf("intaking decklist: %+v\n", decklist)
 		library, err := s.createLibraryFromDecklist(ctx, decklist)
 		if err != nil {
-			// Fail gracefully and still populate basic cards
-			log.Printf("error creating library from decklist: %+v", err)
-			bs.Library = getCards(player.Library)
+			log.Printf("unable to parse decklist: ", err)
+			bs.Library = nil
 		} else {
 			// Happy path
 			log.Printf("setting library: %+v", library)
@@ -326,10 +325,9 @@ func (s *graphQLServer) createLibraryFromDecklist(ctx context.Context, decklist 
 
 		quantity, err := strconv.ParseInt(record[0], 0, 64)
 		if err != nil {
-			// handle error
+			// treat this as a parsing error and return
 			log.Printf("error parsing quantity: %+v\n", err)
-			// assume quantity = 1
-			quantity = 1
+			return nil, errs.New("failed to parse input quantity - invalid input format: %s", err)
 		}
 
 		name := record[1]
