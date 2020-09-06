@@ -159,7 +159,12 @@ func (s *graphQLServer) Cards(ctx context.Context, list []string) ([]*Card, erro
 }
 
 // Search will search for card names in the database.
-func (s *graphQLServer) Search(ctx context.Context, name string) ([]*Card, error) {
+func (s *graphQLServer) Search(ctx context.Context,
+	name string,
+	colors []*string,
+	colorIdentity []*string,
+	keywords []*string,
+) ([]*Card, error) {
 	if name == "" {
 		return nil, nil
 	}

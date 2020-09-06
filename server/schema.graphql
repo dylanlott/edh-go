@@ -14,11 +14,10 @@ type Query {
   users: [String!]!
   games: [Game!]!
   boardstates(gameID: String!, userID: String): [BoardState!]!
-  boardstate(gameID: String!, userID: String!): BoardState!
   decks(userID: String!): [Deck!]
   card(name: String!, id: String): [Card!]
   cards(list: [String!]): [Card!]!
-  search(name: String, colors: String, colorIdentity: String, keywords: [String]): [Card]
+  search(name: String!, colors: [String], colorIdentity: [String], keywords: [String]): [Card]
 }
 
 type Subscription {
@@ -41,6 +40,8 @@ type Card {
   Name: String!
   ID: String!
   Quantity: Int,
+  Tapped: String
+  Counters: [Counter] 
   Colors: String
   ColorIdentity: String
   CMC: String
@@ -97,9 +98,8 @@ type Emblem {
 }
 
 type Counter {
-  card: Card!
-  name: String!
-  value: String!
+  Name: String!
+  Value: String!
 }
 
 type BoardState {
@@ -114,7 +114,6 @@ type BoardState {
   Revealed: [Card!]!
   Controlled: [Card!]!
   Counters: [Counter!]
-  Errors: [String]
 }
 
 input InputCard {
@@ -122,6 +121,22 @@ input InputCard {
   Name: String!
   Counters: [InputCounter]
   Labels: [InputLabel]
+  Tapped: String
+  Quantity: Int
+  Colors: String
+  ColorIdentity: String
+  CMC: String
+  ManaCost: String
+  UUID: String
+  Power: String
+  Toughness: String
+  Types: String
+  Subtypes: String
+  Supertypes: String
+  IsTextless: String
+  Text: String
+  TCGID: String
+  ScryfallID: String
 }
 
 input InputCounter {
@@ -134,14 +149,14 @@ input InputBoardState {
   User: InputUser!
   GameID: String!
   Decklist: String,
-  Commander: [InputCard!]!
-  Library: [InputCard]!
-  Graveyard: [InputCard]!
-  Exiled: [InputCard]!
-  Field: [InputCard]!
-  Hand: [InputCard]!
-  Revealed: [InputCard]!
-  Controlled: [InputCard]!
+  Commander: [InputCard]
+  Library: [InputCard]
+  Graveyard: [InputCard]
+  Exiled: [InputCard]
+  Field: [InputCard]
+  Hand: [InputCard]
+  Revealed: [InputCard]
+  Controlled: [InputCard]
   Counters: [InputCounter]
   Emblems: [InputEmblem]
 }

@@ -18,33 +18,33 @@ type BoardState struct {
 	Revealed   []*Card    `json:"Revealed"`
 	Controlled []*Card    `json:"Controlled"`
 	Counters   []*Counter `json:"Counters"`
-	Errors     []*string  `json:"Errors"`
 }
 
 type Card struct {
-	Name          string  `json:"Name"`
-	ID            string  `json:"ID"`
-	Quantity      *int    `json:"Quantity"`
-	Colors        *string `json:"Colors"`
-	ColorIdentity *string `json:"ColorIdentity"`
-	Cmc           *string `json:"CMC"`
-	ManaCost      *string `json:"ManaCost"`
-	UUID          *string `json:"UUID"`
-	Power         *string `json:"Power"`
-	Toughness     *string `json:"Toughness"`
-	Types         *string `json:"Types"`
-	Subtypes      *string `json:"Subtypes"`
-	Supertypes    *string `json:"Supertypes"`
-	IsTextless    *string `json:"IsTextless"`
-	Text          *string `json:"Text"`
-	Tcgid         *string `json:"TCGID"`
-	ScryfallID    *string `json:"ScryfallID"`
+	Name          string     `json:"Name"`
+	ID            string     `json:"ID"`
+	Quantity      *int       `json:"Quantity"`
+	Tapped        *string    `json:"Tapped"`
+	Counters      []*Counter `json:"Counters"`
+	Colors        *string    `json:"Colors"`
+	ColorIdentity *string    `json:"ColorIdentity"`
+	Cmc           *string    `json:"CMC"`
+	ManaCost      *string    `json:"ManaCost"`
+	UUID          *string    `json:"UUID"`
+	Power         *string    `json:"Power"`
+	Toughness     *string    `json:"Toughness"`
+	Types         *string    `json:"Types"`
+	Subtypes      *string    `json:"Subtypes"`
+	Supertypes    *string    `json:"Supertypes"`
+	IsTextless    *string    `json:"IsTextless"`
+	Text          *string    `json:"Text"`
+	Tcgid         *string    `json:"TCGID"`
+	ScryfallID    *string    `json:"ScryfallID"`
 }
 
 type Counter struct {
-	Card  *Card  `json:"card"`
-	Name  string `json:"name"`
-	Value string `json:"value"`
+	Name  string `json:"Name"`
+	Value string `json:"Value"`
 }
 
 type Deck struct {
@@ -86,10 +86,26 @@ type InputBoardState struct {
 }
 
 type InputCard struct {
-	ID       *string         `json:"ID"`
-	Name     string          `json:"Name"`
-	Counters []*InputCounter `json:"Counters"`
-	Labels   []*InputLabel   `json:"Labels"`
+	ID            *string         `json:"ID"`
+	Name          string          `json:"Name"`
+	Counters      []*InputCounter `json:"Counters"`
+	Labels        []*InputLabel   `json:"Labels"`
+	Tapped        *string         `json:"Tapped"`
+	Quantity      *int            `json:"Quantity"`
+	Colors        *string         `json:"Colors"`
+	ColorIdentity *string         `json:"ColorIdentity"`
+	Cmc           *string         `json:"CMC"`
+	ManaCost      *string         `json:"ManaCost"`
+	UUID          *string         `json:"UUID"`
+	Power         *string         `json:"Power"`
+	Toughness     *string         `json:"Toughness"`
+	Types         *string         `json:"Types"`
+	Subtypes      *string         `json:"Subtypes"`
+	Supertypes    *string         `json:"Supertypes"`
+	IsTextless    *string         `json:"IsTextless"`
+	Text          *string         `json:"Text"`
+	Tcgid         *string         `json:"TCGID"`
+	ScryfallID    *string         `json:"ScryfallID"`
 }
 
 type InputCounter struct {
