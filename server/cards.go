@@ -164,8 +164,8 @@ func (s *graphQLServer) Cards(ctx context.Context, list []string) ([]*Card, erro
 func (s *graphQLServer) Search(
 	ctx context.Context,
 	name *string,
-	colors *string,
-	colorIdentity *string,
+	colors []*string,
+	colorIdentity []*string,
 	keywords []*string,
 ) ([]*Card, error) {
 	if *name == "" {

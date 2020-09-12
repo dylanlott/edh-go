@@ -297,43 +297,176 @@ func boardStateFromInput(bs InputBoardState) *BoardState {
 
 	for _, c := range bs.Commander {
 		out.Commander = append(out.Commander, &Card{
-			Name: c.Name,
+			Name:     c.Name,
+			ID:       *c.ID,
+			Quantity: c.Quantity,
+			Tapped:   c.Tapped,
+			// TODO: Handle counters and labels
+			// Counters:      c.Counters,
+			Colors:        c.Colors,
+			ColorIdentity: c.ColorIdentity,
+			Cmc:           c.Cmc,
+			ManaCost:      c.ManaCost,
+			UUID:          c.UUID,
+			Power:         c.Power,
+			Toughness:     c.Toughness,
+			Types:         c.Types,
+			Subtypes:      c.Subtypes,
+			Supertypes:    c.Supertypes,
+			IsTextless:    c.IsTextless,
+			Text:          c.Text,
+			Tcgid:         c.Tcgid,
+			ScryfallID:    c.ScryfallID,
 		})
 	}
 
 	for _, c := range bs.Library {
 		out.Library = append(out.Library, &Card{
-			Name: c.Name,
+			Name:     c.Name,
+			ID:       *c.ID,
+			Quantity: c.Quantity,
+			Tapped:   c.Tapped,
+			// TODO: Handle counters and labels
+			// Counters:      c.Counters,
+			Colors:        c.Colors,
+			ColorIdentity: c.ColorIdentity,
+			Cmc:           c.Cmc,
+			ManaCost:      c.ManaCost,
+			UUID:          c.UUID,
+			Power:         c.Power,
+			Toughness:     c.Toughness,
+			Types:         c.Types,
+			Subtypes:      c.Subtypes,
+			Supertypes:    c.Supertypes,
+			IsTextless:    c.IsTextless,
+			Text:          c.Text,
+			Tcgid:         c.Tcgid,
+			ScryfallID:    c.ScryfallID,
 		})
 	}
 
 	for _, c := range bs.Exiled {
 		out.Exiled = append(out.Exiled, &Card{
-			Name: c.Name,
+			Name:     c.Name,
+			ID:       *c.ID,
+			Quantity: c.Quantity,
+			Tapped:   c.Tapped,
+			// TODO: Handle counters and labels
+			// Counters:      c.Counters,
+			Colors:        c.Colors,
+			ColorIdentity: c.ColorIdentity,
+			Cmc:           c.Cmc,
+			ManaCost:      c.ManaCost,
+			UUID:          c.UUID,
+			Power:         c.Power,
+			Toughness:     c.Toughness,
+			Types:         c.Types,
+			Subtypes:      c.Subtypes,
+			Supertypes:    c.Supertypes,
+			IsTextless:    c.IsTextless,
+			Text:          c.Text,
+			Tcgid:         c.Tcgid,
+			ScryfallID:    c.ScryfallID,
 		})
 	}
 
 	for _, c := range bs.Field {
 		out.Field = append(out.Field, &Card{
-			Name: c.Name,
+			Name:     c.Name,
+			ID:       *c.ID,
+			Quantity: c.Quantity,
+			Tapped:   c.Tapped,
+			// TODO: Handle counters and labels
+			// Counters:      c.Counters,
+			Colors:        c.Colors,
+			ColorIdentity: c.ColorIdentity,
+			Cmc:           c.Cmc,
+			ManaCost:      c.ManaCost,
+			UUID:          c.UUID,
+			Power:         c.Power,
+			Toughness:     c.Toughness,
+			Types:         c.Types,
+			Subtypes:      c.Subtypes,
+			Supertypes:    c.Supertypes,
+			IsTextless:    c.IsTextless,
+			Text:          c.Text,
+			Tcgid:         c.Tcgid,
+			ScryfallID:    c.ScryfallID,
 		})
 	}
 
 	for _, c := range bs.Hand {
 		out.Hand = append(out.Hand, &Card{
-			Name: c.Name,
+			Name:     c.Name,
+			ID:       *c.ID,
+			Quantity: c.Quantity,
+			Tapped:   c.Tapped,
+			// TODO: Handle counters and labels
+			// Counters:      c.Counters,
+			Colors:        c.Colors,
+			ColorIdentity: c.ColorIdentity,
+			Cmc:           c.Cmc,
+			ManaCost:      c.ManaCost,
+			UUID:          c.UUID,
+			Power:         c.Power,
+			Toughness:     c.Toughness,
+			Types:         c.Types,
+			Subtypes:      c.Subtypes,
+			Supertypes:    c.Supertypes,
+			IsTextless:    c.IsTextless,
+			Text:          c.Text,
+			Tcgid:         c.Tcgid,
+			ScryfallID:    c.ScryfallID,
 		})
 	}
 
 	for _, c := range bs.Controlled {
 		out.Controlled = append(out.Controlled, &Card{
-			Name: c.Name,
+			Name:     c.Name,
+			ID:       *c.ID,
+			Quantity: c.Quantity,
+			Tapped:   c.Tapped,
+			// TODO: Handle counters and labels
+			// Counters:      c.Counters,
+			Colors:        c.Colors,
+			ColorIdentity: c.ColorIdentity,
+			Cmc:           c.Cmc,
+			ManaCost:      c.ManaCost,
+			UUID:          c.UUID,
+			Power:         c.Power,
+			Toughness:     c.Toughness,
+			Types:         c.Types,
+			Subtypes:      c.Subtypes,
+			Supertypes:    c.Supertypes,
+			IsTextless:    c.IsTextless,
+			Text:          c.Text,
+			Tcgid:         c.Tcgid,
+			ScryfallID:    c.ScryfallID,
 		})
 	}
 
 	for _, c := range bs.Revealed {
 		out.Revealed = append(out.Revealed, &Card{
-			Name: c.Name,
+			Name:     c.Name,
+			ID:       *c.ID,
+			Quantity: c.Quantity,
+			Tapped:   c.Tapped,
+			// TODO: Handle counters and labels
+			// Counters:      c.Counters,
+			Colors:        c.Colors,
+			ColorIdentity: c.ColorIdentity,
+			Cmc:           c.Cmc,
+			ManaCost:      c.ManaCost,
+			UUID:          c.UUID,
+			Power:         c.Power,
+			Toughness:     c.Toughness,
+			Types:         c.Types,
+			Subtypes:      c.Subtypes,
+			Supertypes:    c.Supertypes,
+			IsTextless:    c.IsTextless,
+			Text:          c.Text,
+			Tcgid:         c.Tcgid,
+			ScryfallID:    c.ScryfallID,
 		})
 	}
 
