@@ -17,7 +17,7 @@ type Query {
   decks(userID: String!): [Deck!]
   card(name: String!, id: String): [Card!]
   cards(list: [String!]): [Card!]!
-  search(name: String, colors: String, colorIdentity: String, keywords: [String]): [Card]
+  search(name: String, colors: [String], colorIdentity: [String], keywords: [String]): [Card]
 }
 
 type Subscription {
@@ -39,8 +39,8 @@ type Message {
 type Card {
   Name: String!
   ID: String!
-  Quantity: Int,
-  Tapped: String
+  Quantity: Int
+  Tapped: Boolean
   Counters: [Counter] 
   Colors: String
   ColorIdentity: String
@@ -121,7 +121,7 @@ input InputCard {
   Name: String!
   Counters: [InputCounter]
   Labels: [InputLabel]
-  Tapped: String
+  Tapped: Boolean 
   Quantity: Int
   Colors: String
   ColorIdentity: String

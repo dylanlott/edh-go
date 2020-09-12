@@ -24,7 +24,7 @@ type Card struct {
 	Name          string     `json:"Name"`
 	ID            string     `json:"ID"`
 	Quantity      *int       `json:"Quantity"`
-	Tapped        *string    `json:"Tapped"`
+	Tapped        *bool      `json:"Tapped"`
 	Counters      []*Counter `json:"Counters"`
 	Colors        *string    `json:"Colors"`
 	ColorIdentity *string    `json:"ColorIdentity"`
@@ -90,7 +90,7 @@ type InputCard struct {
 	Name          string          `json:"Name"`
 	Counters      []*InputCounter `json:"Counters"`
 	Labels        []*InputLabel   `json:"Labels"`
-	Tapped        *string         `json:"Tapped"`
+	Tapped        *bool           `json:"Tapped"`
 	Quantity      *int            `json:"Quantity"`
 	Colors        *string         `json:"Colors"`
 	ColorIdentity *string         `json:"ColorIdentity"`

@@ -138,7 +138,7 @@ type ComplexityRoot struct {
 		Decks       func(childComplexity int, userID string) int
 		Games       func(childComplexity int) int
 		Messages    func(childComplexity int) int
-		Search      func(childComplexity int, name *string, colors *string, colorIdentity *string, keywords []*string) int
+		Search      func(childComplexity int, name *string, colors []*string, colorIdentity []*string, keywords []*string) int
 		Users       func(childComplexity int) int
 	}
 
@@ -183,7 +183,7 @@ type QueryResolver interface {
 	Decks(ctx context.Context, userID string) ([]*Deck, error)
 	Card(ctx context.Context, name string, id *string) ([]*Card, error)
 	Cards(ctx context.Context, list []string) ([]*Card, error)
-	Search(ctx context.Context, name *string, colors *string, colorIdentity *string, keywords []*string) ([]*Card, error)
+	Search(ctx context.Context, name *string, colors []*string, colorIdentity []*string, keywords []*string) ([]*Card, error)
 }
 type SubscriptionResolver interface {
 	MessagePosted(ctx context.Context, user string) (<-chan *Message, error)
@@ -708,7 +708,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.Search(childComplexity, args["name"].(*string), args["colors"].(*string), args["colorIdentity"].(*string), args["keywords"].([]*string)), true
+		return e.complexity.Query.Search(childComplexity, args["name"].(*string), args["colors"].([]*string), args["colorIdentity"].([]*string), args["keywords"].([]*string)), true
 
 	case "Query.users":
 		if e.complexity.Query.Users == nil {
@@ -931,7 +931,7 @@ type Query {
   decks(userID: String!): [Deck!]
   card(name: String!, id: String): [Card!]
   cards(list: [String!]): [Card!]!
-  search(name: String, colors: String, colorIdentity: String, keywords: [String]): [Card]
+  search(name: String, colors: [String], colorIdentity: [String], keywords: [String]): [Card]
 }
 
 type Subscription {
@@ -953,8 +953,8 @@ type Message {
 type Card {
   Name: String!
   ID: String!
-  Quantity: Int,
-  Tapped: String
+  Quantity: Int
+  Tapped: Boolean
   Counters: [Counter] 
   Colors: String
   ColorIdentity: String
@@ -1035,7 +1035,7 @@ input InputCard {
   Name: String!
   Counters: [InputCounter]
   Labels: [InputLabel]
-  Tapped: String
+  Tapped: Boolean 
   Quantity: Int
   Colors: String
   ColorIdentity: String
@@ -1352,17 +1352,17 @@ func (ec *executionContext) field_Query_search_args(ctx context.Context, rawArgs
 		}
 	}
 	args["name"] = arg0
-	var arg1 *string
+	var arg1 []*string
 	if tmp, ok := rawArgs["colors"]; ok {
-		arg1, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
+		arg1, err = ec.unmarshalOString2ᚕᚖstring(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
 	args["colors"] = arg1
-	var arg2 *string
+	var arg2 []*string
 	if tmp, ok := rawArgs["colorIdentity"]; ok {
-		arg2, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
+		arg2, err = ec.unmarshalOString2ᚕᚖstring(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -2016,10 +2016,10 @@ func (ec *executionContext) _Card_Tapped(ctx context.Context, field graphql.Coll
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*string)
+	res := resTmp.(*bool)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+	return ec.marshalOBoolean2ᚖbool(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Card_Counters(ctx context.Context, field graphql.CollectedField, obj *Card) (ret graphql.Marshaler) {
@@ -3712,7 +3712,7 @@ func (ec *executionContext) _Query_search(ctx context.Context, field graphql.Col
 	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
 	resTmp := ec._fieldMiddleware(ctx, nil, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Search(rctx, args["name"].(*string), args["colors"].(*string), args["colorIdentity"].(*string), args["keywords"].([]*string))
+		return ec.resolvers.Query().Search(rctx, args["name"].(*string), args["colors"].([]*string), args["colorIdentity"].([]*string), args["keywords"].([]*string))
 	})
 
 	if resTmp == nil {
@@ -5442,7 +5442,7 @@ func (ec *executionContext) unmarshalInputInputCard(ctx context.Context, obj int
 			}
 		case "Tapped":
 			var err error
-			it.Tapped, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			it.Tapped, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
 			if err != nil {
 				return it, err
 			}
