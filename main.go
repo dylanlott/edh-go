@@ -27,7 +27,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	cardDB, err := persistence.NewSQLite("./persistence/mtgallcards.sqlite")
+	cardDB, err := persistence.NewSQLite("./persistence/AllPrintings.sqlite")
 	if err != nil {
 		log.Fatalf(errs.Wrap(err).Error())
 	}
