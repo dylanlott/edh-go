@@ -171,7 +171,8 @@ import SelfState from '@/components/SelfState.vue';
 import TurnTracker from '@/components/TurnTracker.vue';
 import { 
   selfStateQuery, 
-  updateBoardStateQuery 
+  updateBoardStateQuery,
+  boardstates,
 } from '@/gqlQueries';
 import router from '@/router'
 
@@ -190,9 +191,6 @@ export default {
           User: {
             username: this.$currentUser(),
           },
-          // Commander: [],
-          // Library: [],
-          // Field: [],
         },
       },
     };
@@ -216,27 +214,39 @@ export default {
       console.log('updating state: ', self)
       // _.throttle(this.mutateBoardState, 500)
 
+      // TODO: Fix this.
       // stuff is assigned to `self.boardstates` somewhere but mutateBoardState
       // tries to access `self.boardstate` so that's probably causing some of our issues.
       this.mutateBoardState()
     },
     mutateBoardState() {
-      const self = this
-      self.self.boardstate.User = {
+      this.self.boardstate.User = {
         Username: this.$currentUser()
       }
-      self.self.boardstate.GameID = this.$route.params.id
-
-  // This is 
+      this.self.boardstate.GameID = this.$route.params.id
+      console.log('boardstate variable: ', this.self.boardstate)
       this.$apollo.mutate({
         mutation: updateBoardStateQuery,
         variables: {
-          boardstate: self.self.boardstate,
+          boardstate: this.self.boardstate,
         },
       })
-      .then((data) => {
-        console.log('successfully mutated state: ', data)
-        this.self.boardstate = data.updateBoardStateQuery
+      .then((res) => {
+        const bs = res.data.updateBoardState
+        console.log('bs object: ', bs)
+        this.self.boardstate.Library = bs.Library
+        this.self.boardstate.Commander = bs.Commander
+        this.self.boardstate.Graveyard = bs.Graveyard
+        this.self.boardstate.Exiled = bs.Exiled
+        this.self.boardstate.Hand = bs.Hand
+        this.self.boardstate.Revealed = bs.Revealed
+        this.self.boardstate.Field = bs.Field
+        this.self.boardstate.Controlled = bs.Controlled
+        return res 
+      })
+      .catch((err) => {
+        console.log('error mutating boardstate: ', err)
+        return err
       })
     },
     handleActivity(val) {
@@ -262,6 +272,7 @@ export default {
           userID: this.$currentUser(),
         },
         update(data) {
+          console.log('incoming selfstate#data: ', data)
           this.self.boardstate = data.boardstates[0];
           console.log('selfstate#update: ', this.self.boardstate);
         },
@@ -270,36 +281,7 @@ export default {
     boardstates() {
       // get gameID and userID here so they're not tied to `self`
       return {
-        query: gql`
-          query($gameID: String!) {
-            boardstates(gameID: $gameID) {
-              Commander {
-                Name
-              }
-              Library {
-                Name
-              }
-              Graveyard {
-                Name
-              }
-              Exiled {
-                Name
-              }
-              Field {
-                Name
-              }
-              Hand {
-                Name
-              }
-              Revealed {
-                Name
-              }
-              Controlled {
-                Name
-              }
-            }
-          }
-        `,
+        query: boardstates,
         variables: { gameID: this.$route.params.id },
         subscribeToMore: {
           document: gql`
@@ -328,7 +310,7 @@ export default {
                   Name
                 }
                 Controlled {
-                  Name
+                 Name
                 }
               }
             }

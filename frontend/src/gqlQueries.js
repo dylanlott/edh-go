@@ -1,5 +1,148 @@
 import gql from 'graphql-tag';
 
+export const boardstates = gql`
+query($gameID: String!) {
+  boardstates(gameID: $gameID) {
+    Commander {
+      Name 
+      ID 
+      Colors 
+      ColorIdentity 
+      ManaCost 
+      Power 
+      Toughness 
+      CMC 
+      Text 
+      Types 
+      Subtypes 
+      Supertypes 
+      IsTextless 
+      TCGID 
+      ScryfallID  
+    }
+    Library {
+      Name 
+      ID 
+      Colors 
+      ColorIdentity 
+      ManaCost 
+      Power 
+      Toughness 
+      CMC 
+      Text 
+      Types 
+      Subtypes 
+      Supertypes 
+      IsTextless 
+      TCGID 
+      ScryfallID  
+    }
+    Graveyard {
+      Name 
+      ID 
+      Colors 
+      ColorIdentity 
+      ManaCost 
+      Power 
+      Toughness 
+      CMC 
+      Text 
+      Types 
+      Subtypes 
+      Supertypes 
+      IsTextless 
+      TCGID 
+      ScryfallID  
+    }
+    Exiled {
+      Name 
+      ID 
+      Colors 
+      ColorIdentity 
+      ManaCost 
+      Power 
+      Toughness 
+      CMC 
+      Text 
+      Types 
+      Subtypes 
+      Supertypes 
+      IsTextless 
+      TCGID 
+      ScryfallID   
+    }
+    Field {
+      Name 
+      ID 
+      Colors 
+      ColorIdentity 
+      ManaCost 
+      Power 
+      Toughness 
+      CMC 
+      Text 
+      Types 
+      Subtypes 
+      Supertypes 
+      IsTextless 
+      TCGID 
+      ScryfallID  
+    }
+    Hand {
+      Name 
+      ID 
+      Colors 
+      ColorIdentity 
+      ManaCost 
+      Power 
+      Toughness 
+      CMC 
+      Text 
+      Types 
+      Subtypes 
+      Supertypes 
+      IsTextless 
+      TCGID 
+      ScryfallID 
+    }
+    Revealed {
+      Name 
+      ID 
+      Colors 
+      ColorIdentity 
+      ManaCost 
+      Power 
+      Toughness 
+      CMC 
+      Text 
+      Types 
+      Subtypes 
+      Supertypes 
+      IsTextless 
+      TCGID 
+      ScryfallID 
+    }
+    Controlled {
+      Name 
+      ID 
+      Colors 
+      ColorIdentity 
+      ManaCost 
+      Power 
+      Toughness 
+      CMC 
+      Text 
+      Types 
+      Subtypes 
+      Supertypes 
+      IsTextless 
+      TCGID 
+      ScryfallID 
+    }
+  }
+}
+`
+
 export const updateBoardStateQuery = gql`
   mutation ($boardstate: InputBoardState!) {
     updateBoardState(input: $boardstate) {
