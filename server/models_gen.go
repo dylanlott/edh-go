@@ -8,6 +8,7 @@ import (
 
 type BoardState struct {
 	User       *User      `json:"User"`
+	Life       int        `json:"Life"`
 	GameID     string     `json:"GameID"`
 	Commander  []*Card    `json:"Commander"`
 	Library    []*Card    `json:"Library"`
@@ -73,6 +74,7 @@ type Game struct {
 type InputBoardState struct {
 	User       *InputUser      `json:"User"`
 	GameID     string          `json:"GameID"`
+	Life       int             `json:"Life"`
 	Decklist   *string         `json:"Decklist"`
 	Commander  []*InputCard    `json:"Commander"`
 	Library    []*InputCard    `json:"Library"`

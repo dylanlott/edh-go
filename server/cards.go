@@ -97,8 +97,6 @@ func (s *graphQLServer) Cards(ctx context.Context, list []string) ([]*Card, erro
 		return nil, errs.New("error formatting sqlx query")
 	}
 
-	fmt.Printf("processing: query: %+v -- args %+v \n", query, args)
-
 	rows, err := s.cardDB.Query(query, args...)
 	if err != nil {
 		return nil, errs.New("error querying cards DB for list of cards")
@@ -134,8 +132,6 @@ func (s *graphQLServer) Cards(ctx context.Context, list []string) ([]*Card, erro
 		}
 
 		parsedID := strconv.Itoa(*id)
-		fmt.Printf("parsed ID: %+v\n", parsedID)
-		fmt.Printf("power: %+v\n toughness %+v\n", power, toughness)
 
 		card := &Card{
 			ID:            parsedID,
@@ -172,7 +168,6 @@ func (s *graphQLServer) Search(
 		return nil, nil
 	}
 	n := fmt.Sprintf("%%%s%%", *name)
-	fmt.Printf("searching for name: %s", n)
 	rows, err := s.cardDB.Query("SELECT id, name, colors FROM cards WHERE name LIKE ?", n)
 	if err != nil {
 		log.Printf("error querying database: %s", err)
@@ -189,7 +184,7 @@ func (s *graphQLServer) Search(
 		)
 
 		if err := rows.Scan(&id, &name, &colors); err != nil {
-			log.Printf("failed to scan card into struct: %s", err)
+			log.Printf("ERROR: failed to scan card into struct: %s", err)
 			continue
 		}
 
@@ -199,8 +194,6 @@ func (s *graphQLServer) Search(
 			Name:   *name,
 			Colors: colors,
 		}
-
-		fmt.Printf("searched card: %+v\n", card)
 
 		cards = append(cards, card)
 	}

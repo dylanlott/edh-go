@@ -145,6 +145,7 @@ export default {
               User: {
                 Username: this.$currentUser()
               },
+              Life: 40,
               Commander: this.commander,
               Library: [],
               Decklist: this.decklist,

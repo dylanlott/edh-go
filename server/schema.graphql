@@ -105,6 +105,7 @@ type Counter {
 
 type BoardState {
   User: User!
+  Life: Int! 
   GameID: String!
   Commander: [Card!]!
   Library: [Card!]!
@@ -150,6 +151,7 @@ input InputCounter {
 input InputBoardState {
   User: InputUser!
   GameID: String!
+  Life: Int!
   Decklist: String,
   Commander: [InputCard]
   Library: [InputCard]

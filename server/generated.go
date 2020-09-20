@@ -60,6 +60,7 @@ type ComplexityRoot struct {
 		Graveyard  func(childComplexity int) int
 		Hand       func(childComplexity int) int
 		Library    func(childComplexity int) int
+		Life       func(childComplexity int) int
 		Revealed   func(childComplexity int) int
 		User       func(childComplexity int) int
 	}
@@ -270,6 +271,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.BoardState.Library(childComplexity), true
+
+	case "BoardState.Life":
+		if e.complexity.BoardState.Life == nil {
+			break
+		}
+
+		return e.complexity.BoardState.Life(childComplexity), true
 
 	case "BoardState.Revealed":
 		if e.complexity.BoardState.Revealed == nil {
@@ -1027,6 +1035,7 @@ type Counter {
 
 type BoardState {
   User: User!
+  Life: Int! 
   GameID: String!
   Commander: [Card!]!
   Library: [Card!]!
@@ -1072,6 +1081,7 @@ input InputCounter {
 input InputBoardState {
   User: InputUser!
   GameID: String!
+  Life: Int!
   Decklist: String,
   Commander: [InputCard]
   Library: [InputCard]
@@ -1563,6 +1573,40 @@ func (ec *executionContext) _BoardState_User(ctx context.Context, field graphql.
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
 	return ec.marshalNUser2ᚖgithubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐUser(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _BoardState_Life(ctx context.Context, field graphql.CollectedField, obj *BoardState) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "BoardState",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp := ec._fieldMiddleware(ctx, obj, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Life, nil
+	})
+
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _BoardState_GameID(ctx context.Context, field graphql.CollectedField, obj *BoardState) (ret graphql.Marshaler) {
@@ -5379,6 +5423,12 @@ func (ec *executionContext) unmarshalInputInputBoardState(ctx context.Context, o
 			if err != nil {
 				return it, err
 			}
+		case "Life":
+			var err error
+			it.Life, err = ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
 		case "Decklist":
 			var err error
 			it.Decklist, err = ec.unmarshalOString2ᚖstring(ctx, v)
@@ -5850,6 +5900,11 @@ func (ec *executionContext) _BoardState(ctx context.Context, sel ast.SelectionSe
 			out.Values[i] = graphql.MarshalString("BoardState")
 		case "User":
 			out.Values[i] = ec._BoardState_User(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "Life":
+			out.Values[i] = ec._BoardState_Life(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}

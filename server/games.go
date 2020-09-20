@@ -87,7 +87,6 @@ func (s *graphQLServer) Boardstates(ctx context.Context, gameID string, userID *
 }
 
 func (s *graphQLServer) GameUpdated(ctx context.Context, game InputGame) (<-chan *Game, error) {
-	log.Printf("GameUpdated hit: %+v\n", game)
 	_, ok := s.gameChannels[game.ID]
 	if !ok {
 		return nil, errs.New("game does not exist with ID of %s", game.ID)
@@ -95,7 +94,6 @@ func (s *graphQLServer) GameUpdated(ctx context.Context, game InputGame) (<-chan
 
 	games := make(chan *Game, 1)
 	s.mutex.Lock()
-	log.Printf("emitting updated game event: %+v\n", game)
 	s.gameChannels[game.ID] = games
 	s.mutex.Unlock()
 
@@ -126,7 +124,6 @@ func (s *graphQLServer) BoardUpdate(ctx context.Context, bs InputBoardState) (<-
 		s.mutex.Unlock()
 	}()
 
-	log.Printf("Returning BoardStates: %+v\n", boardstates)
 	return boardstates, nil
 }
 
@@ -176,6 +173,7 @@ func (s *graphQLServer) CreateGame(ctx context.Context, inputGame InputGame) (*G
 				ID:       uuid.New().String(),
 				Username: player.User.Username,
 			},
+			Life:       player.Life,
 			GameID:     g.ID,
 			Hand:       getCards(player.Hand),
 			Exiled:     getCards(player.Exiled),
@@ -220,8 +218,6 @@ func (s *graphQLServer) CreateGame(ctx context.Context, inputGame InputGame) (*G
 		s.mutex.Lock()
 		s.boardChannels[boardKey] = make(chan *BoardState, 1)
 		s.mutex.Unlock()
-
-		log.Printf("pushed player boardstate successfully: %+v\n", bs)
 	}
 
 	// Set game in directory for access
@@ -235,8 +231,6 @@ func (s *graphQLServer) CreateGame(ctx context.Context, inputGame InputGame) (*G
 	if err != nil {
 		log.Printf("error setting Game to redis: %+v\n", err)
 	}
-
-	log.Printf("Game added to directory: %+v\n", s.gameChannels[g.ID])
 
 	return g, nil
 }
@@ -283,10 +277,9 @@ func gameFromInput(game InputGame) *Game {
 	return out
 }
 
-// TODO: there is a bug here - need to figure it out .
-// This breaks when handling boardstate updates
 func boardStateFromInput(bs InputBoardState) *BoardState {
 	out := &BoardState{
+		Life: bs.Life,
 		User: &User{
 			Username: bs.User.Username,
 		},
