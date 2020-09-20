@@ -1,5 +1,5 @@
 <template>
-  <div @click="tap()"
+  <div 
     class="mtg-card card"
     v-bind:class="{
       'd-none': hidden,
@@ -12,7 +12,7 @@
       <img class="card-img-top" src="https://via.placeholder.com/1000x400.jpg">
     -->
     <div class="card-body">
-      <p class="card-title"><b>{{ Name }}</b></p>
+      <p class="card-title"><b>{{ Name }} {{ Tapped }} </b></p>
       <p class="card-text"
         v-if="CMC || ManaCost">{{ CMC }} - {{ ManaCost }} </p>
       <p class="card-text">{{ Types }} {{ Supertypes }} {{ Subtypes }}</p>
@@ -50,6 +50,7 @@ export default {
     'Subtypes',
     'ScryfallID',
     'Tapped',
+    'Flipped',
   ],
   methods: {
     addCounter (name) {
@@ -66,9 +67,6 @@ export default {
     },
     updateLabel (name, value) {
       this.labels.name
-    },
-    tap () {
-      this.Tapped = !this.Tapped
     },
     moveTo (dst) {
     },
