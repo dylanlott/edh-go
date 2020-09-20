@@ -69,6 +69,7 @@ type ComplexityRoot struct {
 		ColorIdentity func(childComplexity int) int
 		Colors        func(childComplexity int) int
 		Counters      func(childComplexity int) int
+		Flipped       func(childComplexity int) int
 		ID            func(childComplexity int) int
 		IsTextless    func(childComplexity int) int
 		ManaCost      func(childComplexity int) int
@@ -311,6 +312,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Card.Counters(childComplexity), true
+
+	case "Card.Flipped":
+		if e.complexity.Card.Flipped == nil {
+			break
+		}
+
+		return e.complexity.Card.Flipped(childComplexity), true
 
 	case "Card.ID":
 		if e.complexity.Card.ID == nil {
@@ -955,6 +963,7 @@ type Card {
   ID: String!
   Quantity: Int
   Tapped: Boolean
+  Flipped: Boolean
   Counters: [Counter] 
   Colors: String
   ColorIdentity: String
@@ -1036,6 +1045,7 @@ input InputCard {
   Counters: [InputCounter]
   Labels: [InputLabel]
   Tapped: Boolean 
+  Flipped: Boolean
   Quantity: Int
   Colors: String
   ColorIdentity: String
@@ -2011,6 +2021,37 @@ func (ec *executionContext) _Card_Tapped(ctx context.Context, field graphql.Coll
 	resTmp := ec._fieldMiddleware(ctx, obj, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Tapped, nil
+	})
+
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*bool)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalOBoolean2ᚖbool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Card_Flipped(ctx context.Context, field graphql.CollectedField, obj *Card) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "Card",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp := ec._fieldMiddleware(ctx, obj, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Flipped, nil
 	})
 
 	if resTmp == nil {
@@ -5446,6 +5487,12 @@ func (ec *executionContext) unmarshalInputInputCard(ctx context.Context, obj int
 			if err != nil {
 				return it, err
 			}
+		case "Flipped":
+			var err error
+			it.Flipped, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
 		case "Quantity":
 			var err error
 			it.Quantity, err = ec.unmarshalOInt2ᚖint(ctx, v)
@@ -5889,6 +5936,8 @@ func (ec *executionContext) _Card(ctx context.Context, sel ast.SelectionSet, obj
 			out.Values[i] = ec._Card_Quantity(ctx, field, obj)
 		case "Tapped":
 			out.Values[i] = ec._Card_Tapped(ctx, field, obj)
+		case "Flipped":
+			out.Values[i] = ec._Card_Flipped(ctx, field, obj)
 		case "Counters":
 			out.Values[i] = ec._Card_Counters(ctx, field, obj)
 		case "Colors":

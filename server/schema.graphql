@@ -41,6 +41,7 @@ type Card {
   ID: String!
   Quantity: Int
   Tapped: Boolean
+  Flipped: Boolean
   Counters: [Counter] 
   Colors: String
   ColorIdentity: String
@@ -122,6 +123,7 @@ input InputCard {
   Counters: [InputCounter]
   Labels: [InputLabel]
   Tapped: Boolean 
+  Flipped: Boolean
   Quantity: Int
   Colors: String
   ColorIdentity: String

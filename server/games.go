@@ -242,8 +242,6 @@ func (s *graphQLServer) CreateGame(ctx context.Context, inputGame InputGame) (*G
 }
 
 func (s *graphQLServer) UpdateBoardState(ctx context.Context, bs InputBoardState) (*BoardState, error) {
-	log.Printf("UpdateBoardState hit: %+v", bs)
-	log.Printf("updated boardstate cards: %+v\n", *bs.Hand[0])
 	updated := boardStateFromInput(bs)
 	boardKey := BoardStateKey(bs.GameID, bs.User.Username)
 	err := s.Set(boardKey, updated)
@@ -301,6 +299,7 @@ func boardStateFromInput(bs InputBoardState) *BoardState {
 			ID:       *c.ID,
 			Quantity: c.Quantity,
 			Tapped:   c.Tapped,
+			Flipped:  c.Flipped,
 			// TODO: Handle counters and labels
 			// Counters:      c.Counters,
 			Colors:        c.Colors,
@@ -326,6 +325,7 @@ func boardStateFromInput(bs InputBoardState) *BoardState {
 			ID:       *c.ID,
 			Quantity: c.Quantity,
 			Tapped:   c.Tapped,
+			Flipped:  c.Flipped,
 			// TODO: Handle counters and labels
 			// Counters:      c.Counters,
 			Colors:        c.Colors,
@@ -351,6 +351,7 @@ func boardStateFromInput(bs InputBoardState) *BoardState {
 			ID:       *c.ID,
 			Quantity: c.Quantity,
 			Tapped:   c.Tapped,
+			Flipped:  c.Flipped,
 			// TODO: Handle counters and labels
 			// Counters:      c.Counters,
 			Colors:        c.Colors,
@@ -376,6 +377,7 @@ func boardStateFromInput(bs InputBoardState) *BoardState {
 			ID:       *c.ID,
 			Quantity: c.Quantity,
 			Tapped:   c.Tapped,
+			Flipped:  c.Flipped,
 			// TODO: Handle counters and labels
 			// Counters:      c.Counters,
 			Colors:        c.Colors,
@@ -401,6 +403,7 @@ func boardStateFromInput(bs InputBoardState) *BoardState {
 			ID:       *c.ID,
 			Quantity: c.Quantity,
 			Tapped:   c.Tapped,
+			Flipped:  c.Flipped,
 			// TODO: Handle counters and labels
 			// Counters:      c.Counters,
 			Colors:        c.Colors,
@@ -426,6 +429,7 @@ func boardStateFromInput(bs InputBoardState) *BoardState {
 			ID:       *c.ID,
 			Quantity: c.Quantity,
 			Tapped:   c.Tapped,
+			Flipped:  c.Flipped,
 			// TODO: Handle counters and labels
 			// Counters:      c.Counters,
 			Colors:        c.Colors,
@@ -451,6 +455,7 @@ func boardStateFromInput(bs InputBoardState) *BoardState {
 			ID:       *c.ID,
 			Quantity: c.Quantity,
 			Tapped:   c.Tapped,
+			Flipped:  c.Flipped,
 			// TODO: Handle counters and labels
 			// Counters:      c.Counters,
 			Colors:        c.Colors,

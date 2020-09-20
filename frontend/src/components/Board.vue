@@ -23,24 +23,29 @@
 
       <div>
         <div class="columns">
-          <div class="column is-10">
+          <div class="column is-full is-multiline">
             <p class="title is-5">Battlefield</p>
             <draggable
-              class="card-wrapper bordered"
-              v-model="self.boardstate.Field"
+              class="card-wrapper bordered is-multiline battlefield"
               group="board" 
+              v-model="self.boardstate.Field"
               @start="drag = true"
               @end="drag = false"
               @change="handleUpdateState()"
             >
-              <div v-for="card in self.boardstate.Field" :key="card.id" class="columns">
+              <div 
+              class="is-multiline"
+              @click="tap(card)"
+              v-for="(card, i) in self.boardstate.Field" 
+              :key="i" 
+              >
                 <Card v-bind="card" />
               </div>
             </draggable>
           </div>
         </div>
         <div class="columns">
-          <div class="column">
+          <!-- <div class="column">
             <p class="title is-5">Exiled</p>
             <draggable
               class="column card-wrapper"
@@ -51,11 +56,11 @@
               @change="handleUpdateState()"
             >
               <div v-for="card in self.boardstate.Exiled" :key="card.id">
-                <Card v-bind="card" />
+                <Card v-bind="card" @click="tap()"/>
               </div>
             </draggable>
-          </div>
-          <div class="column">
+          </div> -->
+          <!-- <div class="column">
             <p class="title is-5">Graveyard</p>
             <draggable
               class="column card-wrapper"
@@ -69,8 +74,8 @@
                 <Card v-bind="card" />
               </div>
             </draggable>
-          </div>
-          <div class="column">
+          </div> -->
+          <!-- <div class="column">
             <p class="title is-5">Revealed</p>
             <draggable
               class="column card-wrapper"
@@ -81,11 +86,11 @@
               @change="handleUpdateState()"
             >
               <div v-for="card in self.boardstate.Revealed" :key="card.id">
-                <Card v-bind="card" />
+                <Card v-bind="card" @click="tap(card)"/>
               </div>
             </draggable>
-          </div>
-          <div class="column">
+          </div> -->
+          <!-- <div class="column">
             <p class="title is-5">Emblems/Counters</p>
             <draggable
               class="column card-wrapper"
@@ -96,10 +101,10 @@
               @change="handleUpdateState()"
             >
               <div v-for="card in self.boardstate.emblems" :key="card.id">
-                <Card v-bind="card" />
+                <Card v-bind="card" @click="tap(card)"/>
               </div>
             </draggable>
-          </div>
+          </div> -->
           <div class="column library" @click="draw()">
             <p class="title is-5">Library</p>
             <draggable
@@ -111,7 +116,7 @@
               @change="handleUpdateState()"
             >
               <div v-for="card in self.boardstate.Library" :key="card.id">
-                <Card v-bind="card" hidden="true" />
+                <Card v-bind="card" hidden="true"/>
               </div>
             </draggable>
           </div>
@@ -134,7 +139,6 @@
           </div>
         </div>
         <hr />
-        <!-- <code>{{ self }}</code> -->
       </div>
       <!-- END OF SELF STATE -->
     </div>
@@ -211,13 +215,16 @@ export default {
     },
     handleUpdateState() {
       const self = this
-      console.log('updating state: ', self)
       // _.throttle(this.mutateBoardState, 500)
 
       // TODO: Fix this.
       // stuff is assigned to `self.boardstates` somewhere but mutateBoardState
       // tries to access `self.boardstate` so that's probably causing some of our issues.
       this.mutateBoardState()
+    },
+    tap(card) {
+      card.Tapped = !card.Tapped
+      this.handleUpdateState()
     },
     mutateBoardState() {
       this.self.boardstate.User = {
@@ -370,5 +377,9 @@ export default {
 
 .bordered {
   border: 1px #000;
+}
+
+.battlefield {
+  height: 200px;
 }
 </style>

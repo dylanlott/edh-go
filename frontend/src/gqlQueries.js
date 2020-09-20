@@ -74,6 +74,8 @@ query($gameID: String!) {
     Field {
       Name 
       ID 
+      Tapped
+      Flipped
       Colors 
       ColorIdentity 
       ManaCost 
@@ -125,6 +127,8 @@ query($gameID: String!) {
     Controlled {
       Name 
       ID 
+      Tapped
+      Flipped
       Colors 
       ColorIdentity 
       ManaCost 
@@ -153,6 +157,8 @@ export const updateBoardStateQuery = gql`
       Commander { 
         Name 
         ID 
+        Tapped
+        Flipped
         Colors 
         ColorIdentity 
         ManaCost 
@@ -221,6 +227,8 @@ export const updateBoardStateQuery = gql`
       Field { 
         Name 
         ID 
+        Tapped
+        Flipped
         Colors 
         ColorIdentity 
         ManaCost 
@@ -272,6 +280,8 @@ export const updateBoardStateQuery = gql`
       Controlled { 
         Name 
         ID 
+        Tapped
+        Flipped
         Colors 
         ColorIdentity 
         ManaCost 
@@ -416,6 +426,8 @@ export const selfStateQuery = gql`
       Field { 
         Name 
         ID 
+        Tapped
+        Flipped
         Colors 
         ColorIdentity 
         ManaCost 
@@ -450,6 +462,8 @@ export const selfStateQuery = gql`
       Revealed { 
         Name 
         ID 
+        Tapped
+        Flipped
         Colors 
         ColorIdentity 
         ManaCost 
