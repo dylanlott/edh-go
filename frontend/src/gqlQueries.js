@@ -302,62 +302,46 @@ export const updateBoardStateQuery = gql`
   }
 `
 
-export const getBoardstate = gql`
-  query($gameID: String!) {
-    boardstates(gameID: $gameID) {
-      User {
-        id
-      }
-      Library {
-        Name
-        ID
-      }
-      Graveyard {
-        Name
-        ID
-      }
-      Exiled {
-        Name
-        ID
-      }
-      Field {
-        Name
-        ID
-      }
-      Hand {
-        Name
-        ID
-      }
-      Revealed {
-        Name
-        ID
-      }
-      Controlled {
-        Name
-        ID
-      }
+export const boardstatesSubscription = gql`
+subscription($boardstate: InputBoardState!) {
+  boardUpdate(boardstate: $boardstate) {
+    GameID
+    Life
+    Commander {
+      Name
+    }
+    Library {
+      Name
+    }
+    Graveyard {
+      Name
+    }
+    Exiled {
+      Name
+    }
+    Field {
+      Name
+    }
+    Hand {
+      Name
+    }
+    Revealed {
+      Name
+    }
+    Controlled {
+     Name
     }
   }
-`
-
-export const boardstateSubscription = gql`
-  subscription ($boardstate: InputBoardState!) {
-    boardUpdate(boardstate: $boardstate) {
-      GameID
-      User {
-        username
-      }
-    }
-  }
+}
 `
 
 export const selfStateQuery = gql`
   query($gameID: String!, $userID: String) {
     boardstates(gameID: $gameID, userID: $userID) {
-      Life
       User {
         username
       }
+      Life
       Commander { 
         Name 
         ID 

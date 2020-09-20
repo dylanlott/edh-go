@@ -3,6 +3,13 @@
     <h1 class="title shell">{{ gameID }}</h1>
     <TurnTracker gameID="gameID" />
 
+  <!-- LIFE TRACKER -->
+    <div>
+      <div class="title is-4">{{ self.boardstate.Life }}</div>
+      <button class="button" @click="increaseLife()">Increase</button>
+      <button class="button" @click="decreaseLife()">Decrease</button>
+    </div>
+
     <!-- OPPONENTS -->
     <div class="opponents">
       <div :key="b.id" v-for="b in boardstates" class="shell">
@@ -31,7 +38,7 @@
               v-model="self.boardstate.Field"
               @start="drag = true"
               @end="drag = false"
-              @change="handleUpdateState()"
+              @change="mutateBoardState()"
             >
               <div 
               class="is-multiline"
@@ -53,7 +60,7 @@
               group="board" 
               @start="drag = true"
               @end="drag = false"
-              @change="handleUpdateState()"
+              @change="mutateBoardState()"
             >
               <div v-for="card in self.boardstate.Exiled" :key="card.id">
                 <Card v-bind="card" @click="tap()"/>
@@ -68,7 +75,7 @@
               group="board" 
               @start="drag = true"
               @end="drag = false"
-              @change="handleUpdateState()"
+              @change="mutateBoardState()"
             >
               <div v-for="card in self.boardstate.Graveyard" :key="card.id">
                 <Card v-bind="card" />
@@ -83,7 +90,7 @@
               group="board"
               @start="drag = true"
               @end="drag = false"
-              @change="handleUpdateState()"
+              @change="mutateBoardState()"
             >
               <div v-for="card in self.boardstate.Revealed" :key="card.id">
                 <Card v-bind="card" @click="tap(card)"/>
@@ -98,7 +105,7 @@
               group="board"
               @start="drag = true"
               @end="drag = false"
-              @change="handleUpdateState()"
+              @change="mutateBoardState()"
             >
               <div v-for="card in self.boardstate.emblems" :key="card.id">
                 <Card v-bind="card" @click="tap(card)"/>
@@ -113,7 +120,7 @@
               group="board" 
               @start="drag = true"
               @end="drag = false"
-              @change="handleUpdateState()"
+              @change="mutateBoardState()"
             >
               <div v-for="card in self.boardstate.Library" :key="card.id">
                 <Card v-bind="card" hidden="true"/>
@@ -130,7 +137,7 @@
               group="board" 
               @start="drag = true"
               @end="drag = false"
-              @change="handleUpdateState()"
+              @change="mutateBoardState()"
             >
               <div class="column mtg-card" v-for="card in self.boardstate.Hand" :key="card.id">
                 <Card v-bind="card"></Card>
@@ -177,6 +184,7 @@ import {
   selfStateQuery, 
   updateBoardStateQuery,
   boardstates,
+  boardstatesSubscription
 } from '@/gqlQueries';
 import router from '@/router'
 
@@ -206,31 +214,31 @@ export default {
     draw() {
       const card = this.self.boardstate.Library.shift();
       this.self.boardstate.Hand.push(card);
-      this.handleUpdateState()
+      this.mutateBoardState()
     },
     mill() {
       const card = this.self.boardstate.Library.shift();
       this.self.boardstate.Graveyard.push(card);
-      this.handleUpdateState()
+      this.mutateBoardState()
     },
-    handleUpdateState() {
-      const self = this
-      // _.throttle(this.mutateBoardState, 500)
-
-      // TODO: Fix this.
-      // stuff is assigned to `self.boardstates` somewhere but mutateBoardState
-      // tries to access `self.boardstate` so that's probably causing some of our issues.
+    increaseLife () {
+      this.self.boardstate.Life++
+      this.mutateBoardState()
+    },
+    decreaseLife() {
+      this.self.boardstate.Life--
       this.mutateBoardState()
     },
     tap(card) {
       card.Tapped = !card.Tapped
-      this.handleUpdateState()
+      this.mutateBoardState()
     },
     mutateBoardState() {
       this.self.boardstate.User = {
         Username: this.$currentUser()
       }
       this.self.boardstate.GameID = this.$route.params.id
+      console.log('right before update: ', this.self.boardstate)
       this.$apollo.mutate({
         mutation: updateBoardStateQuery,
         variables: {
@@ -256,7 +264,7 @@ export default {
       })
     },
     handleActivity(val) {
-      console.log('logging activity: ', val)
+      // console.log('logging activity: ', val)
     }
   },
   watch: {
@@ -279,53 +287,25 @@ export default {
           userID: this.$currentUser(),
         },
         update(data) {
+          console.log('setting life: ', data.boardstates[0])
           this.self.boardstate = data.boardstates[0];
         },
       };
     },
     boardstates() {
-      // get gameID and userID here so they're not tied to `self`
+      // TODO: get gameID and userID here so they're not tied to `self`
+      // NB: This is where opponent boardstates come in to the Board.
       return {
         query: boardstates,
         variables: { gameID: this.$route.params.id },
         subscribeToMore: {
-          document: gql`
-            subscription($boardstate: InputBoardState!) {
-              boardUpdate(boardstate: $boardstate) {
-                GameID
-                Commander {
-                  Name
-                }
-                Library {
-                  Name
-                }
-                Graveyard {
-                  Name
-                }
-                Exiled {
-                  Name
-                }
-                Field {
-                  Name
-                }
-                Hand {
-                  Name
-                }
-                Revealed {
-                  Name
-                }
-                Controlled {
-                 Name
-                }
-              }
-            }
-          `,
+          document: boardstatesSubscription,
           variables: {
             boardstate: {
               User: {
                 Username: this.$currentUser(),
               },
-              Life: this.self.boardstate.Life ? this.self.boardstate.Life : 0,
+              Life: this.self.boardstate.Life ? this.self.boardstate.Life : 40,
               GameID: this.$route.params.id,
               Commander: this.self.boardstate.Commander ? [...this.self.boardstate.Commander] : [],
               Library: this.self.boardstate.Library ? [...this.self.boardstate.Library] : [],
@@ -339,6 +319,7 @@ export default {
           },
         },
         results({ data }) {
+          console.log('setting life: ', data.boardstates[0])
           console.log('subscription results: ', data);
         },
         error(err) {
