@@ -231,7 +231,6 @@ export default {
         Username: this.$currentUser()
       }
       this.self.boardstate.GameID = this.$route.params.id
-      console.log('boardstate variable: ', this.self.boardstate)
       this.$apollo.mutate({
         mutation: updateBoardStateQuery,
         variables: {
@@ -240,7 +239,7 @@ export default {
       })
       .then((res) => {
         const bs = res.data.updateBoardState
-        console.log('bs object: ', bs)
+        this.self.boardstate.Life = bs.Life
         this.self.boardstate.Library = bs.Library
         this.self.boardstate.Commander = bs.Commander
         this.self.boardstate.Graveyard = bs.Graveyard
@@ -263,8 +262,9 @@ export default {
   watch: {
     self: {
       handler (newVal, oldVal) {
-        // we don't want to mutate with this, or else we'll get infinite loops.
-        // instead we should only send out activity log events here.
+        // we don't want to mutate state with this, 
+        // or else we'll get infinite loops.
+        // This is only where we should emit ActivityLog events.
         this.handleActivity(newVal)
       },
       deep: true
@@ -279,9 +279,7 @@ export default {
           userID: this.$currentUser(),
         },
         update(data) {
-          console.log('incoming selfstate#data: ', data)
           this.self.boardstate = data.boardstates[0];
-          console.log('selfstate#update: ', this.self.boardstate);
         },
       };
     },
@@ -327,6 +325,7 @@ export default {
               User: {
                 Username: this.$currentUser(),
               },
+              Life: this.self.boardstate.Life ? this.self.boardstate.Life : 0,
               GameID: this.$route.params.id,
               Commander: this.self.boardstate.Commander ? [...this.self.boardstate.Commander] : [],
               Library: this.self.boardstate.Library ? [...this.self.boardstate.Library] : [],

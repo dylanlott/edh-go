@@ -3,6 +3,7 @@ import gql from 'graphql-tag';
 export const boardstates = gql`
 query($gameID: String!) {
   boardstates(gameID: $gameID) {
+    Life
     Commander {
       Name 
       ID 
@@ -154,6 +155,7 @@ export const updateBoardStateQuery = gql`
         username
       }
       GameID
+      Life
       Commander { 
         Name 
         ID 
@@ -352,6 +354,7 @@ export const boardstateSubscription = gql`
 export const selfStateQuery = gql`
   query($gameID: String!, $userID: String) {
     boardstates(gameID: $gameID, userID: $userID) {
+      Life
       User {
         username
       }

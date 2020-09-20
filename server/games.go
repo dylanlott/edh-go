@@ -143,6 +143,7 @@ func (s *graphQLServer) UpdateGame(ctx context.Context, inputGame InputGame) (*G
 
 // createGame is untested currently
 func (s *graphQLServer) CreateGame(ctx context.Context, inputGame InputGame) (*Game, error) {
+	fmt.Printf("enetered CreateGame")
 	g := &Game{
 		ID:        uuid.New().String(),
 		CreatedAt: time.Now(),
@@ -184,6 +185,7 @@ func (s *graphQLServer) CreateGame(ctx context.Context, inputGame InputGame) (*G
 			Controlled: getCards(player.Controlled),
 		}
 
+		fmt.Printf("created boardstate with life: %+v\n", bs)
 		var decklist string
 		if inputGame.Players[0].Decklist != nil {
 			decklist = string(*inputGame.Players[0].Decklist)
@@ -224,6 +226,7 @@ func (s *graphQLServer) CreateGame(ctx context.Context, inputGame InputGame) (*G
 		log.Printf("pushed player boardstate successfully: %+v\n", bs)
 	}
 
+	fmt.Printf("did we get here???? ")
 	// Set game in directory for access
 	s.mutex.Lock()
 	s.gameChannels[g.ID] = make(chan *Game, 1)
