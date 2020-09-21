@@ -1,14 +1,18 @@
 <template>
   <div class="board shell">
-    <h1 class="title shell">{{ gameID }}</h1>
-    <TurnTracker gameID="gameID" />
+    <!-- <h1 class="title shell">{{ gameID }}</h1> -->
 
   <!-- LIFE TRACKER -->
-    <div>
-      <div class="title is-4">{{ self.boardstate.Life }}</div>
-      <button class="button" @click="increaseLife()">Increase</button>
-      <button class="button" @click="decreaseLife()">Decrease</button>
+  <div class="columns">
+    <div class="shell column is-9">
+      <TurnTracker gameID="gameID" />
     </div>
+    <div class="shell column is-3">
+      <div class="title is-4">{{ self.boardstate.Life }}</div>
+      <button class="button is-small" @click="increaseLife()">Increase</button>
+      <button class="button is-small" @click="decreaseLife()">Decrease</button>
+    </div>
+  </div>
 
     <!-- OPPONENTS -->
     <div class="opponents">
@@ -52,84 +56,9 @@
           </div>
         </div>
         <div class="columns">
-          <!-- <div class="column">
-            <p class="title is-5">Exiled</p>
-            <draggable
-              class="column card-wrapper"
-              v-model="self.boardstate.Exiled"
-              group="board" 
-              @start="drag = true"
-              @end="drag = false"
-              @change="mutateBoardState()"
-            >
-              <div v-for="card in self.boardstate.Exiled" :key="card.id">
-                <Card v-bind="card" @click="tap()"/>
-              </div>
-            </draggable>
-          </div> -->
-          <!-- <div class="column">
-            <p class="title is-5">Graveyard</p>
-            <draggable
-              class="column card-wrapper"
-              v-model="self.boardstate.Graveyard"
-              group="board" 
-              @start="drag = true"
-              @end="drag = false"
-              @change="mutateBoardState()"
-            >
-              <div v-for="card in self.boardstate.Graveyard" :key="card.id">
-                <Card v-bind="card" />
-              </div>
-            </draggable>
-          </div> -->
-          <!-- <div class="column">
-            <p class="title is-5">Revealed</p>
-            <draggable
-              class="column card-wrapper"
-              v-model="self.boardstate.Revealed"
-              group="board"
-              @start="drag = true"
-              @end="drag = false"
-              @change="mutateBoardState()"
-            >
-              <div v-for="card in self.boardstate.Revealed" :key="card.id">
-                <Card v-bind="card" @click="tap(card)"/>
-              </div>
-            </draggable>
-          </div> -->
-          <!-- <div class="column">
-            <p class="title is-5">Emblems/Counters</p>
-            <draggable
-              class="column card-wrapper"
-              v-model="self.boardstate.emblems"
-              group="board"
-              @start="drag = true"
-              @end="drag = false"
-              @change="mutateBoardState()"
-            >
-              <div v-for="card in self.boardstate.emblems" :key="card.id">
-                <Card v-bind="card" @click="tap(card)"/>
-              </div>
-            </draggable>
-          </div> -->
-          <div class="column library" @click="draw()">
-            <p class="title is-5">Library</p>
-            <draggable
-              class="column card-wrapper"
-              v-model="self.boardstate.Library"
-              group="board" 
-              @start="drag = true"
-              @end="drag = false"
-              @change="mutateBoardState()"
-            >
-              <div v-for="card in self.boardstate.Library" :key="card.id">
-                <Card v-bind="card" hidden="true"/>
-              </div>
-            </draggable>
-          </div>
         </div>
         <div class="columns">
-          <div class="column">
+          <div class="column hand is-three-quarters">
             <p class="title is-4">Hand</p>
             <draggable
               class="columns card-wrapper is-vcentered"
@@ -141,6 +70,21 @@
             >
               <div class="column mtg-card" v-for="card in self.boardstate.Hand" :key="card.id">
                 <Card v-bind="card"></Card>
+              </div>
+            </draggable>
+          </div>
+          <div class="column library is-one-quarter" @click="draw()">
+            <p class="title is-5">Library</p>
+            <draggable
+              class="column card-wrapper"
+              v-model="self.boardstate.Library"
+              group="board" 
+              @start="drag = true"
+              @end="drag = false"
+              @change="mutateBoardState()"
+            >
+              <div v-for="card in self.boardstate.Library" :key="card.id">
+                <Card v-bind="card" hidden="true"/>
               </div>
             </draggable>
           </div>
@@ -238,7 +182,6 @@ export default {
         Username: this.$currentUser()
       }
       this.self.boardstate.GameID = this.$route.params.id
-      console.log('right before update: ', this.self.boardstate)
       this.$apollo.mutate({
         mutation: updateBoardStateQuery,
         variables: {
@@ -287,7 +230,6 @@ export default {
           userID: this.$currentUser(),
         },
         update(data) {
-          console.log('setting life: ', data.boardstates[0])
           this.self.boardstate = data.boardstates[0];
         },
       };
@@ -319,8 +261,6 @@ export default {
           },
         },
         results({ data }) {
-          console.log('setting life: ', data.boardstates[0])
-          console.log('subscription results: ', data);
         },
         error(err) {
           if (err == "Error: GraphQL error: game does not exist")  {

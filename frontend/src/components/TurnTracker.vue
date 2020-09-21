@@ -1,5 +1,5 @@
 <template>
-  <div class="turn-tracker shell">
+  <div class="turn-tracker">
     <div class="columns">
       <section class="column is-11 is-mobile">
         <p class="has-text-primary">
