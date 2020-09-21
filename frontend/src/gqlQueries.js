@@ -14,7 +14,7 @@ query($gameID: String!) {
 export const stackMutation = gql`
   mutation($inputGame: InputGame!) {
     updateGame(input: $inputGame) {
-      Stack {
+      stack {
         Name 
         ID 
         Colors 

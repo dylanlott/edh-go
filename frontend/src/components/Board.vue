@@ -15,17 +15,17 @@
       <div class="column is-two-thirds is-multiline">
         Stack
         <div class="columns">
+          <code>{{ self.game.stack }}</code>
             <draggable
               class="card-wrapper bordered is-multiline battlefield"
               group="board" 
               v-model="self.game.stack"
               @start="drag = true"
               @end="drag = false"
-              @change="mutateBoardState()"
+              @change="mutateGameState()"
             >
               <div 
               class="is-multiline"
-              @click="tap(card)"
               v-for="(card, i) in self.game.stack" 
               :key="i" 
               >
@@ -55,8 +55,8 @@
       </h1>
 
       <div>
-        <div class="columns">
-          <div class="column is-full is-multiline">
+        <div class="columns is-multiline is-mobile">
+          <div class="column is-full">
             <p class="title is-5">Battlefield</p>
             <draggable
               class="card-wrapper bordered is-multiline battlefield"
@@ -265,10 +265,26 @@ export default {
       this.mutateBoardState()
     },
     mutateGameState() {
-      console.log('mutate game state hit')
       // TODO: Add stack mutation here
-      // this.$apollo.mutate({
-      // })
+      this.$apollo.mutate({
+        mutation: stackMutation,
+        variables: {
+          inputGame: {
+            ID: this.$route.params.id,
+            Stack: this.self.game.Stack || []
+          }
+        },
+      })
+      .then((res) => {
+        console.log('mutateGameState response: ', res)
+        const game = res.games[0]
+        this.self.game.Stack = game.stack
+        return res
+      })
+      .catch((err) => {
+        console.error('error mutating game state: ', err)
+        return err
+      })
     },
     mutateBoardState() {
       this.self.boardstate.User = {
@@ -336,8 +352,7 @@ export default {
           gameID: this.$route.params.id,
         },
         update (data) {
-          this.self.game.stack = data.games[0].stack
-          console.log(this.self.game.stack)
+          this.self.game.stack = data.games[0].stack ? data.games[0].stack : []
         }
       }
     },

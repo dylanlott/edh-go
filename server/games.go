@@ -41,7 +41,7 @@ func (s *graphQLServer) Games(ctx context.Context, gameID *string) ([]*Game, err
 	}
 
 	if g, ok := s.Directory[*gameID]; !ok {
-		return nil, errs.New("game with ID of %s does not exist", *gameID)
+		return []*Game{}, errs.New("game with ID of %s does not exist", *gameID)
 	} else {
 		return []*Game{g}, nil
 	}
