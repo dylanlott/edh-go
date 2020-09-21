@@ -1,5 +1,41 @@
 import gql from 'graphql-tag';
 
+export const stackQuery = gql`
+query($gameID: String!) {
+	games(gameID: $gameID) {
+    stack {
+      Name
+      Text
+    }
+	}
+}
+`
+
+export const stackMutation = gql`
+  mutation($inputGame: InputGame!) {
+    updateGame(input: $inputGame) {
+      Stack {
+        Name 
+        ID 
+        Colors 
+        ColorIdentity 
+        ManaCost 
+        Power 
+        Toughness 
+        CMC 
+        Text 
+        Types 
+        Subtypes 
+        Name
+        Supertypes 
+        IsTextless 
+        TCGID 
+        ScryfallID 
+      }
+    }
+  }
+`
+
 export const createGameMutation = gql`mutation ($inputGame: InputGame!) {
   createGame(input: $inputGame){
      id
@@ -34,7 +70,7 @@ export const createGameMutation = gql`mutation ($inputGame: InputGame!) {
       }
     }
   }
-}` 
+}`
 
 export const boardstates = gql`
 query($gameID: String!) {

@@ -3,31 +3,48 @@
     <h1 class="title shell">{{ gameID }}</h1>
     <TurnTracker gameID="gameID" />
 
-  <!-- LIFE TRACKER -->
-    <div>
-      <div class="title is-4">{{ self.boardstate.Life }}</div>
-      <button class="button" @click="increaseLife()">Increase</button>
-      <button class="button" @click="decreaseLife()">Decrease</button>
+    <div class="shell columns is-mobile is-multiline">
+      <!-- LIFE TRACKER -->
+      <div class="column is-one-third">
+        Life
+        <div class="title is-4">{{ self.boardstate.Life }}</div>
+        <button class="button" @click="increaseLife()">Increase</button>
+        <button class="button" @click="decreaseLife()">Decrease</button>
+      </div>
+      <!-- STACK -->
+      <div class="column is-two-thirds is-multiline">
+        Stack
+        <div class="columns">
+            <draggable
+              class="card-wrapper bordered is-multiline battlefield"
+              group="board" 
+              v-model="self.game.stack"
+              @start="drag = true"
+              @end="drag = false"
+              @change="mutateBoardState()"
+            >
+              <div 
+              class="is-multiline"
+              @click="tap(card)"
+              v-for="(card, i) in self.game.stack" 
+              :key="i" 
+              >
+                <Card v-bind="card" />
+              </div>
+            </draggable>
+        </div>
+      </div>
     </div>
 
     <!-- OPPONENTS -->
-    <div class="opponents">
+    <!-- <div class="opponents">
       <div :key="b.id" v-for="b in boardstates" class="shell">
         <h1 class="title">{{ b.username }}</h1>
         <PlayerState v-bind="b"></PlayerState>
       </div>
     </div>
-    <hr />
+    <hr /> -->
 
-    <!-- STACK-->
-    <div class="columns">
-      <div 
-      class="column is-full is-multiline">
-        <draggable
-          v-model="self.boardstate.Stack" 
-        ></draggable>
-      </div>
-    </div>
     <!-- SELF -->
     <div class="self shell">
       <h1 class="title">
@@ -193,7 +210,9 @@ import {
   selfStateQuery, 
   updateBoardStateQuery,
   boardstates,
-  boardstatesSubscription
+  boardstatesSubscription,
+  stackQuery,
+  stackMutation,
 } from '@/gqlQueries';
 import router from '@/router'
 
@@ -205,6 +224,9 @@ export default {
       locked: false, // `locked` is set to true once the players and turn order are decided.
       mulligan: true, // `mulligan` is set to true until no one is mulling anymore.
       self: {
+        game: {
+          stack: []
+        },
         user: {
           username: this.$currentUser(),
         },
@@ -241,6 +263,12 @@ export default {
     tap(card) {
       card.Tapped = !card.Tapped
       this.mutateBoardState()
+    },
+    mutateGameState() {
+      console.log('mutate game state hit')
+      // TODO: Add stack mutation here
+      // this.$apollo.mutate({
+      // })
     },
     mutateBoardState() {
       this.self.boardstate.User = {
@@ -300,6 +328,18 @@ export default {
           this.self.boardstate = data.boardstates[0];
         },
       };
+    },
+    stack () {
+      return {
+        query: stackQuery,
+        variables: {
+          gameID: this.$route.params.id,
+        },
+        update (data) {
+          this.self.game.stack = data.games[0].stack
+          console.log(this.self.game.stack)
+        }
+      }
     },
     boardstates() {
       // TODO: get gameID and userID here so they're not tied to `self`

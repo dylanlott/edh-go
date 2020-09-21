@@ -25,14 +25,26 @@ type IPersistence interface {
 var _ IPersistence = (&graphQLServer{})
 
 // Games returns a list of Games.
-func (s *graphQLServer) Games(ctx context.Context) ([]*Game, error) {
-	games := []*Game{}
-	for _, game := range s.Directory {
-		games = append(games, game)
+func (s *graphQLServer) Games(ctx context.Context, gameID *string) ([]*Game, error) {
+	if gameID == nil {
+		// return all games because no gameID was provided
+		// NB: We need to implement cleanup for Games in the Game directory.
+		// When a game is "won", we should remove it from the game directory
+		// and clean up all associated data.
+		games := []*Game{}
+		for _, game := range s.Directory {
+			games = append(games, game)
+		}
+
+		// TODO: Sort games here.
+		return games, nil
 	}
 
-	// TODO: Sort games here.
-	return games, nil
+	if g, ok := s.Directory[*gameID]; !ok {
+		return nil, errs.New("game with ID of %s does not exist", *gameID)
+	} else {
+		return []*Game{g}, nil
+	}
 }
 
 // Boardstates queries Redis for different boardstates per player or game

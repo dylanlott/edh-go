@@ -140,7 +140,7 @@ type ComplexityRoot struct {
 		Card        func(childComplexity int, name string, id *string) int
 		Cards       func(childComplexity int, list []string) int
 		Decks       func(childComplexity int, userID string) int
-		Games       func(childComplexity int) int
+		Games       func(childComplexity int, gameID *string) int
 		Messages    func(childComplexity int) int
 		Search      func(childComplexity int, name *string, colors []*string, colorIdentity []*string, keywords []*string) int
 		Users       func(childComplexity int) int
@@ -182,7 +182,7 @@ type MutationResolver interface {
 type QueryResolver interface {
 	Messages(ctx context.Context) ([]*Message, error)
 	Users(ctx context.Context) ([]string, error)
-	Games(ctx context.Context) ([]*Game, error)
+	Games(ctx context.Context, gameID *string) ([]*Game, error)
 	Boardstates(ctx context.Context, gameID string, userID *string) ([]*BoardState, error)
 	Decks(ctx context.Context, userID string) ([]*Deck, error)
 	Card(ctx context.Context, name string, id *string) ([]*Card, error)
@@ -721,7 +721,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			break
 		}
 
-		return e.complexity.Query.Games(childComplexity), true
+		args, err := ec.field_Query_games_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.Games(childComplexity, args["gameID"].(*string)), true
 
 	case "Query.messages":
 		if e.complexity.Query.Messages == nil {
@@ -958,7 +963,7 @@ type Mutation {
 type Query {
   messages: [Message!]!
   users: [String!]!
-  games: [Game!]!
+  games(gameID: String): [Game!]!
   boardstates(gameID: String!, userID: String): [BoardState!]!
   decks(userID: String!): [Deck!]
   card(name: String!, id: String): [Card!]
@@ -1378,6 +1383,20 @@ func (ec *executionContext) field_Query_decks_args(ctx context.Context, rawArgs 
 		}
 	}
 	args["userID"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_games_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *string
+	if tmp, ok := rawArgs["gameID"]; ok {
+		arg0, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["gameID"] = arg0
 	return args, nil
 }
 
@@ -3677,10 +3696,17 @@ func (ec *executionContext) _Query_games(ctx context.Context, field graphql.Coll
 		IsMethod: true,
 	}
 	ctx = graphql.WithResolverContext(ctx, rctx)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Query_games_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	rctx.Args = args
 	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
 	resTmp := ec._fieldMiddleware(ctx, nil, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Games(rctx)
+		return ec.resolvers.Query().Games(rctx, args["gameID"].(*string))
 	})
 
 	if resTmp == nil {
