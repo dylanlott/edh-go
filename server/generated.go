@@ -1133,7 +1133,7 @@ input InputUser {
 input InputGame {
   ID: String!
   Stack: [InputCard!]
-  Priority: InputUser!
+  Priority: String!
   Turn: InputTurn!
   Handle: String
   Players: [InputBoardState!]!
@@ -5831,7 +5831,7 @@ func (ec *executionContext) unmarshalInputInputGame(ctx context.Context, obj int
 			}
 		case "Priority":
 			var err error
-			it.Priority, err = ec.unmarshalNInputUser2ᚖgithubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐInputUser(ctx, v)
+			it.Priority, err = ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}

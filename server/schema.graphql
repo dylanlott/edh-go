@@ -187,7 +187,7 @@ input InputUser {
 input InputGame {
   ID: String!
   Stack: [InputCard!]
-  Priority: InputUser!
+  Priority: String!
   Turn: InputTurn!
   Handle: String
   Players: [InputBoardState!]!

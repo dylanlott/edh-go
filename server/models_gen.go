@@ -135,7 +135,7 @@ type InputEmblem struct {
 type InputGame struct {
 	ID       string             `json:"ID"`
 	Stack    []*InputCard       `json:"Stack"`
-	Priority *InputUser         `json:"Priority"`
+	Priority string             `json:"Priority"`
 	Turn     *InputTurn         `json:"Turn"`
 	Handle   *string            `json:"Handle"`
 	Players  []*InputBoardState `json:"Players"`

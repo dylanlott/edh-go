@@ -19,6 +19,15 @@
     </div>
     <hr />
 
+    <!-- STACK-->
+    <div class="columns">
+      <div 
+      class="column is-full is-multiline">
+        <draggable
+          v-model="self.boardstate.Stack" 
+        ></draggable>
+      </div>
+    </div>
     <!-- SELF -->
     <div class="self shell">
       <h1 class="title">

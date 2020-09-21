@@ -45,7 +45,9 @@
 <script>
 import router from '@/router'
 import gql from 'graphql-tag';
-
+import {
+  createGameMutation
+} from '@/gqlQueries'
 export default {
   name: 'game',
   data () {
@@ -114,24 +116,7 @@ export default {
   methods: {
     handleCreateGame() {
       this.$apollo.mutate({
-        mutation: gql`mutation ($inputGame: InputGame!) {
-          createGame(input: $inputGame){
-           	id
-            created_at
-            turn {
-              Number
-              Player
-              Phase
-            }
-        		players {
-              GameID
-              Commander {
-                Name
-                ID
-              }
-            }
-          }
-        }`,
+        mutation: createGameMutation,
         variables: {
           inputGame: {
             ID: "",
@@ -140,6 +125,8 @@ export default {
               Phase: "setup",
               Number: 0
             },
+            Stack: [],
+            Priority: "",
             Players: [{
               GameID: "",
               User: {
@@ -164,12 +151,15 @@ export default {
         router.push({ path: `/games/${res.data.createGame.id}` })
       })
       .catch((err) => {
-        console.error('got error back: ', err)
+        console.error('error creating game: ', err)
         return err
       })
     },
     handleJoinGame() {
-      router.push({ name: 'board', params: { id: this.joinGameID }})
+      console.log('handleJoinGame hit')
+      // TODO: This should mutate the Game and add their info and then
+      // push the user to the Game with id of `GameID`.
+      // router.push({ name: 'board', params: { id: this.joinGameID }})
     },
     queryCommanders() {
       if (this.deck.commander === "") {

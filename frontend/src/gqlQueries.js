@@ -1,5 +1,41 @@
 import gql from 'graphql-tag';
 
+export const createGameMutation = gql`mutation ($inputGame: InputGame!) {
+  createGame(input: $inputGame){
+     id
+    created_at
+    stack {
+      Name 
+      ID 
+      Colors 
+      ColorIdentity 
+      ManaCost 
+      Power 
+      Toughness 
+      CMC 
+      Text 
+      Types 
+      Subtypes 
+      Supertypes 
+      IsTextless 
+      TCGID 
+      ScryfallID  
+    }
+    turn {
+      Number
+      Player
+      Phase
+    }
+    players {
+      GameID
+      Commander {
+        Name
+        ID
+      }
+    }
+  }
+}` 
+
 export const boardstates = gql`
 query($gameID: String!) {
   boardstates(gameID: $gameID) {
