@@ -68,6 +68,8 @@ type Game struct {
 	CreatedAt time.Time     `json:"created_at"`
 	Rules     []*Rule       `json:"rules"`
 	Turn      *Turn         `json:"turn"`
+	Stack     []*Card       `json:"stack"`
+	Priority  *User         `json:"Priority"`
 	Players   []*BoardState `json:"players"`
 }
 
@@ -131,10 +133,12 @@ type InputEmblem struct {
 }
 
 type InputGame struct {
-	ID      string             `json:"ID"`
-	Turn    *InputTurn         `json:"Turn"`
-	Handle  *string            `json:"Handle"`
-	Players []*InputBoardState `json:"Players"`
+	ID       string             `json:"ID"`
+	Stack    []*InputCard       `json:"Stack"`
+	Priority *InputUser         `json:"Priority"`
+	Turn     *InputTurn         `json:"Turn"`
+	Handle   *string            `json:"Handle"`
+	Players  []*InputBoardState `json:"Players"`
 }
 
 type InputLabel struct {

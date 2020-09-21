@@ -78,6 +78,8 @@ type Game {
   created_at: Time!
   rules: [Rule!]
   turn: Turn!
+  stack: [Card!]
+  Priority: User
   players: [BoardState!]!
 }
 
@@ -184,6 +186,8 @@ input InputUser {
 
 input InputGame {
   ID: String!
+  Stack: [InputCard!]
+  Priority: InputUser!
   Turn: InputTurn!
   Handle: String
   Players: [InputBoardState!]!
