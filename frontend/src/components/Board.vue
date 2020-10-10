@@ -34,10 +34,10 @@
 
       <div>
         <div class="columns">
-          <div class="column is-full is-multiline">
+          <div class="column">
             <p class="title is-5">Battlefield</p>
             <draggable
-              class="card-wrapper bordered is-multiline battlefield"
+              class="card-wrapper bordered battlefield"
               group="board" 
               v-model="self.boardstate.Field"
               @start="drag = true"
@@ -45,7 +45,6 @@
               @change="mutateBoardState()"
             >
               <div 
-              class="is-multiline"
               @click="tap(card)"
               v-for="(card, i) in self.boardstate.Field" 
               :key="i" 
@@ -61,14 +60,14 @@
           <div class="column hand is-three-quarters">
             <p class="title is-4">Hand</p>
             <draggable
-              class="columns card-wrapper is-vcentered"
+              class="columns card-wrapper"
               v-model="self.boardstate.Hand"
               group="board" 
               @start="drag = true"
               @end="drag = false"
               @change="mutateBoardState()"
             >
-              <div class="column mtg-card" v-for="card in self.boardstate.Hand" :key="card.id">
+              <div class="column mtg-card" v-for="(card, i) in self.boardstate.Hand" :key="i">
                 <Card v-bind="card"></Card>
               </div>
             </draggable>
@@ -165,6 +164,31 @@ export default {
       this.self.boardstate.Graveyard.push(card);
       this.mutateBoardState()
     },
+
+    // `src` is the source field of cards the target card is in. 
+    // `target` is the card that's being fetched
+    // `dst` is the destination field of the fetched card
+    // NB: We always want to pass cards around by ID, since we're 
+    // planning on these being unique.
+    // @returns: `src`, `dst`
+    fetch (src, target, dst) {
+      let obj = src.find((v, idx)=> {
+        if (v.ID === target.ID) {
+          src = src.splice(1, idx)
+          dst = dst.push(v)
+          console.log(`target found, moving ${target} from ${src} -> ${dst}`)
+          return src, dst
+        }
+      })
+      if (obj === undefined) {
+        console.error(`unable to find target ${target}`)
+        return src, dst
+      }
+      // if we get here, we have a weird result. 
+      // log and return src.
+      console.log('weird, we shouldnt be here', src, dst)
+      return src, dst
+    },
     increaseLife () {
       this.self.boardstate.Life++
       this.mutateBoardState()
@@ -260,7 +284,8 @@ export default {
             },
           },
         },
-        results({ data }) {
+        results(data) {
+          console.log('boardstates#data: ', data)
         },
         error(err) {
           if (err == "Error: GraphQL error: game does not exist")  {
@@ -297,9 +322,5 @@ export default {
 
 .bordered {
   border: 1px #000;
-}
-
-.battlefield {
-  height: 200px;
 }
 </style>
