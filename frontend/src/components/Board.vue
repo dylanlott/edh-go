@@ -17,8 +17,9 @@
     <!-- OPPONENTS -->
     <div class="opponents">
       <div :key="b.id" v-for="b in boardstates" class="shell">
-        <h1 class="title">{{ b.username }}</h1>
-        <PlayerState v-bind="b"></PlayerState>
+        <pre> {{ b }} </pre>
+        <!-- <h1 class="title">{{ b.username }}</h1> -->
+        <!-- <PlayerState v-bind="b"></PlayerState> -->
       </div>
     </div>
     <hr />
@@ -165,19 +166,20 @@ export default {
       this.mutateBoardState()
     },
 
-    // `src` is the source field of cards the target card is in. 
-    // `target` is the card that's being fetched
-    // `dst` is the destination field of the fetched card
+    // @param `src` is the source field of cards the target card is in. 
+    // @param `target` is the card that's being fetched
+    // @param `dst` is the destination field of the fetched card
     // NB: We always want to pass cards around by ID, since we're 
     // planning on these being unique.
     // @returns: `src`, `dst`
     fetch (src, target, dst) {
       let obj = src.find((v, idx)=> {
         if (v.ID === target.ID) {
-          src = src.splice(1, idx)
-          dst = dst.push(v)
           console.log(`target found, moving ${target} from ${src} -> ${dst}`)
-          return src, dst
+          src2 = src.splice(1, idx)
+          dst2 = dst.push(v)
+          console.log(`target moved: src: ${src2} dst: ${dst2}`)
+          return src2, dst2
         }
       })
       if (obj === undefined) {
@@ -213,16 +215,7 @@ export default {
         },
       })
       .then((res) => {
-        const bs = res.data.updateBoardState
-        this.self.boardstate.Life = bs.Life
-        this.self.boardstate.Library = bs.Library
-        this.self.boardstate.Commander = bs.Commander
-        this.self.boardstate.Graveyard = bs.Graveyard
-        this.self.boardstate.Exiled = bs.Exiled
-        this.self.boardstate.Hand = bs.Hand
-        this.self.boardstate.Revealed = bs.Revealed
-        this.self.boardstate.Field = bs.Field
-        this.self.boardstate.Controlled = bs.Controlled
+        this.self.boardstate = res.data.updateBoardState
         return res 
       })
       .catch((err) => {
@@ -266,6 +259,10 @@ export default {
         variables: { gameID: this.$route.params.id },
         subscribeToMore: {
           document: boardstatesSubscription,
+          updateQuery: (previousResult, { subscriptionData }) => {
+            console.log('previousResult: ', previousResult)
+            console.log('subscriptionData: ', subscriptionData)
+          },
           variables: {
             boardstate: {
               User: {

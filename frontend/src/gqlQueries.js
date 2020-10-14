@@ -305,31 +305,149 @@ export const updateBoardStateQuery = gql`
 export const boardstatesSubscription = gql`
 subscription($boardstate: InputBoardState!) {
   boardUpdate(boardstate: $boardstate) {
-    GameID
+    User {
+      username
+    }
     Life
     Commander {
-      Name
+      Name 
+      ID 
+      Colors 
+      ColorIdentity 
+      ManaCost 
+      Power 
+      Toughness 
+      CMC 
+      Text 
+      Types 
+      Subtypes 
+      Supertypes 
+      IsTextless 
+      TCGID 
+      ScryfallID  
     }
     Library {
-      Name
+      Name 
+      ID 
+      Colors 
+      ColorIdentity 
+      ManaCost 
+      Power 
+      Toughness 
+      CMC 
+      Text 
+      Types 
+      Subtypes 
+      Supertypes 
+      IsTextless 
+      TCGID 
+      ScryfallID  
     }
     Graveyard {
-      Name
+      Name 
+      ID 
+      Colors 
+      ColorIdentity 
+      ManaCost 
+      Power 
+      Toughness 
+      CMC 
+      Text 
+      Types 
+      Subtypes 
+      Supertypes 
+      IsTextless 
+      TCGID 
+      ScryfallID  
     }
     Exiled {
-      Name
+      Name 
+      ID 
+      Colors 
+      ColorIdentity 
+      ManaCost 
+      Power 
+      Toughness 
+      CMC 
+      Text 
+      Types 
+      Subtypes 
+      Supertypes 
+      IsTextless 
+      TCGID 
+      ScryfallID   
     }
     Field {
-      Name
+      Name 
+      ID 
+      Tapped
+      Flipped
+      Colors 
+      ColorIdentity 
+      ManaCost 
+      Power 
+      Toughness 
+      CMC 
+      Text 
+      Types 
+      Subtypes 
+      Supertypes 
+      IsTextless 
+      TCGID 
+      ScryfallID  
     }
     Hand {
-      Name
+      Name 
+      ID 
+      Colors 
+      ColorIdentity 
+      ManaCost 
+      Power 
+      Toughness 
+      CMC 
+      Text 
+      Types 
+      Subtypes 
+      Supertypes 
+      IsTextless 
+      TCGID 
+      ScryfallID 
     }
     Revealed {
-      Name
+      Name 
+      ID 
+      Colors 
+      ColorIdentity 
+      ManaCost 
+      Power 
+      Toughness 
+      CMC 
+      Text 
+      Types 
+      Subtypes 
+      Supertypes 
+      IsTextless 
+      TCGID 
+      ScryfallID 
     }
     Controlled {
-     Name
+      Name 
+      ID 
+      Tapped
+      Flipped
+      Colors 
+      ColorIdentity 
+      ManaCost 
+      Power 
+      Toughness 
+      CMC 
+      Text 
+      Types 
+      Subtypes 
+      Supertypes 
+      IsTextless 
+      TCGID 
+      ScryfallID 
     }
   }
 }
