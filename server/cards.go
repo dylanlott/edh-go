@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"math/rand"
 	"strconv"
 
 	"github.com/jmoiron/sqlx"
@@ -199,4 +200,19 @@ func (s *graphQLServer) Search(
 	}
 
 	return cards, nil
+}
+
+//
+// Shuffle functions
+//
+
+// Shuffler type defines the interface for a given Shuffle function to fulfill.
+type Shuffler func(deck []*Card) ([]*Card, error)
+
+// Shuffle will apply a Knuth shuffle to the decklist.
+func Shuffle(deck []*Card) ([]*Card, error) {
+	rand.Shuffle(len(deck), func(i, j int) {
+		deck[i], deck[j] = deck[j], deck[i]
+	})
+	return deck, nil
 }

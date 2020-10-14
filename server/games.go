@@ -206,6 +206,12 @@ func (s *graphQLServer) CreateGame(ctx context.Context, inputGame InputGame) (*G
 			bs.Commander = []*Card{commander[0]}
 		}
 
+		shuff, err := Shuffle(bs.Library)
+		if err != nil {
+			log.Printf("error shuffling library: %s", err)
+			return nil, err
+		}
+		bs.Library = shuff
 		g.Players = append(g.Players, bs)
 		boardKey := BoardStateKey(g.ID, bs.User.Username)
 		err = s.Set(boardKey, bs)
