@@ -109,7 +109,7 @@ func (s *graphQLServer) GameUpdated(ctx context.Context, game InputGame) (<-chan
 
 // BoardUpdate returns a channel that emits all the Boardstate's over it and then
 // listens for ctx.Done and then cleans up after itself.
-func (s *graphQLServer) BoardUpdate(ctx context.Context, bs InputBoardState) (<-chan *BoardState, error) {
+func (s *graphQLServer) BoardUpdate(ctx context.Context, bs InputBoardState) (<-chan *Game, error) {
 	// Make a boardstates channel to emit all the events on, and assign it to
 	// the user who submitted to the update.
 	boardstates := make(chan *BoardState, 1)
@@ -124,7 +124,14 @@ func (s *graphQLServer) BoardUpdate(ctx context.Context, bs InputBoardState) (<-
 		s.mutex.Unlock()
 	}()
 
-	return boardstates, nil
+	game, ok := s.Directory[bs.GameID]
+	if !ok {
+		return nil, errs.New("game %s does not exist", bs.GameID)
+	}
+
+	games := make(chan *Game, 1)
+	games <- game
+	return games, nil
 }
 
 // UpdateGame is what's used to change the name of the game, format, insert
