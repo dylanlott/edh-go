@@ -3,7 +3,7 @@ scalar Time
 type Mutation {
   signup(input: InputSignup): User!
   postMessage(user: String!, text: String!): Message
-  createGame(input: InputGame!): Game!
+  createGame(input: InputCreateGame!): Game!
   updateGame(input: InputGame!): Game!
   createDeck(input: InputDeck): BoardState 
   updateBoardState(input: InputBoardState!): BoardState
@@ -79,6 +79,7 @@ type Game {
   rules: [Rule!]
   turn: Turn!
   players: [BoardState!]!
+  playerIDs: [User!]
 }
 
 type Turn {
@@ -178,15 +179,23 @@ input InputEmblem {
 }
 
 input InputUser {
-  Deck: InputDeck
   Username: String!
+  ID: String
+}
+
+input InputCreateGame {
+  ID: String!
+  Turn: InputTurn!
+  Handle: String
+  Players: [InputBoardState!]!
 }
 
 input InputGame {
   ID: String!
   Turn: InputTurn!
+  Created_At: Time
   Handle: String
-  Players: [InputBoardState!]!
+  PlayerIDs: [InputUser!]
 }
 
 input InputTurn {

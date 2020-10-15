@@ -69,6 +69,7 @@ type Game struct {
 	Rules     []*Rule       `json:"rules"`
 	Turn      *Turn         `json:"turn"`
 	Players   []*BoardState `json:"players"`
+	PlayerIDs []*User       `json:"playerIDs"`
 }
 
 type InputBoardState struct {
@@ -118,6 +119,13 @@ type InputCounter struct {
 	Value string     `json:"value"`
 }
 
+type InputCreateGame struct {
+	ID      string             `json:"ID"`
+	Turn    *InputTurn         `json:"Turn"`
+	Handle  *string            `json:"Handle"`
+	Players []*InputBoardState `json:"Players"`
+}
+
 type InputDeck struct {
 	Name      *string  `json:"name"`
 	Commander []string `json:"commander"`
@@ -131,10 +139,11 @@ type InputEmblem struct {
 }
 
 type InputGame struct {
-	ID      string             `json:"ID"`
-	Turn    *InputTurn         `json:"Turn"`
-	Handle  *string            `json:"Handle"`
-	Players []*InputBoardState `json:"Players"`
+	ID        string       `json:"ID"`
+	Turn      *InputTurn   `json:"Turn"`
+	CreatedAt *time.Time   `json:"Created_At"`
+	Handle    *string      `json:"Handle"`
+	PlayerIDs []*InputUser `json:"PlayerIDs"`
 }
 
 type InputLabel struct {
@@ -156,8 +165,8 @@ type InputTurn struct {
 }
 
 type InputUser struct {
-	Deck     *InputDeck `json:"Deck"`
-	Username string     `json:"Username"`
+	Username string  `json:"Username"`
+	ID       *string `json:"ID"`
 }
 
 type Message struct {

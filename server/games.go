@@ -87,10 +87,13 @@ func (s *graphQLServer) Boardstates(ctx context.Context, gameID string, userID *
 }
 
 func (s *graphQLServer) GameUpdated(ctx context.Context, game InputGame) (<-chan *Game, error) {
-	_, ok := s.gameChannels[game.ID]
+	g, ok := s.Directory[game.ID]
 	if !ok {
 		return nil, errs.New("game does not exist with ID of %s", game.ID)
 	}
+
+	fmt.Printf("[GameUpdated] found game: %+v\n", g)
+	fmt.Printf("game channel: %+v\n", s.gameChannels[game.ID])
 
 	games := make(chan *Game, 1)
 	s.mutex.Lock()
@@ -139,7 +142,7 @@ func (s *graphQLServer) UpdateGame(ctx context.Context, inputGame InputGame) (*G
 }
 
 // createGame is untested currently
-func (s *graphQLServer) CreateGame(ctx context.Context, inputGame InputGame) (*Game, error) {
+func (s *graphQLServer) CreateGame(ctx context.Context, inputGame InputCreateGame) (*Game, error) {
 	g := &Game{
 		ID:        uuid.New().String(),
 		CreatedAt: time.Now(),
@@ -265,22 +268,33 @@ func pushBoardStateUpdate(ctx context.Context, observers []Observer, input Input
 }
 
 func gameFromInput(game InputGame) *Game {
-	players := []*BoardState{}
-	for _, p := range game.Players {
-		players = append(players, boardStateFromInput(*p))
-	}
+	fmt.Printf("gameFromInput game: %+v\n", game)
 	out := &Game{
-		ID:     game.ID,
-		Handle: game.Handle,
+		ID:        game.ID,
+		CreatedAt: *game.CreatedAt,
+		Handle:    game.Handle,
 		Turn: &Turn{
 			Player: game.Turn.Player,
 			Phase:  game.Turn.Phase,
 			Number: game.Turn.Number,
 		},
-		Players: players,
+		PlayerIDs: getPlayerIDs(game.PlayerIDs),
 	}
 
+	fmt.Printf("returning #gameFromInput: %+v\n", out)
 	return out
+}
+
+func getPlayerIDs(inputUsers []*InputUser) []*User {
+	var u []*User
+	for _, i := range inputUsers {
+		u = append(u, &User{
+			ID:       *i.ID,
+			Username: i.Username,
+		})
+	}
+
+	return u
 }
 
 func boardStateFromInput(bs InputBoardState) *BoardState {
