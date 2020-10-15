@@ -78,7 +78,6 @@ type Game {
   created_at: Time!
   rules: [Rule!]
   turn: Turn!
-  players: [BoardState!]!
   playerIDs: [User!]
 }
 

@@ -111,7 +111,6 @@ type ComplexityRoot struct {
 		Handle    func(childComplexity int) int
 		ID        func(childComplexity int) int
 		PlayerIDs func(childComplexity int) int
-		Players   func(childComplexity int) int
 		Rules     func(childComplexity int) int
 		Turn      func(childComplexity int) int
 	}
@@ -524,13 +523,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Game.PlayerIDs(childComplexity), true
-
-	case "Game.players":
-		if e.complexity.Game.Players == nil {
-			break
-		}
-
-		return e.complexity.Game.Players(childComplexity), true
 
 	case "Game.rules":
 		if e.complexity.Game.Rules == nil {
@@ -1016,7 +1008,6 @@ type Game {
   created_at: Time!
   rules: [Rule!]
   turn: Turn!
-  players: [BoardState!]!
   playerIDs: [User!]
 }
 
@@ -3054,40 +3045,6 @@ func (ec *executionContext) _Game_turn(ctx context.Context, field graphql.Collec
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
 	return ec.marshalNTurn2ᚖgithubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐTurn(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _Game_players(ctx context.Context, field graphql.CollectedField, obj *Game) (ret graphql.Marshaler) {
-	ctx = ec.Tracer.StartFieldExecution(ctx, field)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-		ec.Tracer.EndFieldExecution(ctx)
-	}()
-	rctx := &graphql.ResolverContext{
-		Object:   "Game",
-		Field:    field,
-		Args:     nil,
-		IsMethod: false,
-	}
-	ctx = graphql.WithResolverContext(ctx, rctx)
-	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
-	resTmp := ec._fieldMiddleware(ctx, obj, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Players, nil
-	})
-
-	if resTmp == nil {
-		if !ec.HasError(rctx) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.([]*BoardState)
-	rctx.Result = res
-	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalNBoardState2ᚕᚖgithubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐBoardStateᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Game_playerIDs(ctx context.Context, field graphql.CollectedField, obj *Game) (ret graphql.Marshaler) {
@@ -6259,11 +6216,6 @@ func (ec *executionContext) _Game(ctx context.Context, sel ast.SelectionSet, obj
 			out.Values[i] = ec._Game_rules(ctx, field, obj)
 		case "turn":
 			out.Values[i] = ec._Game_turn(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		case "players":
-			out.Values[i] = ec._Game_players(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}

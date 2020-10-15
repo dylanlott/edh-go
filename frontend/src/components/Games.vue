@@ -123,12 +123,8 @@ export default {
               Player
               Phase
             }
-        		players {
-              GameID
-              Commander {
-                Name
-                ID
-              }
+            playerIDs {
+              username
             }
           }
         }`,

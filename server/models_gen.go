@@ -63,13 +63,12 @@ type Emblem struct {
 }
 
 type Game struct {
-	ID        string        `json:"id"`
-	Handle    *string       `json:"handle"`
-	CreatedAt time.Time     `json:"created_at"`
-	Rules     []*Rule       `json:"rules"`
-	Turn      *Turn         `json:"turn"`
-	Players   []*BoardState `json:"players"`
-	PlayerIDs []*User       `json:"playerIDs"`
+	ID        string    `json:"id"`
+	Handle    *string   `json:"handle"`
+	CreatedAt time.Time `json:"created_at"`
+	Rules     []*Rule   `json:"rules"`
+	Turn      *Turn     `json:"turn"`
+	PlayerIDs []*User   `json:"playerIDs"`
 }
 
 type InputBoardState struct {
