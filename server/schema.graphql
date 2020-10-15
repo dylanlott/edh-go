@@ -24,7 +24,7 @@ type Subscription {
   messagePosted(user: String!): Message!
   gameUpdated(game: InputGame!): Game!
   userJoined(user: String!, gameID: String!): String!
-  boardUpdate(boardstate: InputBoardState!): BoardState!
+  boardUpdate(boardstate: InputBoardState!): Game!
 }
 
 type Message {

@@ -191,7 +191,7 @@ type SubscriptionResolver interface {
 	MessagePosted(ctx context.Context, user string) (<-chan *Message, error)
 	GameUpdated(ctx context.Context, game InputGame) (<-chan *Game, error)
 	UserJoined(ctx context.Context, user string, gameID string) (<-chan string, error)
-	BoardUpdate(ctx context.Context, boardstate InputBoardState) (<-chan *BoardState, error)
+	BoardUpdate(ctx context.Context, boardstate InputBoardState) (<-chan *Game, error)
 }
 
 type executableSchema struct {
@@ -954,7 +954,7 @@ type Subscription {
   messagePosted(user: String!): Message!
   gameUpdated(game: InputGame!): Game!
   userJoined(user: String!, gameID: String!): String!
-  boardUpdate(boardstate: InputBoardState!): BoardState!
+  boardUpdate(boardstate: InputBoardState!): Game!
 }
 
 type Message {
@@ -4132,7 +4132,7 @@ func (ec *executionContext) _Subscription_boardUpdate(ctx context.Context, field
 		return nil
 	}
 	return func() graphql.Marshaler {
-		res, ok := <-resTmp.(<-chan *BoardState)
+		res, ok := <-resTmp.(<-chan *Game)
 		if !ok {
 			return nil
 		}
@@ -4140,7 +4140,7 @@ func (ec *executionContext) _Subscription_boardUpdate(ctx context.Context, field
 			w.Write([]byte{'{'})
 			graphql.MarshalString(field.Alias).MarshalGQL(w)
 			w.Write([]byte{':'})
-			ec.marshalNBoardState2ᚖgithubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐBoardState(ctx, field.Selections, res).MarshalGQL(w)
+			ec.marshalNGame2ᚖgithubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐGame(ctx, field.Selections, res).MarshalGQL(w)
 			w.Write([]byte{'}'})
 		})
 	}
