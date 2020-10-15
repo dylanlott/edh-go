@@ -87,3 +87,21 @@ Figured out what the bugs are with the refresh of state - I think the issue has 
 * The client implementation references both `boardstate` and `boardstates` at different points in the cycle. This is a code smell that we need to clean up the handling of the `self` component so that the separation between the `self` boardstate and the other player boardstates is clearer. I think this is the cause of the `ReferenceError` issues I keep having whenever an update occurs on the board. 
   
 Fixing these two issues should give us the proper boardstate maintenance and persistence that we're looking for.
+
+
+### 15 September 2020
+Working on adding realtime boardstate updates to the app. 
+
+*References*
+https://gist.github.com/gorbypark/91917cf19d1245f52e025b42508344b1
+
+*Task List*
+* Account for Turn Ordering and tracking in BoardState subscriptions.
+* Write a GraphQL resolver for returning only opponent boardstates.
+
+*Notes*
+One of the real benefits of GraphQL is that the client can change their appetite themselves. They can take in the whole massive data object or they can build more complex interactions with specific pieces of data from different areas choosing to return only what they need.
+
+The downside of this approach is that the long-tail amplification can be pretty bad if any part of the chain is slow.
+
+InputCreateGame has BoardStates tied to it. In the future, we should remove this coupling and have the client create a BoardState and a Game independently of each other and then go to the Board route to start collecting data. This will keep BoardStates represented more cleanly by only a Player's Username and ID fields rather than toting around the BoardStates on the Game object.
