@@ -468,3 +468,11 @@ export const selfStateQuery = gql`
     }
   }
 `
+
+// export const gameQuery = gql`
+// query($gameID: String!, $userID: String) {
+//   boardstates(gameID: $gameID, userID: $userID) {
+
+//   }
+// }
+// `

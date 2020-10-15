@@ -17,7 +17,7 @@
     <!-- OPPONENTS -->
     <div class="opponents">
       <div :key="b.id" v-for="b in boardstates" class="shell">
-        <pre> {{ b }} </pre>
+        <!-- <pre> {{ b }} </pre> -->
         <!-- <h1 class="title">{{ b.username }}</h1> -->
         <!-- <PlayerState v-bind="b"></PlayerState> -->
       </div>
@@ -179,6 +179,7 @@ export default {
           src2 = src.splice(1, idx)
           dst2 = dst.push(v)
           console.log(`target moved: src: ${src2} dst: ${dst2}`)
+          // TODO: this.mutateBoardState()
           return src2, dst2
         }
       })
@@ -233,7 +234,7 @@ export default {
         // we don't want to mutate state with this, 
         // or else we'll get infinite loops.
         // This is only where we should emit ActivityLog events.
-        this.handleActivity(newVal)
+        // this.handleActivity(newVal)
       },
       deep: true
     }

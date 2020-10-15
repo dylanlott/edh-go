@@ -114,7 +114,7 @@ export default {
   methods: {
     handleCreateGame() {
       this.$apollo.mutate({
-        mutation: gql`mutation ($inputGame: InputGame!) {
+        mutation: gql`mutation ($inputGame: InputCreateGame!) {
           createGame(input: $inputGame){
            	id
             created_at
