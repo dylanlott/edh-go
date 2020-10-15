@@ -93,15 +93,27 @@ Fixing these two issues should give us the proper boardstate maintenance and per
 Working on adding realtime boardstate updates to the app. 
 
 *References*
-https://gist.github.com/gorbypark/91917cf19d1245f52e025b42508344b1
+https://gist.github.com/gorbypark/91917cf19d1245f52e025b42508344b1 For vue apollo subscriptions
+https://en.wikipedia.org/wiki/Magic:_The_Gathering - Card sizes should be proportionally sized to the real life dimensions. Aspect ratio of "approximately 63 × 88 mm in size (2.5 by 3.5 inches)"
+https://css-tricks.com/scaled-proportional-blocks-with-css-and-javascript/ We can use an approach like this to maintain size and allow users to scale their size up or down and maintain their aspect ratio.
+
 
 *Task List*
-* Account for Turn Ordering and tracking in BoardState subscriptions.
-* Write a GraphQL resolver for returning only opponent boardstates.
+- [ ] Account for Turn Ordering and tracking in BoardState subscriptions.
+- [ ] Write a GraphQL resolver for returning only opponent boardstates.
+- [ ] Only reference players by ID and username on Games.
+- [ ] Decouple BoardStates from Game model
 
 *Notes*
 One of the real benefits of GraphQL is that the client can change their appetite themselves. They can take in the whole massive data object or they can build more complex interactions with specific pieces of data from different areas choosing to return only what they need.
 
-The downside of this approach is that the long-tail amplification can be pretty bad if any part of the chain is slow.
+The downside of this approach is that the long-tail amplification can be pretty bad if any part of the chain is slow. For queries that all run on the same cluster, this means that individually slow queries are going be harm all your graphql returns. For microservice architectures using GraphQL to tie services together, this is even more important as a single slow microservice could bring everything down much more.
 
 InputCreateGame has BoardStates tied to it. In the future, we should remove this coupling and have the client create a BoardState and a Game independently of each other and then go to the Board route to start collecting data. This will keep BoardStates represented more cleanly by only a Player's Username and ID fields rather than toting around the BoardStates on the Game object.
+
+GraphQL modeling can be a real foot-meet-shotgun problem, however. One change of a value can have sweeing consequences, so make sure you spend appropriate time decoupling data wherever you can before committing it to code. For example, I originally had BoardStates tied to Games as a required field, and this made sense initially, but after working on some improvements to the game, I decided I wanted BoardStates to be a separate entity from Games to decouple them and instead the Game model should only reference User's, and if a BoardState was needed it should be queried as a separate resource. However this meant that I had to refactor the create game logic because of how BoardStates and Games were created, and I had to refactor how Games were queried and updated for subscriptions, too. This is definitely my fault, but it's something you need to be hyper aware of when designing schema for your own personal apps.
+
+At some point I should update the GraphQL schema to remove `Input` from types and instead use `Create` or `Update` based on what type the resource is going to be applied. For example `InputDeck` should be `CreateDeck` and `InputTurn` should be `UpdateTurn` because Turns are always idempotent and so can be treated like a PUT operation, but decks are only created once and thus should be treated like a POST operation.
+
+Need to add a loading animation to the Game creation page. 
+Join Game page needs to be created.

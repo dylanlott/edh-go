@@ -50,9 +50,9 @@ func (s *graphQLServer) Boardstates(ctx context.Context, gameID string, userID *
 
 	if userID == nil {
 		var boardstates []*BoardState
-		for _, p := range game.Players {
+		for _, p := range game.PlayerIDs {
 			var board BoardState
-			boardKey := BoardStateKey(game.ID, p.User.Username)
+			boardKey := BoardStateKey(game.ID, p.Username)
 			err := s.Get(boardKey, &board)
 			if err != nil {
 				log.Printf("error fetching boardstate from redis: %s", err)
@@ -70,9 +70,9 @@ func (s *graphQLServer) Boardstates(ctx context.Context, gameID string, userID *
 	// userID not nil, so send only that boardstate
 	var boardstates []*BoardState
 
-	for _, player := range game.Players {
-		if player.User.Username == *userID {
-			boardKey := BoardStateKey(game.ID, player.User.Username)
+	for _, player := range game.PlayerIDs {
+		if player.Username == *userID {
+			boardKey := BoardStateKey(game.ID, player.Username)
 			var board BoardState
 			err := s.Get(boardKey, &board)
 			if err != nil {
@@ -153,7 +153,8 @@ func (s *graphQLServer) CreateGame(ctx context.Context, inputGame InputCreateGam
 	g := &Game{
 		ID:        uuid.New().String(),
 		CreatedAt: time.Now(),
-		Players:   []*BoardState{},
+		PlayerIDs: []*User{},
+		// Players:   []*BoardState{},
 		// NB: Turns get added once the game has "started".
 		// This is after roll for turn and mulligans happen.
 		Turn: &Turn{
@@ -222,7 +223,7 @@ func (s *graphQLServer) CreateGame(ctx context.Context, inputGame InputCreateGam
 			return nil, err
 		}
 		bs.Library = shuff
-		g.Players = append(g.Players, bs)
+		// g.Players = append(g.Players, bs)
 		boardKey := BoardStateKey(g.ID, bs.User.Username)
 		err = s.Set(boardKey, bs)
 		if err != nil {
@@ -230,6 +231,10 @@ func (s *graphQLServer) CreateGame(ctx context.Context, inputGame InputCreateGam
 			return nil, err
 		}
 
+		// Add player ID to Game for reference
+		g.PlayerIDs = append(g.PlayerIDs, bs.User)
+
+		fmt.Printf("## created game: %+v\n", g)
 		// save the baordChannels to the same key format of <gameID:username>
 		s.mutex.Lock()
 		s.boardChannels[boardKey] = make(chan *BoardState, 1)
