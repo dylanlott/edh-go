@@ -35,7 +35,6 @@ func (s *graphQLServer) Games(ctx context.Context, gameID *string) ([]*Game, err
 		return games, nil
 	}
 
-	fmt.Printf("getting Game %s", *gameID)
 	game, ok := s.Directory[*gameID]
 	if !ok {
 		return nil, errs.New("game %s does not exist", gameID)
@@ -105,8 +104,10 @@ func (s *graphQLServer) GameUpdated(ctx context.Context, game InputGame) (<-chan
 	fmt.Printf("game channel: %+v\n", s.gameChannels[game.ID])
 
 	games := make(chan *Game, 1)
+	out := gameFromInput(game)
 	s.mutex.Lock()
 	s.gameChannels[game.ID] = games
+	s.Directory[game.ID] = out
 	s.mutex.Unlock()
 
 	go func() {
@@ -152,6 +153,7 @@ func (s *graphQLServer) BoardUpdate(ctx context.Context, bs InputBoardState) (<-
 func (s *graphQLServer) UpdateGame(ctx context.Context, inputGame InputGame) (*Game, error) {
 	updated := gameFromInput(inputGame)
 	s.mutex.Lock()
+	s.Directory[inputGame.ID] = updated
 	s.gameChannels[inputGame.ID] <- updated
 	s.mutex.Unlock()
 	return updated, nil
@@ -289,7 +291,6 @@ func pushBoardStateUpdate(ctx context.Context, observers []Observer, input Input
 }
 
 func gameFromInput(game InputGame) *Game {
-	fmt.Printf("gameFromInput game: %+v\n", game)
 	out := &Game{
 		ID: game.ID,
 		Turn: &Turn{
@@ -308,7 +309,6 @@ func gameFromInput(game InputGame) *Game {
 		out.Handle = game.Handle
 	}
 
-	fmt.Printf("returning #gameFromInput: %+v\n", out)
 	return out
 }
 

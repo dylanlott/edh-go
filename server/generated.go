@@ -1137,6 +1137,7 @@ input InputTurn {
   Phase: String !
   Number: Int!
 }
+
 input InputDeck {
   name: String
   commander: [String!]
