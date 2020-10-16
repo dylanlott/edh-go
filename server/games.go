@@ -25,14 +25,23 @@ type IPersistence interface {
 var _ IPersistence = (&graphQLServer{})
 
 // Games returns a list of Games.
-func (s *graphQLServer) Games(ctx context.Context) ([]*Game, error) {
-	games := []*Game{}
-	for _, game := range s.Directory {
-		games = append(games, game)
+func (s *graphQLServer) Games(ctx context.Context, gameID *string) ([]*Game, error) {
+	if gameID == nil {
+		games := []*Game{}
+		for _, game := range s.Directory {
+			games = append(games, game)
+		}
+
+		return games, nil
 	}
 
-	// TODO: Sort games here.
-	return games, nil
+	fmt.Printf("getting Game %s", *gameID)
+	game, ok := s.Directory[*gameID]
+	if !ok {
+		return nil, errs.New("game %s does not exist", gameID)
+	}
+
+	return []*Game{game}, nil
 }
 
 // Boardstates queries Redis for different boardstates per player or game
@@ -282,15 +291,21 @@ func pushBoardStateUpdate(ctx context.Context, observers []Observer, input Input
 func gameFromInput(game InputGame) *Game {
 	fmt.Printf("gameFromInput game: %+v\n", game)
 	out := &Game{
-		ID:        game.ID,
-		CreatedAt: *game.CreatedAt,
-		Handle:    game.Handle,
+		ID: game.ID,
 		Turn: &Turn{
 			Player: game.Turn.Player,
 			Phase:  game.Turn.Phase,
 			Number: game.Turn.Number,
 		},
 		PlayerIDs: getPlayerIDs(game.PlayerIDs),
+	}
+
+	if game.CreatedAt != nil {
+		out.CreatedAt = *game.CreatedAt
+	}
+
+	if game.Handle != nil {
+		out.Handle = game.Handle
 	}
 
 	fmt.Printf("returning #gameFromInput: %+v\n", out)

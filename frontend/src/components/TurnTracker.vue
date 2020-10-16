@@ -3,10 +3,11 @@
     <div class="columns">
       <section class="column is-11 is-mobile">
         <p class="has-text-primary">
-          <b> {{ players[turn.player]['username'] }} - {{ phases[turn.phase] }} </b>
+          <!-- <b> {{ players[turn.player]['username'] }} - {{ phases[turn.phase] }} </b> -->
+          <b>{{ players }}</b>
+          <b>{{ turn }}</b>
         </p>
-        <b-progress :value="progress" size="is-medium" show-value>
-        </b-progress>
+        <b-progress :value="progress" size="is-medium" show-value></b-progress>
       </section>
       <section class="column is-1">
         <b-button
@@ -20,6 +21,8 @@
   </div>
 </template>
 <script>
+import gql from 'graphql-tag';
+
 export default {
   name: 'turntracker',
   data () {
@@ -29,17 +32,7 @@ export default {
         phase: 0,
         player: 0
       },
-      players: [
-        // TODO: Make these props.
-        {
-          id: '1',
-          username: 'shakezula'
-        },
-        {
-          id: '2',
-          username: 'player2'
-        }
-      ],
+      game: {},
       phases: [
         'untap',
         'upkeep',
@@ -62,6 +55,51 @@ export default {
       const current = this.turn.phase
       const v = ((current / total) * 100)
       return v 
+    }
+  },
+  apollo: {
+    game: {
+      query: gql`
+          subscription($game: InputGame!) {
+            gameUpdated(game: $game) {
+              ID
+              Turn {
+                Player
+                Phase
+                Number
+              }
+              PlayerIDs {
+                Username
+                ID
+              }
+            }
+          } 
+        `,
+      update(data) {
+        console.log('game#update: ', data)
+      },
+      subscribeToMore: {
+        document: gql`
+          subscription($game: InputGame!) {
+            gameUpdated(game: $game) {
+              ID
+              Turn {
+                Player
+                Phase
+                Number
+              }
+              PlayerIDs {
+                Username
+                ID
+              }
+            }
+          } 
+        `,
+        updateQuery: (previousResult, { subscriptionData}) => {
+          console.log("game#previousResult: ", previousResult)
+          console.log("game#subscriptionData: ", subscriptionData)
+        }
+      }
     }
   },
   methods: {

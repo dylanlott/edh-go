@@ -469,10 +469,20 @@ export const selfStateQuery = gql`
   }
 `
 
-// export const gameQuery = gql`
-// query($gameID: String!, $userID: String) {
-//   boardstates(gameID: $gameID, userID: $userID) {
-
-//   }
-// }
-// `
+// gameQuery powers the TurnTracker and Opponents components.
+export const gameQuery = gql`
+subscription($game: InputGame!) {
+  gameUpdated(game: $game) {
+    ID
+    Turn {
+      Player
+      Phase
+      Number
+    }
+    PlayerIDs {
+      Username
+      ID
+    }
+  }
+} 
+`
