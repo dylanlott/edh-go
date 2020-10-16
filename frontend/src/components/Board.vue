@@ -16,11 +16,11 @@
 
     <!-- OPPONENTS -->
     <div class="opponents">
-      <div :key="b.id" v-for="b in boardstates" class="shell">
+      <!-- <div :key="b.id" v-for="o in opponents" class="shell"> -->
         <!-- <pre> {{ b }} </pre> -->
         <!-- <h1 class="title">{{ b.username }}</h1> -->
         <!-- <PlayerState v-bind="b"></PlayerState> -->
-      </div>
+      <!-- </div> -->
     </div>
     <hr />
 

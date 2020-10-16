@@ -12,7 +12,7 @@ type Mutation {
 type Query {
   messages: [Message!]!
   users: [String!]!
-  games: [Game!]!
+  games(gameID: String): [Game!]!
   boardstates(gameID: String!, userID: String): [BoardState!]!
   decks(userID: String!): [Deck!]
   card(name: String!, id: String): [Card!]

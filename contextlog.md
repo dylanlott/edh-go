@@ -102,7 +102,8 @@ https://css-tricks.com/scaled-proportional-blocks-with-css-and-javascript/ We ca
 - [ ] Account for Turn Ordering and tracking in BoardState subscriptions.
 - [ ] Write a GraphQL resolver for returning only opponent boardstates.
 - [ ] Only reference players by ID and username on Games.
-- [ ] Decouple BoardStates from Game model
+- [*] Decouple BoardStates from Game model
+- [ ] Persist the Game directory to Redis
 
 *Notes*
 One of the real benefits of GraphQL is that the client can change their appetite themselves. They can take in the whole massive data object or they can build more complex interactions with specific pieces of data from different areas choosing to return only what they need.
@@ -117,3 +118,9 @@ At some point I should update the GraphQL schema to remove `Input` from types an
 
 Need to add a loading animation to the Game creation page. 
 Join Game page needs to be created.
+
+*Where I Left Off*
+Test that Game updates and subscriptions are working so that BoardStates for Opponents can be written. 
+We're getting closer to implementing Opponent Boardstates. 
+
+_Opponent Component_ This should be fed a list of opponent IDs and then use those ID's to generate BoardState components for them that can't be updated or effected by the Self user.
