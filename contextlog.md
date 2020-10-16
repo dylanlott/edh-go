@@ -99,9 +99,9 @@ https://css-tricks.com/scaled-proportional-blocks-with-css-and-javascript/ We ca
 
 
 *Task List*
-- [ ] Account for Turn Ordering and tracking in BoardState subscriptions.
+- [*] Account for Turn Ordering and tracking in Game subscriptions.
 - [ ] Write a GraphQL resolver for returning only opponent boardstates.
-- [ ] Only reference players by ID and username on Games.
+- [*] Only reference players by ID and username on Games.
 - [*] Decouple BoardStates from Game model
 - [ ] Persist the Game directory to Redis
 
@@ -124,3 +124,11 @@ Test that Game updates and subscriptions are working so that BoardStates for Opp
 We're getting closer to implementing Opponent Boardstates. 
 
 _Opponent Component_ This should be fed a list of opponent IDs and then use those ID's to generate BoardState components for them that can't be updated or effected by the Self user.
+
+### 16 Sep 2020
+
+Currently wiring up the turn tracker to persist to the backend state.
+
+* cards() and card() graphql endpoints should be refactored into one single endpoint 
+* card searches in backend should utilize WHERE IN queries
+* working on wiring up the turn tracker to game updates so they're reflected in game data accordingly.

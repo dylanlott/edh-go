@@ -284,6 +284,7 @@ export default {
         },
         results(data) {
           console.log('boardstates#data: ', data)
+          return data
         },
         error(err) {
           if (err == "Error: GraphQL error: game does not exist")  {

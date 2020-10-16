@@ -2,12 +2,8 @@
   <div class="turn-tracker">
     <div class="columns">
       <section class="column is-11 is-mobile">
-        <p class="has-text-primary">
-          <!-- <b> {{ players[turn.player]['username'] }} - {{ phases[turn.phase] }} </b> -->
-          <b>{{ players }}</b>
-          <b>{{ turn }}</b>
-        </p>
-        <b-progress :value="progress" size="is-medium" show-value></b-progress>
+        <p class="has-text-primary">{{ game.turn.Player }} - {{ game.turn.Phase }}</p>
+        <b-progress :value="progress" size="is-small" show-value></b-progress>
       </section>
       <section class="column is-1">
         <b-button
@@ -27,12 +23,16 @@ export default {
   name: 'turntracker',
   data () {
     return {
-      turn: {
-        // starting indexes for game.
-        phase: 0,
-        player: 0
+      game: {
+        ID: "",
+        turn: {
+          Player: "",
+          Phase: "",
+          Number: 0,
+        },
+        PlayerIDs: []
       },
-      game: {},
+      currentPhase: "",
       phases: [
         'untap',
         'upkeep',
@@ -44,82 +44,147 @@ export default {
         'first strike / double strike',
         'resolve combat damage',
         'main phase 2',
-        'end phase',
-        'discard'
+        'end step',
       ],
     }
   },
   computed: {
     progress () {
-      const total = this.phases.length
-      const current = this.turn.phase
-      const v = ((current / total) * 100)
-      return v 
+      return 100
     }
   },
   apollo: {
-    game: {
-      query: gql`
-          subscription($game: InputGame!) {
-            gameUpdated(game: $game) {
-              ID
-              Turn {
+    gameSubscription() {
+      return {
+        query: gql`
+          query($gameID: String!) {
+            games(gameID: $gameID) {
+              id 
+              turn {
                 Player
                 Phase
                 Number
               }
-              PlayerIDs {
-                Username
-                ID
+              playerIDs {
+                username
+                id
               }
             }
           } 
         `,
-      update(data) {
-        console.log('game#update: ', data)
-      },
-      subscribeToMore: {
-        document: gql`
-          subscription($game: InputGame!) {
+        variables: {
+          gameID: this.$route.params.id
+        },
+        update(data) {
+          this.game = data.games[0]
+        },
+        subscribeToMore: {
+          document: gql`subscription($game: InputGame!) {
             gameUpdated(game: $game) {
-              ID
-              Turn {
+              id 
+              turn {
                 Player
                 Phase
                 Number
               }
-              PlayerIDs {
-                Username
-                ID
+            }
+          }`,
+          variables: {
+            game: {
+              ID: this.$route.params.id,
+              Turn: {
+                Player: this.game.turn.Player || "",
+                Phase: this.game.turn.Phase || "",
+                Number: this.game.turn.Number || 0
               }
             }
-          } 
-        `,
-        updateQuery: (previousResult, { subscriptionData}) => {
-          console.log("game#previousResult: ", previousResult)
-          console.log("game#subscriptionData: ", subscriptionData)
-        }
+          },
+          updateQuery: (previousResult, { subscriptionData }) => {
+            console.log('turntracker#previousResult: ', previousResult)
+            console.log('turntracker#subscriptionData: ', subscriptionData)
+          }
+        } 
       }
     }
   },
   methods: {
-    tick () {
-      if ((this.turn.phase + 1) >= this.phases.length) {
-        // turn ends, tick player over
-        this.turn.phase = 0
-
-        // if player is last in array, tick back to beginning rotation
-        if ((this.turn.player + 1) >= this.players.length) {
-          this.turn.player = 0
-          return
+    mutateGame () {
+      this.$apollo.mutate({
+        mutation: gql`mutation ($input: InputGame!) {
+          updateGame(input: $input) {
+            id
+            turn {
+              Player
+              Phase
+              Number
+            }
+            playerIDs {
+              id
+              username
+            }
+          }
         }
-
-        this.turn.player++
+        `,
+        variables: {
+          input: {
+            ID: this.$route.params.id,
+            Turn: {
+              Player: this.game.turn.Player,
+              Phase: this.game.turn.Phase,
+              Number: this.game.turn.Number,
+            },
+            PlayerIDs: this.getPlayerIDs(),
+          }
+        },
+        update: (store, { data }) => {
+          return data
+        }
+      }).then((data) => {
+        return data
+      }).catch((err) => {
+        console.error('error mutating game: ', err)
+        return err
+      })
+    },
+    // this is a utility function to properly format received playerIDs into input
+    getPlayerIDs () {
+      const formatted = this.game.playerIDs.map((u, i) => {
+        return {
+          Username: u.username,
+          ID: u.id,
+        }
+      })
+      return formatted
+    },
+    tick () {
+      // setup is the default phase before the game starts, where chat,
+      // rolls for turn, and deck tweaking can occur.
+      // TODO: Make it so that only the game creator can leave the setup phase
+      // TODO: Allow players to confirm "ready" if (phase === "setup")
+      if (this.game.turn.Phase === "setup") {
+        console.log('setup phase ending, setting to untap.')
+        this.game.turn.Phase = this.phases[0]
         return
       }
-
-      this.turn.phase++
-      return
+      if (this.game.turn.Phase === this.phases[10]) {
+        this.game.turn.Phase = this.phases[0]
+        return
+      }
+      var pos = 0
+      let current = this.phases.find((phase, i) => {
+        pos = i
+        if (phase === this.game.turn.Phase) { return true }
+      })
+      if (current === undefined) {
+        // NB: can't detect current phase, so default to setup
+        this.game.turn.Phase = "setup"
+        return
+      }
+      // happy path 
+      this.currentPos = pos++
+      this.game.turn.Phase = this.phases[pos++]
+      console.log('set phase: ', this.game.turn.Phase)
+      this.mutateGame()
     },
   }
 }
