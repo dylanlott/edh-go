@@ -78,6 +78,7 @@ func (s *graphQLServer) Boardstates(ctx context.Context, gameID string, userID *
 	// userID not nil, so send only that boardstate
 	var boardstates []*BoardState
 
+	fmt.Printf("searching for %s boardstate", *userID)
 	for _, player := range game.PlayerIDs {
 		if player.Username == *userID {
 			boardKey := BoardStateKey(game.ID, player.Username)
@@ -100,11 +101,9 @@ func (s *graphQLServer) GameUpdated(ctx context.Context, game InputGame) (<-chan
 		return nil, errs.New("game does not exist with ID of %s", game.ID)
 	}
 
-	fmt.Printf("[GameUpdated] found game: %+v\n", g)
-	fmt.Printf("game channel: %+v\n", s.gameChannels[game.ID])
-
-	games := make(chan *Game, 1)
 	out := gameFromInput(game)
+	games := make(chan *Game, 1)
+
 	s.mutex.Lock()
 	s.gameChannels[game.ID] = games
 	s.Directory[game.ID] = out
