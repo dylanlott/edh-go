@@ -132,3 +132,8 @@ Currently wiring up the turn tracker to persist to the backend state.
 * cards() and card() graphql endpoints should be refactored into one single endpoint 
 * card searches in backend should utilize WHERE IN queries
 * working on wiring up the turn tracker to game updates so they're reflected in game data accordingly.
+
+*Opponent Component Design Notes*
+Opponent comp. will need to listen for updates to the Game and detect if a player joins, adjusting accordingly. 
+When a new player joins, we should launch a notification of some sort. 
+This is where Ready checks should be gathered and displayed as well. 

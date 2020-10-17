@@ -1,14 +1,8 @@
-<template id="">
+<template>
   <div class="player">
-    <p class="title is-4">(opponent)</p>
-    <pre>{{ playerState }}</pre>
-    <!-- <div class="columns is-mobile is-full">
-      <div class="battlefield column">
-        <div class="columns is-mobile">
-          <div class="column" v-for="(card, i) in battlefield" :key="i"></div>
-        </div>
-      </div>
-    </div> -->
+    <div v-for="(player, i) in opponents" :key="i">
+      {{ player }} 
+    </div> 
   </div>
 </template>
 <script>
@@ -21,6 +15,77 @@ export default {
   },
   created () {
     console.log('PlayerState#gameID: ', this.$route.params.id)
+  },
+  methods: {
+    // this is a utility function to properly format received playerIDs into input
+    getPlayerIDs () {
+      const formatted = this.game.playerIDs.map((u, i) => {
+        return {
+          Username: u.username,
+          ID: u.id,
+        }
+      })
+      return formatted
+    },
+  },
+  apollo: {
+    opponents() {
+      return {
+        query: gql`
+          query($gameID: String!) {
+            games(gameID: $gameID) {
+              id 
+              turn {
+                Player
+                Phase
+                Number
+              }
+              playerIDs {
+                username
+                id
+              }
+            }
+          } 
+        `,
+        variables: {
+          gameID: this.$route.params.id
+        },
+        update(data) {
+          this.game = data.games[0]
+        },
+        subscribeToMore: {
+          document: gql`subscription($game: InputGame!) {
+            gameUpdated(game: $game) {
+              id 
+              turn {
+                Player
+                Phase
+                Number
+              }
+              playerIDs {
+                username
+                id
+              }
+            }
+          }`,
+          variables: {
+            game: {
+              ID: this.$route.params.id,
+              Turn: {
+                Player: this.game.turn.Player || "",
+                Phase: this.game.turn.Phase || "",
+                Number: this.game.turn.Number || 0
+              },
+              PlayerIDs: this.getPlayerIDs()
+            }
+          },
+          updateQuery: (previousResult, { subscriptionData }) => {
+            console.log('playerState#previousResult: ', previousResult)
+            console.log('playerState#subscriptionData: ', subscriptionData)
+          }
+        } 
+      }
+    }
   }
 }
 </script>
