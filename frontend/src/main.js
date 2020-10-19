@@ -3,6 +3,7 @@ import { ApolloClient } from 'apollo-client';
 import { HttpLink } from 'apollo-link-http';
 import { InMemoryCache } from 'apollo-cache-inmemory';
 import VueApollo from 'vue-apollo';
+import Vuex from 'vuex'
 import { split } from 'apollo-link';
 import { WebSocketLink } from 'apollo-link-ws';
 import { getMainDefinition } from 'apollo-utilities';
@@ -18,6 +19,7 @@ Vue.use(Buefy)
 
 import router from './router';
 import App from './App.vue';
+import store from './store';
 import { AuthPlugin } from './auth';
 
 Vue.config.productionTip = false;
@@ -54,6 +56,7 @@ Vue.use(AuthPlugin);
 
 const vm = new Vue({
   router,
+  store,
   provide: apolloProvider.provide(),
   render: (h) => h(App),
 });
