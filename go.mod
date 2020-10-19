@@ -9,6 +9,7 @@ require (
 	github.com/go-redis/redis/v7 v7.2.0
 	github.com/google/uuid v1.1.1
 	github.com/gorilla/websocket v1.4.1
+	github.com/imdario/mergo v0.3.11
 	github.com/jmoiron/sqlx v1.2.0
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/mattn/go-sqlite3 v2.0.3+incompatible

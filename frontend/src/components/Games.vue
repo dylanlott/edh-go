@@ -116,15 +116,15 @@ export default {
       this.$apollo.mutate({
         mutation: gql`mutation ($inputGame: InputCreateGame!) {
           createGame(input: $inputGame){
-           	id
-            created_at
-            turn {
+            ID	
+            CreatedAt 
+            Turn {
               Number
               Player
               Phase
             }
-            playerIDs {
-              username
+            PlayerIDs {
+              Username
             }
           }
         }`,
@@ -156,8 +156,8 @@ export default {
         }
       })
       .then((res) => {
-        const id = res.data.id
-        router.push({ path: `/games/${res.data.createGame.id}` })
+        console.log('pushing route to: ', res.data.createGame.ID)
+        router.push({ path: `/games/${res.data.createGame.ID}` })
       })
       .catch((err) => {
         console.error('got error back: ', err)

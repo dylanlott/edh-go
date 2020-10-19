@@ -475,105 +475,105 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Deck.Name(childComplexity), true
 
-	case "Emblem.name":
+	case "Emblem.Name":
 		if e.complexity.Emblem.Name == nil {
 			break
 		}
 
 		return e.complexity.Emblem.Name(childComplexity), true
 
-	case "Emblem.player":
+	case "Emblem.Player":
 		if e.complexity.Emblem.Player == nil {
 			break
 		}
 
 		return e.complexity.Emblem.Player(childComplexity), true
 
-	case "Emblem.value":
+	case "Emblem.Value":
 		if e.complexity.Emblem.Value == nil {
 			break
 		}
 
 		return e.complexity.Emblem.Value(childComplexity), true
 
-	case "Game.created_at":
+	case "Game.CreatedAt":
 		if e.complexity.Game.CreatedAt == nil {
 			break
 		}
 
 		return e.complexity.Game.CreatedAt(childComplexity), true
 
-	case "Game.handle":
+	case "Game.Handle":
 		if e.complexity.Game.Handle == nil {
 			break
 		}
 
 		return e.complexity.Game.Handle(childComplexity), true
 
-	case "Game.id":
+	case "Game.ID":
 		if e.complexity.Game.ID == nil {
 			break
 		}
 
 		return e.complexity.Game.ID(childComplexity), true
 
-	case "Game.playerIDs":
+	case "Game.PlayerIDs":
 		if e.complexity.Game.PlayerIDs == nil {
 			break
 		}
 
 		return e.complexity.Game.PlayerIDs(childComplexity), true
 
-	case "Game.rules":
+	case "Game.Rules":
 		if e.complexity.Game.Rules == nil {
 			break
 		}
 
 		return e.complexity.Game.Rules(childComplexity), true
 
-	case "Game.turn":
+	case "Game.Turn":
 		if e.complexity.Game.Turn == nil {
 			break
 		}
 
 		return e.complexity.Game.Turn(childComplexity), true
 
-	case "Message.channel":
+	case "Message.Channel":
 		if e.complexity.Message.Channel == nil {
 			break
 		}
 
 		return e.complexity.Message.Channel(childComplexity), true
 
-	case "Message.createdAt":
+	case "Message.CreatedAt":
 		if e.complexity.Message.CreatedAt == nil {
 			break
 		}
 
 		return e.complexity.Message.CreatedAt(childComplexity), true
 
-	case "Message.gameID":
+	case "Message.GameID":
 		if e.complexity.Message.GameID == nil {
 			break
 		}
 
 		return e.complexity.Message.GameID(childComplexity), true
 
-	case "Message.id":
+	case "Message.ID":
 		if e.complexity.Message.ID == nil {
 			break
 		}
 
 		return e.complexity.Message.ID(childComplexity), true
 
-	case "Message.text":
+	case "Message.Text":
 		if e.complexity.Message.Text == nil {
 			break
 		}
 
 		return e.complexity.Message.Text(childComplexity), true
 
-	case "Message.user":
+	case "Message.User":
 		if e.complexity.Message.User == nil {
 			break
 		}
@@ -738,14 +738,14 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.Users(childComplexity), true
 
-	case "Rule.name":
+	case "Rule.Name":
 		if e.complexity.Rule.Name == nil {
 			break
 		}
 
 		return e.complexity.Rule.Name(childComplexity), true
 
-	case "Rule.value":
+	case "Rule.Value":
 		if e.complexity.Rule.Value == nil {
 			break
 		}
@@ -821,21 +821,21 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Turn.Player(childComplexity), true
 
-	case "User.deck":
+	case "User.Deck":
 		if e.complexity.User.Deck == nil {
 			break
 		}
 
 		return e.complexity.User.Deck(childComplexity), true
 
-	case "User.id":
+	case "User.ID":
 		if e.complexity.User.ID == nil {
 			break
 		}
 
 		return e.complexity.User.ID(childComplexity), true
 
-	case "User.username":
+	case "User.Username":
 		if e.complexity.User.Username == nil {
 			break
 		}
@@ -963,12 +963,12 @@ type Subscription {
 }
 
 type Message {
-  id: String!
-  user: String!
-  createdAt: Time!
-  text: String!
-  gameID: String!
-  channel: String
+  ID: String!
+  User: String!
+  CreatedAt: Time!
+  Text: String!
+  GameID: String!
+  Channel: String
 }
 
 type Card {
@@ -995,9 +995,9 @@ type Card {
 }
 
 type User {
-  id: String!
-  username: String!
-  deck: String!
+  ID: String!
+  Username: String!
+  Deck: String!
 }
 
 type Deck {
@@ -1008,12 +1008,12 @@ type Deck {
 }
 
 type Game {
-  id: String!
-  handle: String
-  created_at: Time!
-  rules: [Rule!]
-  turn: Turn!
-  playerIDs: [User!]
+  ID: String!
+  Handle: String
+  CreatedAt: Time!
+  Rules: [Rule!]
+  Turn: Turn!
+  PlayerIDs: [User!]
 }
 
 type Turn {
@@ -1023,14 +1023,14 @@ type Turn {
 }
 
 type Rule {
-  name: String!
-  value: String!
+  Name: String!
+  Value: String!
 }
 
 type Emblem {
-  name: String!
-  value: String!
-  player: User!
+  Name: String!
+  Value: String!
+  Player: User!
 }
 
 type Counter {
@@ -1078,9 +1078,9 @@ input InputCard {
 }
 
 input InputCounter {
-  card: InputCard
-  name: String!
-  value: String!
+  Card: InputCard
+  Name: String!
+  Value: String!
 }
 
 input InputBoardState {
@@ -1107,9 +1107,9 @@ input InputSignup {
 }
 
 input InputEmblem {
-  name: String!
-  value: String!
-  player: InputUser!
+  Name: String!
+  Value: String!
+  Player: InputUser!
 }
 
 input InputUser {
@@ -1139,15 +1139,15 @@ input InputTurn {
 }
 
 input InputDeck {
-  name: String
-  commander: [String!]
-  cards: [String!]
+  Name: String
+  Commander: [String!]
+  Cards: [String!]
 }
 
 input InputLabel {
-  name: String!
-  value: String!
-  assigned_by: String!
+  Name: String!
+  Value: String!
+  AssignedBy: String!
 }`},
 )
 
@@ -2801,7 +2801,7 @@ func (ec *executionContext) _Deck_Library(ctx context.Context, field graphql.Col
 	return ec.marshalOString2ᚕstringᚄ(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Emblem_name(ctx context.Context, field graphql.CollectedField, obj *Emblem) (ret graphql.Marshaler) {
+func (ec *executionContext) _Emblem_Name(ctx context.Context, field graphql.CollectedField, obj *Emblem) (ret graphql.Marshaler) {
 	ctx = ec.Tracer.StartFieldExecution(ctx, field)
 	defer func() {
 		if r := recover(); r != nil {
@@ -2835,7 +2835,7 @@ func (ec *executionContext) _Emblem_name(ctx context.Context, field graphql.Coll
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Emblem_value(ctx context.Context, field graphql.CollectedField, obj *Emblem) (ret graphql.Marshaler) {
+func (ec *executionContext) _Emblem_Value(ctx context.Context, field graphql.CollectedField, obj *Emblem) (ret graphql.Marshaler) {
 	ctx = ec.Tracer.StartFieldExecution(ctx, field)
 	defer func() {
 		if r := recover(); r != nil {
@@ -2869,7 +2869,7 @@ func (ec *executionContext) _Emblem_value(ctx context.Context, field graphql.Col
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Emblem_player(ctx context.Context, field graphql.CollectedField, obj *Emblem) (ret graphql.Marshaler) {
+func (ec *executionContext) _Emblem_Player(ctx context.Context, field graphql.CollectedField, obj *Emblem) (ret graphql.Marshaler) {
 	ctx = ec.Tracer.StartFieldExecution(ctx, field)
 	defer func() {
 		if r := recover(); r != nil {
@@ -2903,7 +2903,7 @@ func (ec *executionContext) _Emblem_player(ctx context.Context, field graphql.Co
 	return ec.marshalNUser2ᚖgithubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐUser(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Game_id(ctx context.Context, field graphql.CollectedField, obj *Game) (ret graphql.Marshaler) {
+func (ec *executionContext) _Game_ID(ctx context.Context, field graphql.CollectedField, obj *Game) (ret graphql.Marshaler) {
 	ctx = ec.Tracer.StartFieldExecution(ctx, field)
 	defer func() {
 		if r := recover(); r != nil {
@@ -2937,7 +2937,7 @@ func (ec *executionContext) _Game_id(ctx context.Context, field graphql.Collecte
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Game_handle(ctx context.Context, field graphql.CollectedField, obj *Game) (ret graphql.Marshaler) {
+func (ec *executionContext) _Game_Handle(ctx context.Context, field graphql.CollectedField, obj *Game) (ret graphql.Marshaler) {
 	ctx = ec.Tracer.StartFieldExecution(ctx, field)
 	defer func() {
 		if r := recover(); r != nil {
@@ -2968,7 +2968,7 @@ func (ec *executionContext) _Game_handle(ctx context.Context, field graphql.Coll
 	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Game_created_at(ctx context.Context, field graphql.CollectedField, obj *Game) (ret graphql.Marshaler) {
+func (ec *executionContext) _Game_CreatedAt(ctx context.Context, field graphql.CollectedField, obj *Game) (ret graphql.Marshaler) {
 	ctx = ec.Tracer.StartFieldExecution(ctx, field)
 	defer func() {
 		if r := recover(); r != nil {
@@ -3002,7 +3002,7 @@ func (ec *executionContext) _Game_created_at(ctx context.Context, field graphql.
 	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Game_rules(ctx context.Context, field graphql.CollectedField, obj *Game) (ret graphql.Marshaler) {
+func (ec *executionContext) _Game_Rules(ctx context.Context, field graphql.CollectedField, obj *Game) (ret graphql.Marshaler) {
 	ctx = ec.Tracer.StartFieldExecution(ctx, field)
 	defer func() {
 		if r := recover(); r != nil {
@@ -3033,7 +3033,7 @@ func (ec *executionContext) _Game_rules(ctx context.Context, field graphql.Colle
 	return ec.marshalORule2ᚕᚖgithubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐRuleᚄ(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Game_turn(ctx context.Context, field graphql.CollectedField, obj *Game) (ret graphql.Marshaler) {
+func (ec *executionContext) _Game_Turn(ctx context.Context, field graphql.CollectedField, obj *Game) (ret graphql.Marshaler) {
 	ctx = ec.Tracer.StartFieldExecution(ctx, field)
 	defer func() {
 		if r := recover(); r != nil {
@@ -3067,7 +3067,7 @@ func (ec *executionContext) _Game_turn(ctx context.Context, field graphql.Collec
 	return ec.marshalNTurn2ᚖgithubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐTurn(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Game_playerIDs(ctx context.Context, field graphql.CollectedField, obj *Game) (ret graphql.Marshaler) {
+func (ec *executionContext) _Game_PlayerIDs(ctx context.Context, field graphql.CollectedField, obj *Game) (ret graphql.Marshaler) {
 	ctx = ec.Tracer.StartFieldExecution(ctx, field)
 	defer func() {
 		if r := recover(); r != nil {
@@ -3098,7 +3098,7 @@ func (ec *executionContext) _Game_playerIDs(ctx context.Context, field graphql.C
 	return ec.marshalOUser2ᚕᚖgithubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐUserᚄ(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Message_id(ctx context.Context, field graphql.CollectedField, obj *Message) (ret graphql.Marshaler) {
+func (ec *executionContext) _Message_ID(ctx context.Context, field graphql.CollectedField, obj *Message) (ret graphql.Marshaler) {
 	ctx = ec.Tracer.StartFieldExecution(ctx, field)
 	defer func() {
 		if r := recover(); r != nil {
@@ -3132,7 +3132,7 @@ func (ec *executionContext) _Message_id(ctx context.Context, field graphql.Colle
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Message_user(ctx context.Context, field graphql.CollectedField, obj *Message) (ret graphql.Marshaler) {
+func (ec *executionContext) _Message_User(ctx context.Context, field graphql.CollectedField, obj *Message) (ret graphql.Marshaler) {
 	ctx = ec.Tracer.StartFieldExecution(ctx, field)
 	defer func() {
 		if r := recover(); r != nil {
@@ -3166,7 +3166,7 @@ func (ec *executionContext) _Message_user(ctx context.Context, field graphql.Col
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Message_createdAt(ctx context.Context, field graphql.CollectedField, obj *Message) (ret graphql.Marshaler) {
+func (ec *executionContext) _Message_CreatedAt(ctx context.Context, field graphql.CollectedField, obj *Message) (ret graphql.Marshaler) {
 	ctx = ec.Tracer.StartFieldExecution(ctx, field)
 	defer func() {
 		if r := recover(); r != nil {
@@ -3200,7 +3200,7 @@ func (ec *executionContext) _Message_createdAt(ctx context.Context, field graphq
 	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Message_text(ctx context.Context, field graphql.CollectedField, obj *Message) (ret graphql.Marshaler) {
+func (ec *executionContext) _Message_Text(ctx context.Context, field graphql.CollectedField, obj *Message) (ret graphql.Marshaler) {
 	ctx = ec.Tracer.StartFieldExecution(ctx, field)
 	defer func() {
 		if r := recover(); r != nil {
@@ -3234,7 +3234,7 @@ func (ec *executionContext) _Message_text(ctx context.Context, field graphql.Col
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Message_gameID(ctx context.Context, field graphql.CollectedField, obj *Message) (ret graphql.Marshaler) {
+func (ec *executionContext) _Message_GameID(ctx context.Context, field graphql.CollectedField, obj *Message) (ret graphql.Marshaler) {
 	ctx = ec.Tracer.StartFieldExecution(ctx, field)
 	defer func() {
 		if r := recover(); r != nil {
@@ -3268,7 +3268,7 @@ func (ec *executionContext) _Message_gameID(ctx context.Context, field graphql.C
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Message_channel(ctx context.Context, field graphql.CollectedField, obj *Message) (ret graphql.Marshaler) {
+func (ec *executionContext) _Message_Channel(ctx context.Context, field graphql.CollectedField, obj *Message) (ret graphql.Marshaler) {
 	ctx = ec.Tracer.StartFieldExecution(ctx, field)
 	defer func() {
 		if r := recover(); r != nil {
@@ -3910,7 +3910,7 @@ func (ec *executionContext) _Query___schema(ctx context.Context, field graphql.C
 	return ec.marshalO__Schema2ᚖgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐSchema(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Rule_name(ctx context.Context, field graphql.CollectedField, obj *Rule) (ret graphql.Marshaler) {
+func (ec *executionContext) _Rule_Name(ctx context.Context, field graphql.CollectedField, obj *Rule) (ret graphql.Marshaler) {
 	ctx = ec.Tracer.StartFieldExecution(ctx, field)
 	defer func() {
 		if r := recover(); r != nil {
@@ -3944,7 +3944,7 @@ func (ec *executionContext) _Rule_name(ctx context.Context, field graphql.Collec
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Rule_value(ctx context.Context, field graphql.CollectedField, obj *Rule) (ret graphql.Marshaler) {
+func (ec *executionContext) _Rule_Value(ctx context.Context, field graphql.CollectedField, obj *Rule) (ret graphql.Marshaler) {
 	ctx = ec.Tracer.StartFieldExecution(ctx, field)
 	defer func() {
 		if r := recover(); r != nil {
@@ -4280,7 +4280,7 @@ func (ec *executionContext) _Turn_Number(ctx context.Context, field graphql.Coll
 	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _User_id(ctx context.Context, field graphql.CollectedField, obj *User) (ret graphql.Marshaler) {
+func (ec *executionContext) _User_ID(ctx context.Context, field graphql.CollectedField, obj *User) (ret graphql.Marshaler) {
 	ctx = ec.Tracer.StartFieldExecution(ctx, field)
 	defer func() {
 		if r := recover(); r != nil {
@@ -4314,7 +4314,7 @@ func (ec *executionContext) _User_id(ctx context.Context, field graphql.Collecte
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _User_username(ctx context.Context, field graphql.CollectedField, obj *User) (ret graphql.Marshaler) {
+func (ec *executionContext) _User_Username(ctx context.Context, field graphql.CollectedField, obj *User) (ret graphql.Marshaler) {
 	ctx = ec.Tracer.StartFieldExecution(ctx, field)
 	defer func() {
 		if r := recover(); r != nil {
@@ -4348,7 +4348,7 @@ func (ec *executionContext) _User_username(ctx context.Context, field graphql.Co
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _User_deck(ctx context.Context, field graphql.CollectedField, obj *User) (ret graphql.Marshaler) {
+func (ec *executionContext) _User_Deck(ctx context.Context, field graphql.CollectedField, obj *User) (ret graphql.Marshaler) {
 	ctx = ec.Tracer.StartFieldExecution(ctx, field)
 	defer func() {
 		if r := recover(); r != nil {
@@ -5677,19 +5677,19 @@ func (ec *executionContext) unmarshalInputInputCounter(ctx context.Context, obj 
 
 	for k, v := range asMap {
 		switch k {
-		case "card":
+		case "Card":
 			var err error
 			it.Card, err = ec.unmarshalOInputCard2ᚖgithubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐInputCard(ctx, v)
 			if err != nil {
 				return it, err
 			}
-		case "name":
+		case "Name":
 			var err error
 			it.Name, err = ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
-		case "value":
+		case "Value":
 			var err error
 			it.Value, err = ec.unmarshalNString2string(ctx, v)
 			if err != nil {
@@ -5743,19 +5743,19 @@ func (ec *executionContext) unmarshalInputInputDeck(ctx context.Context, obj int
 
 	for k, v := range asMap {
 		switch k {
-		case "name":
+		case "Name":
 			var err error
 			it.Name, err = ec.unmarshalOString2ᚖstring(ctx, v)
 			if err != nil {
 				return it, err
 			}
-		case "commander":
+		case "Commander":
 			var err error
 			it.Commander, err = ec.unmarshalOString2ᚕstringᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
-		case "cards":
+		case "Cards":
 			var err error
 			it.Cards, err = ec.unmarshalOString2ᚕstringᚄ(ctx, v)
 			if err != nil {
@@ -5773,19 +5773,19 @@ func (ec *executionContext) unmarshalInputInputEmblem(ctx context.Context, obj i
 
 	for k, v := range asMap {
 		switch k {
-		case "name":
+		case "Name":
 			var err error
 			it.Name, err = ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
-		case "value":
+		case "Value":
 			var err error
 			it.Value, err = ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
-		case "player":
+		case "Player":
 			var err error
 			it.Player, err = ec.unmarshalNInputUser2ᚖgithubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐInputUser(ctx, v)
 			if err != nil {
@@ -5845,19 +5845,19 @@ func (ec *executionContext) unmarshalInputInputLabel(ctx context.Context, obj in
 
 	for k, v := range asMap {
 		switch k {
-		case "name":
+		case "Name":
 			var err error
 			it.Name, err = ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
-		case "value":
+		case "Value":
 			var err error
 			it.Value, err = ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
-		case "assigned_by":
+		case "AssignedBy":
 			var err error
 			it.AssignedBy, err = ec.unmarshalNString2string(ctx, v)
 			if err != nil {
@@ -6190,18 +6190,18 @@ func (ec *executionContext) _Emblem(ctx context.Context, sel ast.SelectionSet, o
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Emblem")
-		case "name":
-			out.Values[i] = ec._Emblem_name(ctx, field, obj)
+		case "Name":
+			out.Values[i] = ec._Emblem_Name(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
-		case "value":
-			out.Values[i] = ec._Emblem_value(ctx, field, obj)
+		case "Value":
+			out.Values[i] = ec._Emblem_Value(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
-		case "player":
-			out.Values[i] = ec._Emblem_player(ctx, field, obj)
+		case "Player":
+			out.Values[i] = ec._Emblem_Player(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
@@ -6227,27 +6227,27 @@ func (ec *executionContext) _Game(ctx context.Context, sel ast.SelectionSet, obj
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Game")
-		case "id":
-			out.Values[i] = ec._Game_id(ctx, field, obj)
+		case "ID":
+			out.Values[i] = ec._Game_ID(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
-		case "handle":
-			out.Values[i] = ec._Game_handle(ctx, field, obj)
-		case "created_at":
-			out.Values[i] = ec._Game_created_at(ctx, field, obj)
+		case "Handle":
+			out.Values[i] = ec._Game_Handle(ctx, field, obj)
+		case "CreatedAt":
+			out.Values[i] = ec._Game_CreatedAt(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
-		case "rules":
-			out.Values[i] = ec._Game_rules(ctx, field, obj)
-		case "turn":
-			out.Values[i] = ec._Game_turn(ctx, field, obj)
+		case "Rules":
+			out.Values[i] = ec._Game_Rules(ctx, field, obj)
+		case "Turn":
+			out.Values[i] = ec._Game_Turn(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
-		case "playerIDs":
-			out.Values[i] = ec._Game_playerIDs(ctx, field, obj)
+		case "PlayerIDs":
+			out.Values[i] = ec._Game_PlayerIDs(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -6270,33 +6270,33 @@ func (ec *executionContext) _Message(ctx context.Context, sel ast.SelectionSet, 
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Message")
-		case "id":
-			out.Values[i] = ec._Message_id(ctx, field, obj)
+		case "ID":
+			out.Values[i] = ec._Message_ID(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
-		case "user":
-			out.Values[i] = ec._Message_user(ctx, field, obj)
+		case "User":
+			out.Values[i] = ec._Message_User(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
-		case "createdAt":
-			out.Values[i] = ec._Message_createdAt(ctx, field, obj)
+		case "CreatedAt":
+			out.Values[i] = ec._Message_CreatedAt(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
-		case "text":
-			out.Values[i] = ec._Message_text(ctx, field, obj)
+		case "Text":
+			out.Values[i] = ec._Message_Text(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
-		case "gameID":
-			out.Values[i] = ec._Message_gameID(ctx, field, obj)
+		case "GameID":
+			out.Values[i] = ec._Message_GameID(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
-		case "channel":
-			out.Values[i] = ec._Message_channel(ctx, field, obj)
+		case "Channel":
+			out.Values[i] = ec._Message_Channel(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -6499,13 +6499,13 @@ func (ec *executionContext) _Rule(ctx context.Context, sel ast.SelectionSet, obj
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Rule")
-		case "name":
-			out.Values[i] = ec._Rule_name(ctx, field, obj)
+		case "Name":
+			out.Values[i] = ec._Rule_Name(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
-		case "value":
-			out.Values[i] = ec._Rule_value(ctx, field, obj)
+		case "Value":
+			out.Values[i] = ec._Rule_Value(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
@@ -6594,18 +6594,18 @@ func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("User")
-		case "id":
-			out.Values[i] = ec._User_id(ctx, field, obj)
+		case "ID":
+			out.Values[i] = ec._User_ID(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
-		case "username":
-			out.Values[i] = ec._User_username(ctx, field, obj)
+		case "Username":
+			out.Values[i] = ec._User_Username(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
-		case "deck":
-			out.Values[i] = ec._User_deck(ctx, field, obj)
+		case "Deck":
+			out.Values[i] = ec._User_Deck(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
