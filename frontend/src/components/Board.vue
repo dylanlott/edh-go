@@ -5,7 +5,7 @@
   <!-- LIFE TRACKER -->
   <div class="columns">
     <div class="shell column is-9">
-      <TurnTracker gameID="gameID" />
+      <!-- <TurnTracker gameID="GameID" /> -->
     </div>
     <div class="shell column is-3">
       <div class="title is-4">{{ self.boardstate.Life }}</div>
@@ -123,7 +123,7 @@ import draggable from 'vuedraggable';
 import Card from '@/components/Card';
 import PlayerState from '@/components/PlayerState.vue';
 import SelfState from '@/components/SelfState.vue';
-import TurnTracker from '@/components/TurnTracker.vue';
+// import TurnTracker from '@/components/TurnTracker.vue';
 import { 
   selfStateQuery, 
   updateBoardStateQuery,
@@ -136,25 +136,29 @@ export default {
   name: 'board',
   data() {
     return {
-      gameID: this.$route.params.id,
       locked: false, // `locked` is set to true once the players and turn order are decided.
       mulligan: true, // `mulligan` is set to true until no one is mulling anymore.
       self: {
-        user: {
-          username: this.$currentUser(),
+        GameID: this.$route.params.id,
+        User: {
+          Username: this.$currentUser(),
         },
         boardstate: {
+          GameID: this.$route.params.id,
           User: {
-            username: this.$currentUser(),
+            Username: this.$currentUser(),
           },
         },
       },
     };
   },
-  computed: {
-    username: (state) => this.$currentUser(),
+  created () {
+    console.log('route ID: ', this.$route.params.id)
   },
   methods: {
+    routeGameID() {
+      return this.$route.params.id
+    },
     draw() {
       const card = this.self.boardstate.Library.shift();
       this.self.boardstate.Hand.push(card);
@@ -209,6 +213,7 @@ export default {
         Username: this.$currentUser()
       }
       this.self.boardstate.GameID = this.$route.params.id
+      console.log('mutateBoardState#mutating with boardstate: ', this.self.boardstate)
       this.$apollo.mutate({
         mutation: updateBoardStateQuery,
         variables: {
@@ -216,6 +221,7 @@ export default {
         },
       })
       .then((res) => {
+        console.log('mutateBoardState#setting boardstate: ', res.data.updateBoardState)
         this.self.boardstate = res.data.updateBoardState
         return res 
       })
@@ -226,6 +232,10 @@ export default {
     },
     handleActivity(val) {
       // console.log('logging activity: ', val)
+    },
+    sleepFor (sleepDuration) {
+      var now = new Date().getTime();
+      while(new Date().getTime() < now + sleepDuration){ /* do nothing */ } 
     }
   },
   watch: {
@@ -248,65 +258,75 @@ export default {
           userID: this.$currentUser(),
         },
         update(data) {
-          this.self.boardstate = data.boardstates[0];
+          var updated = Object.assign(this.self.boardstate, data.boardstates[0])
+          console.log('selfstate#updated object: ', updated)
+          this.self.boardstate = updated
         },
-      };
-    },
-    boardstates() {
-      // TODO: get gameID and userID here so they're not tied to `self`
-      // NB: This is where opponent boardstates come in to the Board.
-      return {
-        query: boardstates,
-        variables: { gameID: this.$route.params.id },
-        subscribeToMore: {
-          document: boardstatesSubscription,
-          updateQuery: (previousResult, { subscriptionData }) => {
-            console.log('previousResult: ', previousResult)
-            console.log('subscriptionData: ', subscriptionData)
-          },
-          variables: {
-            boardstate: {
-              User: {
-                Username: this.$currentUser(),
-              },
-              Life: this.self.boardstate.Life ? this.self.boardstate.Life : 40,
-              GameID: this.$route.params.id,
-              Commander: this.self.boardstate.Commander ? [...this.self.boardstate.Commander] : [],
-              Library: this.self.boardstate.Library ? [...this.self.boardstate.Library] : [],
-              Graveyard: this.self.boardstate.Graveyard ? [...this.self.boardstate.Graveyard] : [],
-              Exiled: this.self.boardstate.Exiled ? [...this.self.boardstate.Exiled] : [],
-              Field: this.self.boardstate.Field ? [...this.self.boardstate.Field] : [],
-              Hand: this.self.boardstate.Hand ? [...this.self.boardstate.Hand] : [],
-              Revealed: this.self.boardstate.Revealed ? [...this.self.boardstate.Revealed] : [],
-              Controlled: this.self.boardstate.Controlled ? [...this.self.boardstate.Controlled] : [],
-            },
-          },
-        },
-        results(data) {
-          console.log('boardstates#data: ', data)
+        results (data) {
+          console.log("selfstate results: ", data)
           return data
-        },
-        error(err) {
-          if (err == "Error: GraphQL error: game does not exist")  {
-            // push to error page 
-            router.push({ name: 'GameDoesNotExist'})
-          }
-          console.log('error getting boardstates: ', err);
-          const notif = this.$buefy.notification.open({
-            duration: 5000,
-            message: `Error occurred when fetching opponents boardstates. Check your game ID and try again.`,
-            position: 'is-top-right',
-            type: 'is-danger',
-            hasIcon: true,
-          });
-        },
+        }
       };
     },
+    // boardstates() {
+    //   // TODO: This is not correctly async with the route ID. Maybe I need to 
+    //   // refactor these into my own methods and call them individually instead of
+    //   // relying on Apollo's auto-call-on-load magic. 
+
+    //   // TODO: get gameID and userID here so they're not tied to `self`
+    //   // NB: This is where opponent boardstates come in to the Board.
+    //   return {
+    //     query: boardstates,
+    //     variables: { gameID: this.routeGameID() },
+    //     subscribeToMore: {
+    //       document: boardstatesSubscription,
+    //       // updateQuery: (previousResult, { subscriptionData }) => {
+    //       //   console.log('previousResult: ', previousResult)
+    //       //   console.log('subscriptionData: ', subscriptionData)
+    //       // },
+    //       variables: {
+    //         boardstate: {
+    //           User: {
+    //             Username: this.$currentUser(),
+    //           },
+    //           Life: this.self.boardstate.Life ? this.self.boardstate.Life : 40,
+    //           GameID: this.self.boardstate.GameID,
+    //           Commander: this.self.boardstate.Commander ? [...this.self.boardstate.Commander] : [],
+    //           Library: this.self.boardstate.Library ? [...this.self.boardstate.Library] : [],
+    //           Graveyard: this.self.boardstate.Graveyard ? [...this.self.boardstate.Graveyard] : [],
+    //           Exiled: this.self.boardstate.Exiled ? [...this.self.boardstate.Exiled] : [],
+    //           Field: this.self.boardstate.Field ? [...this.self.boardstate.Field] : [],
+    //           Hand: this.self.boardstate.Hand ? [...this.self.boardstate.Hand] : [],
+    //           Revealed: this.self.boardstate.Revealed ? [...this.self.boardstate.Revealed] : [],
+    //           Controlled: this.self.boardstate.Controlled ? [...this.self.boardstate.Controlled] : [],
+    //         },
+    //       },
+    //     },
+    //     results(data) {
+    //       console.log('boardstates#data: ', data)
+    //       return data
+    //     },
+    //     error(err) {
+    //       console.log('HIT BOARDSTATES ERROR:', err)
+    //       if (err == "Error: GraphQL error: game does not exist")  {
+    //         // push to error page 
+    //         router.push({ name: 'GameDoesNotExist'})
+    //       }
+    //       console.log('error getting boardstates: ', err);
+    //       const notif = this.$buefy.notification.open({
+    //         duration: 5000,
+    //         message: `Error occurred when fetching opponents boardstates. Check your game ID and try again.`,
+    //         position: 'is-top-right',
+    //         type: 'is-danger',
+    //         hasIcon: true,
+    //       });
+    //     },
+    //   };
+    // },
   },
   components: {
     draggable,
     Card,
-    TurnTracker,
     PlayerState,
     SelfState,
   },

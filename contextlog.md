@@ -100,7 +100,7 @@ https://css-tricks.com/scaled-proportional-blocks-with-css-and-javascript/ We ca
 
 *Task List*
 - [*] Account for Turn Ordering and tracking in Game subscriptions.
-- [ ] Write a GraphQL resolver for returning only opponent boardstates.
+- [x] Write a GraphQL resolver for returning only opponent boardstates. Update: Instead, I'm just going to handle this at the component level by requesting them individually to be bandwidth optimized.
 - [*] Only reference players by ID and username on Games.
 - [*] Decouple BoardStates from Game model
 - [ ] Persist the Game directory to Redis
@@ -137,3 +137,36 @@ Currently wiring up the turn tracker to persist to the backend state.
 Opponent comp. will need to listen for updates to the Game and detect if a player joins, adjusting accordingly. 
 When a new player joins, we should launch a notification of some sort. 
 This is where Ready checks should be gathered and displayed as well. 
+
+### 18 Sep 2020
+
+I've got a cute little state bug brewing somewhere. 
+
+As far as I can tell, when the Boardstate gets refreshed at some point, there's a race condition between what the state gets set to by selfstatequery and what updateBoardState sets it to. If there's nothing set, the state breaks because it gets into a place where it doesn't know what it's supposed to be. Somewhere along the line we're resetting our own BoardState and so when it goes to grab it again, it's not there in its correct form.
+
+Note: Maybe it's time to start looking into a rough state implementation with vuex or something.
+
+I have officially hit the point where I have run into the exact moment where I needed a state system and almost considered writing my own setup for it but instead, will just use vuex like a good, ethical person. (Please, God, not another state management library.)
+
+*Updated* 
+I think the issue was actually in a variable not being set with the correct case. I'm attempting to switch all queries to capital case to make sure.
+
+Okay, so `boardstates()` subscription in Board.vue is sending a `GameID` of `undefined` which is overwriting the Game in the backend and simultaneously causing it to be 404'd. I think it is being mounted before the route is being computed and thus is sending off the Game query before the GameID has been returned from createGame, which tells the Board component what ID to load. 
+
+*Tasks*
+- [ ] Setup rough GET patterns for something with VueX and call it a day.
+- [ ] Get opponent state fetching boardstates correctly
+- [ ] Investigate the Gavi decklist I've been using - I'm noticing it generated a decklist of 112 cards here, need to make sure that's still functioning right.
+
+References for GraphQL VueX Implementation:
+* https://markus.oberlehner.net/blog/combining-graphql-and-vuex/
+
+### 19 Sep 2020
+
+Turns out, there were several bugs. Game objects were being overwritten by the UpdateGame function in both the mutation and subscription endpoints. But to make it worse, the front end was also send incomplete or incorrect payloads so PlayerIDs weren't being persisted correctly, causing BoardUpdates to not be fetched correctly.
+
+There's no way this is going to scale without a better way of querying the boardstate. There should probably be a Board and a Game store in VueX, with mutations and actions for both, and they should each have a connection to User models.
+
+*Tasks*
+- [ ] Add initial setup for state management
+- [ ] Factor out the rest of the gql queries

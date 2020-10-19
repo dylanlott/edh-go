@@ -57,18 +57,18 @@ type Deck struct {
 }
 
 type Emblem struct {
-	Name   string `json:"name"`
-	Value  string `json:"value"`
-	Player *User  `json:"player"`
+	Name   string `json:"Name"`
+	Value  string `json:"Value"`
+	Player *User  `json:"Player"`
 }
 
 type Game struct {
-	ID        string    `json:"id"`
-	Handle    *string   `json:"handle"`
-	CreatedAt time.Time `json:"created_at"`
-	Rules     []*Rule   `json:"rules"`
-	Turn      *Turn     `json:"turn"`
-	PlayerIDs []*User   `json:"playerIDs"`
+	ID        string    `json:"ID"`
+	Handle    *string   `json:"Handle"`
+	CreatedAt time.Time `json:"CreatedAt"`
+	Rules     []*Rule   `json:"Rules"`
+	Turn      *Turn     `json:"Turn"`
+	PlayerIDs []*User   `json:"PlayerIDs"`
 }
 
 type InputBoardState struct {
@@ -113,9 +113,9 @@ type InputCard struct {
 }
 
 type InputCounter struct {
-	Card  *InputCard `json:"card"`
-	Name  string     `json:"name"`
-	Value string     `json:"value"`
+	Card  *InputCard `json:"Card"`
+	Name  string     `json:"Name"`
+	Value string     `json:"Value"`
 }
 
 type InputCreateGame struct {
@@ -126,15 +126,15 @@ type InputCreateGame struct {
 }
 
 type InputDeck struct {
-	Name      *string  `json:"name"`
-	Commander []string `json:"commander"`
-	Cards     []string `json:"cards"`
+	Name      *string  `json:"Name"`
+	Commander []string `json:"Commander"`
+	Cards     []string `json:"Cards"`
 }
 
 type InputEmblem struct {
-	Name   string     `json:"name"`
-	Value  string     `json:"value"`
-	Player *InputUser `json:"player"`
+	Name   string     `json:"Name"`
+	Value  string     `json:"Value"`
+	Player *InputUser `json:"Player"`
 }
 
 type InputGame struct {
@@ -146,9 +146,9 @@ type InputGame struct {
 }
 
 type InputLabel struct {
-	Name       string `json:"name"`
-	Value      string `json:"value"`
-	AssignedBy string `json:"assigned_by"`
+	Name       string `json:"Name"`
+	Value      string `json:"Value"`
+	AssignedBy string `json:"AssignedBy"`
 }
 
 type InputSignup struct {
@@ -169,17 +169,17 @@ type InputUser struct {
 }
 
 type Message struct {
-	ID        string    `json:"id"`
-	User      string    `json:"user"`
-	CreatedAt time.Time `json:"createdAt"`
-	Text      string    `json:"text"`
-	GameID    string    `json:"gameID"`
-	Channel   *string   `json:"channel"`
+	ID        string    `json:"ID"`
+	User      string    `json:"User"`
+	CreatedAt time.Time `json:"CreatedAt"`
+	Text      string    `json:"Text"`
+	GameID    string    `json:"GameID"`
+	Channel   *string   `json:"Channel"`
 }
 
 type Rule struct {
-	Name  string `json:"name"`
-	Value string `json:"value"`
+	Name  string `json:"Name"`
+	Value string `json:"Value"`
 }
 
 type Turn struct {
@@ -189,7 +189,7 @@ type Turn struct {
 }
 
 type User struct {
-	ID       string `json:"id"`
-	Username string `json:"username"`
-	Deck     string `json:"deck"`
+	ID       string `json:"ID"`
+	Username string `json:"Username"`
+	Deck     string `json:"Deck"`
 }

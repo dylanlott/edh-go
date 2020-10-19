@@ -152,7 +152,7 @@ export const updateBoardStateQuery = gql`
   mutation ($boardstate: InputBoardState!) {
     updateBoardState(input: $boardstate) {
       User {
-        username
+        Username
       }
       GameID
       Life
@@ -306,7 +306,7 @@ export const boardstatesSubscription = gql`
 subscription($boardstate: InputBoardState!) {
   boardUpdate(boardstate: $boardstate) {
     User {
-      username
+      Username
     }
     Life
     Commander {
@@ -457,7 +457,7 @@ export const selfStateQuery = gql`
   query($gameID: String!, $userID: String) {
     boardstates(gameID: $gameID, userID: $userID) {
       User {
-        username
+        Username
       }
       Life
       Commander { 

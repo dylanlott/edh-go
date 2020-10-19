@@ -37,7 +37,7 @@ func (s *graphQLServer) Games(ctx context.Context, gameID *string) ([]*Game, err
 
 	game, ok := s.Directory[*gameID]
 	if !ok {
-		return nil, errs.New("game %s does not exist", gameID)
+		return nil, errs.New("game [%+v] does not exist", gameID)
 	}
 
 	return []*Game{game}, nil
@@ -70,15 +70,12 @@ func (s *graphQLServer) Boardstates(ctx context.Context, gameID string, userID *
 			boardstates = append(boardstates, &board)
 		}
 
-		fmt.Printf("returning boardstates: %+v\n", boardstates)
-
 		return boardstates, nil
 	}
 
 	// userID not nil, so send only that boardstate
 	var boardstates []*BoardState
 
-	fmt.Printf("searching for %s boardstate", *userID)
 	for _, player := range game.PlayerIDs {
 		if player.Username == *userID {
 			boardKey := BoardStateKey(game.ID, player.Username)
@@ -96,17 +93,17 @@ func (s *graphQLServer) Boardstates(ctx context.Context, gameID string, userID *
 }
 
 func (s *graphQLServer) GameUpdated(ctx context.Context, game InputGame) (<-chan *Game, error) {
-	g, ok := s.Directory[game.ID]
+	_, ok := s.Directory[game.ID]
 	if !ok {
 		return nil, errs.New("game does not exist with ID of %s", game.ID)
 	}
 
-	out := gameFromInput(game)
-	games := make(chan *Game, 1)
+	output := gameFromInput(game)
 
+	games := make(chan *Game, 1)
 	s.mutex.Lock()
 	s.gameChannels[game.ID] = games
-	s.Directory[game.ID] = out
+	s.Directory[game.ID] = output
 	s.mutex.Unlock()
 
 	go func() {
@@ -143,12 +140,16 @@ func (s *graphQLServer) BoardUpdate(ctx context.Context, bs InputBoardState) (<-
 // or remove players, or change other meta informatin about a game.
 // NB: Game _can_ touch boardstate right now, and it probably shouldn't.
 func (s *graphQLServer) UpdateGame(ctx context.Context, inputGame InputGame) (*Game, error) {
-	updated := gameFromInput(inputGame)
+	_, ok := s.Directory[inputGame.ID]
+	if !ok {
+		return nil, errs.New("Game with ID %s does not exist", inputGame.ID)
+	}
+	output := gameFromInput(inputGame)
 	s.mutex.Lock()
-	s.Directory[inputGame.ID] = updated
-	s.gameChannels[inputGame.ID] <- updated
+	s.Directory[inputGame.ID] = output
+	s.gameChannels[inputGame.ID] <- output
 	s.mutex.Unlock()
-	return updated, nil
+	return output, nil
 }
 
 // createGame is untested currently
@@ -157,7 +158,6 @@ func (s *graphQLServer) CreateGame(ctx context.Context, inputGame InputCreateGam
 		ID:        uuid.New().String(),
 		CreatedAt: time.Now(),
 		PlayerIDs: []*User{},
-		// Players:   []*BoardState{},
 		// NB: Turns get added once the game has "started".
 		// This is after roll for turn and mulligans happen.
 		Turn: &Turn{
@@ -226,7 +226,6 @@ func (s *graphQLServer) CreateGame(ctx context.Context, inputGame InputCreateGam
 			return nil, err
 		}
 		bs.Library = shuff
-		// g.Players = append(g.Players, bs)
 		boardKey := BoardStateKey(g.ID, bs.User.Username)
 		err = s.Set(boardKey, bs)
 		if err != nil {
@@ -237,7 +236,6 @@ func (s *graphQLServer) CreateGame(ctx context.Context, inputGame InputCreateGam
 		// Add player ID to Game for reference
 		g.PlayerIDs = append(g.PlayerIDs, bs.User)
 
-		fmt.Printf("## created game: %+v\n", g)
 		// save the baordChannels to the same key format of <gameID:username>
 		s.mutex.Lock()
 		s.boardChannels[boardKey] = make(chan *BoardState, 1)
@@ -261,6 +259,7 @@ func (s *graphQLServer) CreateGame(ctx context.Context, inputGame InputCreateGam
 
 func (s *graphQLServer) UpdateBoardState(ctx context.Context, bs InputBoardState) (*BoardState, error) {
 	updated := boardStateFromInput(bs)
+	fmt.Printf("UpdateBoardState hit: %+v\n", updated)
 	boardKey := BoardStateKey(bs.GameID, bs.User.Username)
 	err := s.Set(boardKey, updated)
 	if err != nil {
@@ -282,15 +281,18 @@ func pushBoardStateUpdate(ctx context.Context, observers []Observer, input Input
 	}
 }
 
+// gameFromInput transforms an InputGame to a *Game type
 func gameFromInput(game InputGame) *Game {
 	out := &Game{
-		ID: game.ID,
-		Turn: &Turn{
+		ID:        game.ID,
+		PlayerIDs: getPlayerIDs(game.PlayerIDs),
+	}
+	if game.Turn == nil {
+		out.Turn = &Turn{
 			Player: game.Turn.Player,
 			Phase:  game.Turn.Phase,
 			Number: game.Turn.Number,
-		},
-		PlayerIDs: getPlayerIDs(game.PlayerIDs),
+		}
 	}
 
 	if game.CreatedAt != nil {
@@ -529,7 +531,8 @@ func getCards(inputCards []*InputCard) []*Card {
 }
 
 func (s *graphQLServer) createLibraryFromDecklist(ctx context.Context, decklist string) ([]*Card, error) {
-	r := csv.NewReader(strings.NewReader(decklist))
+	trimmed := strings.TrimSpace(decklist)
+	r := csv.NewReader(strings.NewReader(trimmed))
 	cards := []*Card{}
 
 	for {

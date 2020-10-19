@@ -28,12 +28,12 @@ type Subscription {
 }
 
 type Message {
-  id: String!
-  user: String!
-  createdAt: Time!
-  text: String!
-  gameID: String!
-  channel: String
+  ID: String!
+  User: String!
+  CreatedAt: Time!
+  Text: String!
+  GameID: String!
+  Channel: String
 }
 
 type Card {
@@ -60,9 +60,9 @@ type Card {
 }
 
 type User {
-  id: String!
-  username: String!
-  deck: String!
+  ID: String!
+  Username: String!
+  Deck: String!
 }
 
 type Deck {
@@ -73,12 +73,12 @@ type Deck {
 }
 
 type Game {
-  id: String!
-  handle: String
-  created_at: Time!
-  rules: [Rule!]
-  turn: Turn!
-  playerIDs: [User!]
+  ID: String!
+  Handle: String
+  CreatedAt: Time!
+  Rules: [Rule!]
+  Turn: Turn!
+  PlayerIDs: [User!]
 }
 
 type Turn {
@@ -88,14 +88,14 @@ type Turn {
 }
 
 type Rule {
-  name: String!
-  value: String!
+  Name: String!
+  Value: String!
 }
 
 type Emblem {
-  name: String!
-  value: String!
-  player: User!
+  Name: String!
+  Value: String!
+  Player: User!
 }
 
 type Counter {
@@ -143,9 +143,9 @@ input InputCard {
 }
 
 input InputCounter {
-  card: InputCard
-  name: String!
-  value: String!
+  Card: InputCard
+  Name: String!
+  Value: String!
 }
 
 input InputBoardState {
@@ -172,9 +172,9 @@ input InputSignup {
 }
 
 input InputEmblem {
-  name: String!
-  value: String!
-  player: InputUser!
+  Name: String!
+  Value: String!
+  Player: InputUser!
 }
 
 input InputUser {
@@ -204,13 +204,13 @@ input InputTurn {
 }
 
 input InputDeck {
-  name: String
-  commander: [String!]
-  cards: [String!]
+  Name: String
+  Commander: [String!]
+  Cards: [String!]
 }
 
 input InputLabel {
-  name: String!
-  value: String!
-  assigned_by: String!
+  Name: String!
+  Value: String!
+  AssignedBy: String!
 }

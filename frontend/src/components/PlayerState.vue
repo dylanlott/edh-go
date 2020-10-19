@@ -10,19 +10,16 @@ export default {
   name: 'playerstate',
   data () {
     return {
-      gameID: this.$route.params.id,
+      GameID: this.$route.params.id,
     }
-  },
-  created () {
-    console.log('PlayerState#gameID: ', this.$route.params.id)
   },
   methods: {
     // this is a utility function to properly format received playerIDs into input
     getPlayerIDs () {
-      const formatted = this.game.playerIDs.map((u, i) => {
+      const formatted = this.Game.PlayerIDs.map((u, i) => {
         return {
-          Username: u.username,
-          ID: u.id,
+          Username: u.Username,
+          ID: u.ID,
         }
       })
       return formatted
@@ -34,15 +31,15 @@ export default {
         query: gql`
           query($gameID: String!) {
             games(gameID: $gameID) {
-              id 
-              turn {
+              ID 
+              Turn {
                 Player
                 Phase
                 Number
               }
-              playerIDs {
-                username
-                id
+              PlayerIDs {
+                Username
+                ID 
               }
             }
           } 
@@ -51,30 +48,30 @@ export default {
           gameID: this.$route.params.id
         },
         update(data) {
-          this.game = data.games[0]
+          this.Game = data.Games[0]
         },
         subscribeToMore: {
           document: gql`subscription($game: InputGame!) {
             gameUpdated(game: $game) {
-              id 
-              turn {
+              ID 
+              Turn {
                 Player
                 Phase
                 Number
               }
-              playerIDs {
-                username
-                id
+              PlayerIDs {
+                Username
+                ID 
               }
             }
           }`,
           variables: {
-            game: {
+            Game: {
               ID: this.$route.params.id,
               Turn: {
-                Player: this.game.turn.Player || "",
-                Phase: this.game.turn.Phase || "",
-                Number: this.game.turn.Number || 0
+                Player: this.Game.Turn.Player || "",
+                Phase: this.Game.Turn.Phase || "",
+                Number: this.Game.Turn.Number || 0
               },
               PlayerIDs: this.getPlayerIDs()
             }
