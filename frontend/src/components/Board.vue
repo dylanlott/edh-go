@@ -16,8 +16,10 @@
 
     <!-- OPPONENTS -->
     <div class="opponents">
-      <div :key="o.id" v-for="o in opponents" class="shell">
-        {{ o }}
+      <!-- Gets the game, and only shows the Opponent boardstates from the Game PlayerIDs  -->
+      <div :key="g.id" v-for="g in game" class="shell">
+        {{ g }}
+        <div :key="p.id" v-for="p in g.PlayerIDs"></div>
       </div>
     </div>
     <hr />
@@ -252,6 +254,8 @@ export default {
     }
   },
   apollo: {
+    // Loads the user's state from the Route and UserID.
+    // Selfstate is used for interacting with the Player's board.
     selfstate() {
       return {
         query: selfStateQuery,
@@ -261,17 +265,16 @@ export default {
         },
         update(data) {
           var updated = Object.assign(this.self.boardstate, data.boardstates[0])
-          console.log('selfstate#updated object: ', updated)
           this.self.boardstate = updated
         },
         results (data) {
-          console.log("selfstate results: ", data)
           return data
         }
       };
     },
-    opponents() {
-      // query should be the plain game query
+    // Queries for the Game by route ID. This is responsible for loading up opponents, 
+    // turn tracking, and eventually chat and metagame functionality.
+    game() {
       return {
         query: gql`
           query	($gameID: String) {
@@ -293,6 +296,7 @@ export default {
           gameID: this.gameID(),
         },
         update(data) {
+          console.log('game updating: ', data)
           return data
         },
         subscribeToMore: {
@@ -304,15 +308,20 @@ export default {
                 Username
                 ID
               }
+              Turn {
+                Player
+                Phase
+                Number
+              }
             }  
           }`,
           variables: {
             game: {
-              ID: "3",
+              ID: this.$route.params.id,
               Turn: {
-                Player: "shakezula",
-                Turn: 2,
-                Phase: "subscribeToMore variables"
+                Player: this.self.User.Username,
+                Number: 0,
+                Phase: "" 
               }
             }
           },
