@@ -16,11 +16,9 @@
 
     <!-- OPPONENTS -->
     <div class="opponents">
-      <!-- <div :key="b.id" v-for="o in opponents" class="shell"> -->
-        <!-- <pre> {{ b }} </pre> -->
-        <!-- <h1 class="title">{{ b.username }}</h1> -->
-        <!-- <PlayerState v-bind="b"></PlayerState> -->
-      <!-- </div> -->
+      <div :key="o.id" v-for="o in opponents" class="shell">
+        {{ o }}
+      </div>
     </div>
     <hr />
 
@@ -156,7 +154,7 @@ export default {
     console.log('route ID: ', this.$route.params.id)
   },
   methods: {
-    routeGameID() {
+    gameID() {
       return this.$route.params.id
     },
     draw() {
@@ -268,61 +266,58 @@ export default {
         }
       };
     },
-    // boardstates() {
-    //   // TODO: This is not correctly async with the route ID. Maybe I need to 
-    //   // refactor these into my own methods and call them individually instead of
-    //   // relying on Apollo's auto-call-on-load magic. 
-
-    //   // TODO: get gameID and userID here so they're not tied to `self`
-    //   // NB: This is where opponent boardstates come in to the Board.
-    //   return {
-    //     query: boardstates,
-    //     variables: { gameID: this.routeGameID() },
-    //     subscribeToMore: {
-    //       document: boardstatesSubscription,
-    //       // updateQuery: (previousResult, { subscriptionData }) => {
-    //       //   console.log('previousResult: ', previousResult)
-    //       //   console.log('subscriptionData: ', subscriptionData)
-    //       // },
-    //       variables: {
-    //         boardstate: {
-    //           User: {
-    //             Username: this.$currentUser(),
-    //           },
-    //           Life: this.self.boardstate.Life ? this.self.boardstate.Life : 40,
-    //           GameID: this.self.boardstate.GameID,
-    //           Commander: this.self.boardstate.Commander ? [...this.self.boardstate.Commander] : [],
-    //           Library: this.self.boardstate.Library ? [...this.self.boardstate.Library] : [],
-    //           Graveyard: this.self.boardstate.Graveyard ? [...this.self.boardstate.Graveyard] : [],
-    //           Exiled: this.self.boardstate.Exiled ? [...this.self.boardstate.Exiled] : [],
-    //           Field: this.self.boardstate.Field ? [...this.self.boardstate.Field] : [],
-    //           Hand: this.self.boardstate.Hand ? [...this.self.boardstate.Hand] : [],
-    //           Revealed: this.self.boardstate.Revealed ? [...this.self.boardstate.Revealed] : [],
-    //           Controlled: this.self.boardstate.Controlled ? [...this.self.boardstate.Controlled] : [],
-    //         },
-    //       },
-    //     },
-    //     results(data) {
-    //       console.log('boardstates#data: ', data)
-    //       return data
-    //     },
-    //     error(err) {
-    //       console.log('HIT BOARDSTATES ERROR:', err)
-    //       if (err == "Error: GraphQL error: game does not exist")  {
-    //         // push to error page 
-    //         router.push({ name: 'GameDoesNotExist'})
-    //       }
-    //       console.log('error getting boardstates: ', err);
-    //       const notif = this.$buefy.notification.open({
-    //         duration: 5000,
-    //         message: `Error occurred when fetching opponents boardstates. Check your game ID and try again.`,
-    //         position: 'is-top-right',
-    //         type: 'is-danger',
-    //         hasIcon: true,
-    //       });
-    //     },
-    //   };
-    // },
+    opponents() {
+      // query should be the plain game query
+      return {
+        query: gql`
+          query	($gameID: String) {
+            games(gameID: $gameID) {
+              ID
+              PlayerIDs {
+                Username
+                ID
+              }
+              Turn {
+                Player
+                Phase
+                Number
+              }
+            }
+          }
+        `,
+        variables: {
+          gameID: this.gameID(),
+        },
+        update(data) {
+          return data
+        },
+        subscribeToMore: {
+          // this should be the game updated subscription
+          document: gql`subscription($game: InputGame!) {
+            gameUpdated(game: $game) {
+              ID
+              PlayerIDs {
+                Username
+                ID
+              }
+            }  
+          }`,
+          variables: {
+            game: {
+              ID: "3",
+              Turn: {
+                Player: "shakezula",
+                Turn: 2,
+                Phase: "subscribeToMore variables"
+              }
+            }
+          },
+          updateQuery: (prevResult, {subData}) => {
+            return subData
+          }
+        } 
+      } 
+    }
   },
   components: {
     draggable,
