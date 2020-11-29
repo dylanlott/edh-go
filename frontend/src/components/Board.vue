@@ -16,8 +16,9 @@
 
     <!-- OPPONENTS -->
     <div class="opponents">
-      <code>{{ opponents }}</code>
-      <Opponents :PlayerIDs="self.opponentIDs ? self.opponentIDs : []"></Opponents>
+      <div :key="o.id" v-for="o in opponents" class="shell">
+        {{ o }}
+      </div>
     </div>
     <hr />
 
@@ -159,7 +160,7 @@ export default {
   created () {
   },
   methods: {
-    routeGameID() {
+    gameID() {
       return this.$route.params.id
     },
     draw() {
@@ -270,26 +271,56 @@ export default {
       };
     },
     opponents() {
-      console.log('opponents method hit')
+      // query should be the plain game query
       return {
-        query: gameQuery,
+        query: gql`
+          query	($gameID: String) {
+            games(gameID: $gameID) {
+              ID
+              PlayerIDs {
+                Username
+                ID
+              }
+              Turn {
+                Player
+                Phase
+                Number
+              }
+            }
+          }
+        `,
         variables: {
-          game: {
-            ID: this.$route.params.id,
-            Turn: {
-              Phase: "phase",
-              Number: 1,
-              Player: "shakezula",
+          gameID: this.gameID(),
+        },
+        update(data) {
+          return data
+        },
+        subscribeToMore: {
+          // this should be the game updated subscription
+          document: gql`subscription($game: InputGame!) {
+            gameUpdated(game: $game) {
+              ID
+              PlayerIDs {
+                Username
+                ID
+              }
+            }  
+          }`,
+          variables: {
+            game: {
+              ID: "3",
+              Turn: {
+                Player: "shakezula",
+                Turn: 2,
+                Phase: "subscribeToMore variables"
+              }
             }
           },
-        },
-        update (data) {
-          console.log("opponents#data success: ", data)
-        },
-        results (data) {
-          console.log('opponents#results: ', data)
-        }
-      }
+          updateQuery: (prevResult, {subData}) => {
+            return subData
+          }
+        } 
+      } 
     }
   },
   components: {
