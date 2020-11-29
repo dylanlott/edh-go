@@ -46,7 +46,23 @@ const Game = {
             PlayerIDs: []
         }
     },
-    mutations: {},
+    mutations: {
+        updateTurnRequest (state) {
+
+        },
+        updateTurnFailed (state, err) {
+
+        },
+        updateTurnSuccess (state, turn) {
+            // state.Game.Turn 
+        },
+        opponentsRequest (state) {
+
+        },
+        opponentsSuccess (state, opps) {
+
+        },
+    },
     actions: {}
 }
 
