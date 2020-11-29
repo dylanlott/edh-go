@@ -16,11 +16,8 @@
 
     <!-- OPPONENTS -->
     <div class="opponents">
-      <!-- <div :key="b.id" v-for="o in opponents" class="shell"> -->
-        <!-- <pre> {{ b }} </pre> -->
-        <!-- <h1 class="title">{{ b.username }}</h1> -->
-        <!-- <PlayerState v-bind="b"></PlayerState> -->
-      <!-- </div> -->
+      <code>{{ opponents }}</code>
+      <Opponents :PlayerIDs="self.opponentIDs ? self.opponentIDs : []"></Opponents>
     </div>
     <hr />
 
@@ -123,8 +120,10 @@ import draggable from 'vuedraggable';
 import Card from '@/components/Card';
 import PlayerState from '@/components/PlayerState.vue';
 import SelfState from '@/components/SelfState.vue';
+import Opponents from '@/components/Opponents.vue'
 // import TurnTracker from '@/components/TurnTracker.vue';
 import { 
+  gameQuery,
   selfStateQuery, 
   updateBoardStateQuery,
   boardstates,
@@ -143,6 +142,11 @@ export default {
         User: {
           Username: this.$currentUser(),
         },
+        Turn: {
+          Phase: "",
+          Number: 0,
+          Player: "",
+        },
         boardstate: {
           GameID: this.$route.params.id,
           User: {
@@ -153,7 +157,6 @@ export default {
     };
   },
   created () {
-    console.log('route ID: ', this.$route.params.id)
   },
   methods: {
     routeGameID() {
@@ -213,7 +216,6 @@ export default {
         Username: this.$currentUser()
       }
       this.self.boardstate.GameID = this.$route.params.id
-      console.log('mutateBoardState#mutating with boardstate: ', this.self.boardstate)
       this.$apollo.mutate({
         mutation: updateBoardStateQuery,
         variables: {
@@ -221,7 +223,6 @@ export default {
         },
       })
       .then((res) => {
-        console.log('mutateBoardState#setting boardstate: ', res.data.updateBoardState)
         this.self.boardstate = res.data.updateBoardState
         return res 
       })
@@ -268,67 +269,35 @@ export default {
         }
       };
     },
-    // boardstates() {
-    //   // TODO: This is not correctly async with the route ID. Maybe I need to 
-    //   // refactor these into my own methods and call them individually instead of
-    //   // relying on Apollo's auto-call-on-load magic. 
-
-    //   // TODO: get gameID and userID here so they're not tied to `self`
-    //   // NB: This is where opponent boardstates come in to the Board.
-    //   return {
-    //     query: boardstates,
-    //     variables: { gameID: this.routeGameID() },
-    //     subscribeToMore: {
-    //       document: boardstatesSubscription,
-    //       // updateQuery: (previousResult, { subscriptionData }) => {
-    //       //   console.log('previousResult: ', previousResult)
-    //       //   console.log('subscriptionData: ', subscriptionData)
-    //       // },
-    //       variables: {
-    //         boardstate: {
-    //           User: {
-    //             Username: this.$currentUser(),
-    //           },
-    //           Life: this.self.boardstate.Life ? this.self.boardstate.Life : 40,
-    //           GameID: this.self.boardstate.GameID,
-    //           Commander: this.self.boardstate.Commander ? [...this.self.boardstate.Commander] : [],
-    //           Library: this.self.boardstate.Library ? [...this.self.boardstate.Library] : [],
-    //           Graveyard: this.self.boardstate.Graveyard ? [...this.self.boardstate.Graveyard] : [],
-    //           Exiled: this.self.boardstate.Exiled ? [...this.self.boardstate.Exiled] : [],
-    //           Field: this.self.boardstate.Field ? [...this.self.boardstate.Field] : [],
-    //           Hand: this.self.boardstate.Hand ? [...this.self.boardstate.Hand] : [],
-    //           Revealed: this.self.boardstate.Revealed ? [...this.self.boardstate.Revealed] : [],
-    //           Controlled: this.self.boardstate.Controlled ? [...this.self.boardstate.Controlled] : [],
-    //         },
-    //       },
-    //     },
-    //     results(data) {
-    //       console.log('boardstates#data: ', data)
-    //       return data
-    //     },
-    //     error(err) {
-    //       console.log('HIT BOARDSTATES ERROR:', err)
-    //       if (err == "Error: GraphQL error: game does not exist")  {
-    //         // push to error page 
-    //         router.push({ name: 'GameDoesNotExist'})
-    //       }
-    //       console.log('error getting boardstates: ', err);
-    //       const notif = this.$buefy.notification.open({
-    //         duration: 5000,
-    //         message: `Error occurred when fetching opponents boardstates. Check your game ID and try again.`,
-    //         position: 'is-top-right',
-    //         type: 'is-danger',
-    //         hasIcon: true,
-    //       });
-    //     },
-    //   };
-    // },
+    opponents() {
+      console.log('opponents method hit')
+      return {
+        query: gameQuery,
+        variables: {
+          game: {
+            ID: this.$route.params.id,
+            Turn: {
+              Phase: "phase",
+              Number: 1,
+              Player: "shakezula",
+            }
+          },
+        },
+        update (data) {
+          console.log("opponents#data success: ", data)
+        },
+        results (data) {
+          console.log('opponents#results: ', data)
+        }
+      }
+    }
   },
   components: {
     draggable,
     Card,
     PlayerState,
     SelfState,
+    Opponents,
   },
 };
 </script>

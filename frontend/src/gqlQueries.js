@@ -609,11 +609,6 @@ export const gameQuery = gql`
 subscription($game: InputGame!) {
   gameUpdated(game: $game) {
     ID
-    Turn {
-      Player
-      Phase
-      Number
-    }
     PlayerIDs {
       Username
       ID

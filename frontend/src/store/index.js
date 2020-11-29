@@ -1,30 +1,36 @@
 import Vuex from 'vuex'
 import Vue from 'vue'
+import gql from 'graphql-tag';
+
 
 Vue.use(Vuex)
 
 const BoardStates = {
     state: {
-        Boardstate: {
-            User: {
-                Username: ""
-            },
-            Life: 0,
-            Commander: [],
-            Library: [],
-            Graveyard: [],
-            Exiled: [],
-            Field: [],
-            Hand: [],
-            Revealed: [],
-            Controlled: []
-        }
+        boardstate: {},
+        loading: false,
+        error: undefined
     },
     mutations: {
-
+        request (state, payload) {
+            state.loading = true
+            state.error = undefined
+        },
+        error (state, payload) {
+            state.loading = false
+            state.error = payload
+        },
+        update (state, payload) {
+            state.loading = false
+            state.boardstate = payload
+        }
     },
     actions: {
-
+        mutateBoardState ({ commit }, payload) {
+            console.log('vuex mutate boardstate hit: ', payload)
+            console.log('apollo? ', this.$apollo)
+            commit('update', payload)
+        },
     }
 }
 

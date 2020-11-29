@@ -147,11 +147,14 @@ func (s *graphQLServer) BoardUpdate(ctx context.Context, bs InputBoardState) (<-
 // or remove players, or change other meta informatin about a game.
 // NB: Game _can_ touch boardstate right now, and it probably shouldn't.
 func (s *graphQLServer) UpdateGame(ctx context.Context, inputGame InputGame) (*Game, error) {
-	_, ok := s.Directory[inputGame.ID]
+	fmt.Printf("raw inputGame: %+v\n", inputGame)
+	g, ok := s.Directory[inputGame.ID]
 	if !ok {
 		return nil, errs.New("Game with ID %s does not exist", inputGame.ID)
 	}
+	fmt.Printf("found game to update: %+v\n", g)
 	output := gameFromInput(inputGame)
+	fmt.Printf("updating game with %+v\n", output)
 	s.mutex.Lock()
 	s.Directory[inputGame.ID] = output
 	s.gameChannels[inputGame.ID] <- output
@@ -266,7 +269,6 @@ func (s *graphQLServer) CreateGame(ctx context.Context, inputGame InputCreateGam
 
 func (s *graphQLServer) UpdateBoardState(ctx context.Context, bs InputBoardState) (*BoardState, error) {
 	updated := boardStateFromInput(bs)
-	fmt.Printf("UpdateBoardState hit: %+v\n", updated)
 	boardKey := BoardStateKey(bs.GameID, bs.User.Username)
 	err := s.Set(boardKey, updated)
 	if err != nil {
@@ -274,7 +276,6 @@ func (s *graphQLServer) UpdateBoardState(ctx context.Context, bs InputBoardState
 	}
 
 	s.mutex.Lock()
-	log.Printf("pushing updated boardstate across channels: %+v", updated)
 	s.boardChannels[bs.User.Username] <- updated
 	s.mutex.Unlock()
 	pushBoardStateUpdate(ctx, s.observers, bs)
@@ -303,6 +304,7 @@ func gameFromInput(game InputGame) *Game {
 	}
 
 	if game.CreatedAt != nil {
+		fmt.Printf("gameFromInput#createdAt: %+v\n", *game.CreatedAt)
 		out.CreatedAt = *game.CreatedAt
 	}
 
