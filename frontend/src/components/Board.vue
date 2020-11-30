@@ -17,7 +17,14 @@
     <!-- OPPONENTS -->
     <div class="opponents">
       <!-- Gets the game, and only shows the Opponent boardstates from the Game PlayerIDs  -->
-      <code>{{ game }}</code>
+      <div :key="player.ID" v-for="player in game.PlayerIDs">
+        <div v-if="player.Username !== self.User.Username">
+          <h1 class="title">{{ player.Username }}</h1>
+        </div>
+        <div v-if="game.PlayerIDs.length === 1">
+          <h1>No other players have joined this game.</h1>
+        </div>
+      </div>
     </div>
     <hr />
 
