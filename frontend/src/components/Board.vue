@@ -17,10 +17,7 @@
     <!-- OPPONENTS -->
     <div class="opponents">
       <!-- Gets the game, and only shows the Opponent boardstates from the Game PlayerIDs  -->
-      <div :key="g.id" v-for="g in game" class="shell">
-        {{ g }}
-        <div :key="p.id" v-for="p in g.PlayerIDs"></div>
-      </div>
+      <code>{{ game }}</code>
     </div>
     <hr />
 
@@ -213,7 +210,6 @@ export default {
         Username: this.$currentUser()
       }
       this.self.boardstate.GameID = this.$route.params.id
-      console.log('mutateBoardState#mutating with boardstate: ', this.self.boardstate)
       this.$apollo.mutate({
         mutation: updateBoardStateQuery,
         variables: {
@@ -230,7 +226,11 @@ export default {
         return err
       })
     },
+    mutateGameState() {
+      // console.log
+    },
     handleActivity(val) {
+      return
       // console.log('logging activity: ', val)
     },
     sleepFor (sleepDuration) {
@@ -292,8 +292,12 @@ export default {
           gameID: this.gameID(),
         },
         update(data) {
-          console.log('game updating: ', data)
-          return data
+          console.log(data.games)
+          if (data.games.length === 0) {
+            console.error(`game with ID ${this.gameID()}`)
+            return []
+          }
+          return data.games[0]
         },
         subscribeToMore: {
           // this should be the game updated subscription
