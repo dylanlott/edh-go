@@ -180,3 +180,11 @@ There's no way this is going to scale without a better way of querying the board
 
 ### 21 Dec 2020 
 When I query for a game, there's no associated boardstate. Need to make sure that boardstates are accessible by GameID as well.
+
+Figured out that the `subscribeToMore` method in the `game()` apollo query in Board.vue was clobbering the PlayerIDs state of the subsequent `Game` query requests, meaning that all of those queries had `[]` set as their PlayerIDs, causing a whole bunch of issues. 
+
+I fixed that, but now I need to make it so that the `game()` query in Board.vue properly fetches the game's PlayerIDs array and queries based on that. Right now, we have a chicken and the egg problem where the Board.vue tries to subscribe to the Game object but can't because the PlayerIDs haven't loaded yet. Maybe turning this into a method that we call in `created()` lifecycle hook would fix the problem?
+
+Ultimately, I need to introduce a state management solution to the app via VueX to fix these issues. This will be a pretty large refactor but I suspect would lend itself heavily to the overall quality and reliability of the app.
+
+`add-vuex` branch has some work that does exactly this on it.
