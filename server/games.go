@@ -41,72 +41,106 @@ func (s *graphQLServer) Games(ctx context.Context, gameID *string) ([]*Game, err
 		return nil, errs.New("game [%+v] does not exist", gameID)
 	}
 
-	log.Printf("returning game %+v: %+v", gameID, game)
-
 	return []*Game{game}, nil
 }
 
 // Boardstates queries Redis for different boardstates per player or game
-func (s *graphQLServer) Boardstates(ctx context.Context, gameID string, userID *string) ([]*BoardState, error) {
+func (s *graphQLServer) Boardstates(ctx context.Context, gameID string, username *string) ([]*BoardState, error) {
 	game, ok := s.Directory[gameID]
 	if game == nil {
 		return nil, errs.New("game does not exist")
 	}
-
 	if !ok {
 		return nil, errs.New("game does not exist")
 	}
 
-	// TODO: if not in directory, check storage
+	// Problem: There are multiple users at this point with the same UserIDs
+	// log.Printf("there should not be multiple game.PlayerIDs: %+v\n", game.PlayerIDs)
+	// This prints multiples, so where else are we setting boardstates?
 
-	if userID == nil {
-		var boardstates []*BoardState
+	// if username is not provided, send all
+	if username == nil {
+		boardstates := []*BoardState{}
 		for _, p := range game.PlayerIDs {
-			var board BoardState
+			board := &BoardState{}
 			boardKey := BoardStateKey(game.ID, p.Username)
-			err := s.Get(boardKey, &board)
-			if err != nil {
-				log.Printf("error fetching boardstate from redis: %s", err)
-				continue
-			}
-			fmt.Printf("got boardstate from redis: %+v\n", board)
-			boardstates = append(boardstates, &board)
-		}
-
-		return boardstates, nil
-	}
-
-	// userID not nil, so send only that boardstate
-	var boardstates []*BoardState
-
-	for _, player := range game.PlayerIDs {
-		fmt.Printf("#Boardstates#player: %+v\n", player)
-		if player.Username == *userID {
-			boardKey := BoardStateKey(game.ID, player.Username)
-			var board BoardState
 			err := s.Get(boardKey, &board)
 			if err != nil {
 				log.Printf("error fetching user boardstate from redis: %s", err)
 			}
-			boardstates = append(boardstates, &board)
-			return boardstates, nil
+			boardstates = append(boardstates, board)
 		}
+		return boardstates, nil
+	} else {
+		boardstates := []*BoardState{}
+		for _, p := range game.PlayerIDs {
+			if p.Username == *username {
+				board := &BoardState{}
+				boardKey := BoardStateKey(game.ID, p.Username)
+				err := s.Get(boardKey, &board)
+				if err != nil {
+					log.Printf("error fetching user boardstate from redis: %s", err)
+				}
+
+				boardstates = append(boardstates, board)
+			}
+		}
+
+		if len(boardstates) == 0 {
+			return []*BoardState{}, errs.New("no boardstate for user %s found", *username)
+		}
+
+		return boardstates, nil
+	}
+}
+
+func getUsers(players []*InputUser) []*User {
+	log.Printf("getUsers input: %+v\n", players)
+	users := []*User{}
+	for _, p := range players {
+		u := &User{
+			ID:       *p.ID,
+			Username: p.Username,
+		}
+		users = append(users, u)
+		log.Printf("users after append: %+v\n", users)
 	}
 
-	return nil, errs.New("no user with ID of %s found", *userID)
+	log.Printf("getUsers returning: %+v\n", users)
+	return users
+}
+
+func getTurn(turn *InputTurn) *Turn {
+	return &Turn{
+		Number: turn.Number,
+		Phase:  turn.Phase,
+		Player: turn.Player,
+	}
 }
 
 func (s *graphQLServer) GameUpdated(ctx context.Context, game InputGame) (<-chan *Game, error) {
-	_, ok := s.Directory[game.ID]
+	found, ok := s.Directory[game.ID]
 	if !ok {
 		return nil, errs.New("game does not exist with ID of %s", game.ID)
 	}
 
-	output := gameFromInput(game)
+	log.Printf("#### game.PlayerIDs: %+v\n", game.PlayerIDs)
+
+	output := &Game{
+		ID:        found.ID,
+		Handle:    game.Handle,
+		CreatedAt: found.CreatedAt,
+		PlayerIDs: getUsers(game.PlayerIDs),
+		Turn:      getTurn(game.Turn),
+		Rules:     found.Rules,
+	}
+
+	log.Printf("#GameUpdated#output: %+v\n", output)
 
 	games := make(chan *Game, 1)
 	s.mutex.Lock()
 	s.gameChannels[game.ID] = games
+	// TODO: turn output into update of new and old game
 	s.Directory[game.ID] = output
 	s.mutex.Unlock()
 
@@ -153,7 +187,7 @@ func (s *graphQLServer) BoardUpdate(ctx context.Context, bs InputBoardState) (<-
 // NB: We eventually need a stronger support for combining two structs of different types
 // for GraphQL. Something like https://play.golang.org/p/UBCq0waIEe should eventually be used.
 func (s *graphQLServer) UpdateGame(ctx context.Context, new InputGame) (*Game, error) {
-	log.Printf("#UpdateGame#new(inputGame): %+v\n", new)
+	log.Printf("UpdateGame called with %+v\n", new)
 	// check existence of game, fail if not found
 	old, ok := s.Directory[new.ID]
 	if !ok {
@@ -210,13 +244,15 @@ func (s *graphQLServer) CreateGame(ctx context.Context, inputGame InputCreateGam
 
 	for _, player := range inputGame.Players {
 		// TODO: Deck validation should happen here.
+		user := &User{
+			ID:       uuid.New().String(),
+			Username: player.User.Username,
+		}
+		g.PlayerIDs = append(g.PlayerIDs, user)
 
 		// Init default boardstate minus library and commander
 		bs := &BoardState{
-			User: &User{
-				ID:       uuid.New().String(),
-				Username: player.User.Username,
-			},
+			User:       user,
 			Life:       player.Life,
 			GameID:     g.ID,
 			Hand:       getCards(player.Hand),
@@ -263,9 +299,6 @@ func (s *graphQLServer) CreateGame(ctx context.Context, inputGame InputCreateGam
 			return nil, err
 		}
 
-		// Add player ID to Game for reference
-		g.PlayerIDs = append(g.PlayerIDs, bs.User)
-
 		// save the baordChannels to the same key format of <gameID:username>
 		s.mutex.Lock()
 		s.boardChannels[boardKey] = make(chan *BoardState, 1)
@@ -311,6 +344,7 @@ func pushBoardStateUpdate(ctx context.Context, observers []Observer, input Input
 
 // gameFromInput transforms an InputGame to a *Game type
 func gameFromInput(game InputGame) *Game {
+	log.Printf("#gameFromInput#game: %+v\n", game)
 	out := &Game{
 		ID:        game.ID,
 		PlayerIDs: getPlayerIDs(game.PlayerIDs),
@@ -336,6 +370,7 @@ func gameFromInput(game InputGame) *Game {
 }
 
 func getPlayerIDs(inputUsers []*InputUser) []*User {
+	log.Printf("#getPlayerIDs#inputUsers: %+v\n", inputUsers)
 	var u []*User
 	for _, i := range inputUsers {
 		u = append(u, &User{
@@ -344,6 +379,7 @@ func getPlayerIDs(inputUsers []*InputUser) []*User {
 		})
 	}
 
+	log.Printf("#getPlayerIDs#u<returning>: %+v\n", u)
 	return u
 }
 
