@@ -344,7 +344,6 @@ func pushBoardStateUpdate(ctx context.Context, observers []Observer, input Input
 
 // gameFromInput transforms an InputGame to a *Game type
 func gameFromInput(game InputGame) *Game {
-	log.Printf("#gameFromInput#game: %+v\n", game)
 	out := &Game{
 		ID:        game.ID,
 		PlayerIDs: getPlayerIDs(game.PlayerIDs),
@@ -370,7 +369,6 @@ func gameFromInput(game InputGame) *Game {
 }
 
 func getPlayerIDs(inputUsers []*InputUser) []*User {
-	log.Printf("#getPlayerIDs#inputUsers: %+v\n", inputUsers)
 	var u []*User
 	for _, i := range inputUsers {
 		u = append(u, &User{
@@ -379,7 +377,6 @@ func getPlayerIDs(inputUsers []*InputUser) []*User {
 		})
 	}
 
-	log.Printf("#getPlayerIDs#u<returning>: %+v\n", u)
 	return u
 }
 
