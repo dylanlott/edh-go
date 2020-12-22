@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/imdario/mergo"
 	"github.com/zeebo/errs"
 )
 
@@ -39,6 +40,8 @@ func (s *graphQLServer) Games(ctx context.Context, gameID *string) ([]*Game, err
 	if !ok {
 		return nil, errs.New("game [%+v] does not exist", gameID)
 	}
+
+	log.Printf("returning game %+v: %+v", gameID, game)
 
 	return []*Game{game}, nil
 }
@@ -77,6 +80,7 @@ func (s *graphQLServer) Boardstates(ctx context.Context, gameID string, userID *
 	var boardstates []*BoardState
 
 	for _, player := range game.PlayerIDs {
+		fmt.Printf("#Boardstates#player: %+v\n", player)
 		if player.Username == *userID {
 			boardKey := BoardStateKey(game.ID, player.Username)
 			var board BoardState
@@ -146,17 +150,36 @@ func (s *graphQLServer) BoardUpdate(ctx context.Context, bs InputBoardState) (<-
 // UpdateGame is what's used to change the name of the game, format, insert
 // or remove players, or change other meta informatin about a game.
 // NB: Game _can_ touch boardstate right now, and it probably shouldn't.
-func (s *graphQLServer) UpdateGame(ctx context.Context, inputGame InputGame) (*Game, error) {
-	_, ok := s.Directory[inputGame.ID]
+// NB: We eventually need a stronger support for combining two structs of different types
+// for GraphQL. Something like https://play.golang.org/p/UBCq0waIEe should eventually be used.
+func (s *graphQLServer) UpdateGame(ctx context.Context, new InputGame) (*Game, error) {
+	log.Printf("#UpdateGame#new(inputGame): %+v\n", new)
+	// check existence of game, fail if not found
+	old, ok := s.Directory[new.ID]
 	if !ok {
-		return nil, errs.New("Game with ID %s does not exist", inputGame.ID)
+		return nil, errs.New("Game with ID %s does not exist", new.ID)
 	}
-	output := gameFromInput(inputGame)
+
+	// update old game with new game data
+	if err := mergo.Merge(&new, old); err != nil {
+		return nil, errs.New("Failed to merge old game with new game: %s", err)
+	}
+	fmt.Printf("new game: %+v\n", &new)
+
+	// cast new game into Game for GraphQL
+	game := &Game{}
+	if err := mergo.Merge(game, new); err != nil {
+		return nil, errs.New("Failed to merge new game: %s", err)
+	}
+
+	fmt.Printf("fully updated game: %+v\n", game)
+
 	s.mutex.Lock()
-	s.Directory[inputGame.ID] = output
-	s.gameChannels[inputGame.ID] <- output
+	s.Directory[new.ID] = game
+	s.gameChannels[new.ID] <- game
 	s.mutex.Unlock()
-	return output, nil
+
+	return game, nil
 }
 
 // createGame is untested currently

@@ -168,5 +168,15 @@ Turns out, there were several bugs. Game objects were being overwritten by the U
 There's no way this is going to scale without a better way of querying the boardstate. There should probably be a Board and a Game store in VueX, with mutations and actions for both, and they should each have a connection to User models.
 
 *Tasks*
-- [ ] Add initial setup for state management
-- [ ] Factor out the rest of the gql queries
+> Completed in November 2020
+- [x] Add initial setup for state management
+- [x] Factor out the rest of the gql queries
+
+### 12 Dec 2020
+- Will eventually need a stronger support for combining two structs of different types for GraphQL. Something like https://play.golang.org/p/UBCq0waIEe should eventually be used.
+- Opponent boardstate loading was broken at some point, so I need to fix that.
+- Game updates should be separated more cleanly from Board updates
+- Game updates should be made more granular.
+
+### 21 Dec 2020 
+When I query for a game, there's no associated boardstate. Need to make sure that boardstates are accessible by GameID as well.

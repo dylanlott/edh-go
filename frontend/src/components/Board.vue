@@ -142,6 +142,14 @@ export default {
     return {
       locked: false, // `locked` is set to true once the players and turn order are decided.
       mulligan: true, // `mulligan` is set to true until no one is mulling anymore.
+      game: {
+        PlayerIDs: [],
+        Turn: {
+          Player: this.$currentUser(),
+          Phase: "setup",
+          Number: 0
+        },
+      },
       self: {
         GameID: this.$route.params.id,
         User: {
@@ -267,10 +275,12 @@ export default {
           userID: this.$currentUser(),
         },
         update(data) {
+          console.log('selfstate#update#data: ', data)
           var updated = Object.assign(this.self.boardstate, data.boardstates[0])
           this.self.boardstate = updated
         },
         results (data) {
+          console.log('selfstate#results#data: ', data)
           return data
         }
       };
@@ -299,7 +309,8 @@ export default {
           gameID: this.gameID(),
         },
         update(data) {
-          console.log(data.games)
+          console.log('game query: ', data.games)
+          // this.$store.dispatch('')
           if (data.games.length === 0) {
             console.error(`game with ID ${this.gameID()}`)
             return []
