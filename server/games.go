@@ -322,7 +322,6 @@ func (s *graphQLServer) CreateGame(ctx context.Context, inputGame InputCreateGam
 
 func (s *graphQLServer) UpdateBoardState(ctx context.Context, bs InputBoardState) (*BoardState, error) {
 	updated := boardStateFromInput(bs)
-	fmt.Printf("UpdateBoardState hit: %+v\n", updated)
 	boardKey := BoardStateKey(bs.GameID, bs.User.Username)
 	err := s.Set(boardKey, updated)
 	if err != nil {
@@ -330,7 +329,6 @@ func (s *graphQLServer) UpdateBoardState(ctx context.Context, bs InputBoardState
 	}
 
 	s.mutex.Lock()
-	log.Printf("pushing updated boardstate across channels: %+v", updated)
 	s.boardChannels[bs.User.Username] <- updated
 	s.mutex.Unlock()
 	pushBoardStateUpdate(ctx, s.observers, bs)
@@ -346,7 +344,6 @@ func pushBoardStateUpdate(ctx context.Context, observers []Observer, input Input
 
 // gameFromInput transforms an InputGame to a *Game type
 func gameFromInput(game InputGame) *Game {
-	log.Printf("#gameFromInput#game: %+v\n", game)
 	out := &Game{
 		ID:        game.ID,
 		PlayerIDs: getPlayerIDs(game.PlayerIDs),
@@ -371,7 +368,6 @@ func gameFromInput(game InputGame) *Game {
 }
 
 func getPlayerIDs(inputUsers []*InputUser) []*User {
-	log.Printf("#getPlayerIDs#inputUsers: %+v\n", inputUsers)
 	var u []*User
 	for _, i := range inputUsers {
 		u = append(u, &User{
@@ -380,7 +376,6 @@ func getPlayerIDs(inputUsers []*InputUser) []*User {
 		})
 	}
 
-	log.Printf("#getPlayerIDs#u<returning>: %+v\n", u)
 	return u
 }
 
