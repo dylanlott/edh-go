@@ -21,9 +21,19 @@
         <div v-if="player.Username !== self.User.Username">
           <h1 class="title">{{ player.Username }}</h1>
         </div>
-        <div v-if="game.PlayerIDs.length === 1">
-          <h1>No other players have joined this game.</h1>
+
+        <!-- {{ game.PlayerIDs }} -->
+        <div :key="p.ID" v-for="p in game.PlayerIDs">
+          <div v-if="p.Username !== self.User.Username">
+            {{ p }}
+          </div>
+          <div v-else>
+            You are {{ p }}
+          </div>
         </div>
+        <!-- <div v-if="game.PlayerIDs.length === 1">
+          <h1>No other players have joined this game.</h1>
+        </div> -->
       </div>
     </div>
     <hr />
@@ -291,6 +301,13 @@ export default {
           return data.boardstates[0] 
         }
       };
+    },
+    // TODO: Need to make this pull PlayerIDs correctly and then return their boardstates.
+    // TODO: This needs to be reactive to new Users joining the game via subscribeToMore method.
+    opponents () {
+      return {
+        query: gql``,
+      }
     },
     // Queries for the Game by route ID. This is responsible for loading up opponents, 
     // turn tracking, and eventually chat and metagame functionality.
