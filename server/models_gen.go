@@ -64,8 +64,8 @@ type Emblem struct {
 
 type Game struct {
 	ID        string    `json:"ID"`
-	Handle    *string   `json:"Handle"`
 	CreatedAt time.Time `json:"CreatedAt"`
+	Handle    *string   `json:"Handle"`
 	Rules     []*Rule   `json:"Rules"`
 	Turn      *Turn     `json:"Turn"`
 	PlayerIDs []*User   `json:"PlayerIDs"`

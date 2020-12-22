@@ -8,6 +8,7 @@ import GameDoesNotExist from '@/components/GameDoesNotExist.vue';
 import Board from '@/components/Board.vue';
 import Card from '@/components/Card.vue';
 import Score from '@/components/Score.vue';
+import JoinGame from '@/components/JoinGame.vue';
 
 Vue.use(Router);
 
@@ -49,5 +50,10 @@ export default new Router({
       name: 'card',
       component: Card,
     },
+    {
+      path: '/join/:id',
+      name: 'join',
+      component: JoinGame,
+    }
   ],
 });

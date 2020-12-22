@@ -1009,10 +1009,10 @@ type Deck {
 
 type Game {
   ID: String!
-  Handle: String
   CreatedAt: Time!
+  Handle: String
   Rules: [Rule!]
-  Turn: Turn!
+  Turn: Turn
   PlayerIDs: [User!]
 }
 
@@ -1126,7 +1126,7 @@ input InputCreateGame {
 
 input InputGame {
   ID: String!
-  Turn: InputTurn!
+  Turn: InputTurn
   Created_At: Time
   Handle: String
   PlayerIDs: [InputUser!]
@@ -2937,37 +2937,6 @@ func (ec *executionContext) _Game_ID(ctx context.Context, field graphql.Collecte
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Game_Handle(ctx context.Context, field graphql.CollectedField, obj *Game) (ret graphql.Marshaler) {
-	ctx = ec.Tracer.StartFieldExecution(ctx, field)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-		ec.Tracer.EndFieldExecution(ctx)
-	}()
-	rctx := &graphql.ResolverContext{
-		Object:   "Game",
-		Field:    field,
-		Args:     nil,
-		IsMethod: false,
-	}
-	ctx = graphql.WithResolverContext(ctx, rctx)
-	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
-	resTmp := ec._fieldMiddleware(ctx, obj, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Handle, nil
-	})
-
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*string)
-	rctx.Result = res
-	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
-}
-
 func (ec *executionContext) _Game_CreatedAt(ctx context.Context, field graphql.CollectedField, obj *Game) (ret graphql.Marshaler) {
 	ctx = ec.Tracer.StartFieldExecution(ctx, field)
 	defer func() {
@@ -3000,6 +2969,37 @@ func (ec *executionContext) _Game_CreatedAt(ctx context.Context, field graphql.C
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
 	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Game_Handle(ctx context.Context, field graphql.CollectedField, obj *Game) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "Game",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp := ec._fieldMiddleware(ctx, obj, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Handle, nil
+	})
+
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Game_Rules(ctx context.Context, field graphql.CollectedField, obj *Game) (ret graphql.Marshaler) {
@@ -3056,15 +3056,12 @@ func (ec *executionContext) _Game_Turn(ctx context.Context, field graphql.Collec
 	})
 
 	if resTmp == nil {
-		if !ec.HasError(rctx) {
-			ec.Errorf(ctx, "must not be null")
-		}
 		return graphql.Null
 	}
 	res := resTmp.(*Turn)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalNTurn2ᚖgithubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐTurn(ctx, field.Selections, res)
+	return ec.marshalOTurn2ᚖgithubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐTurn(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Game_PlayerIDs(ctx context.Context, field graphql.CollectedField, obj *Game) (ret graphql.Marshaler) {
@@ -5811,7 +5808,7 @@ func (ec *executionContext) unmarshalInputInputGame(ctx context.Context, obj int
 			}
 		case "Turn":
 			var err error
-			it.Turn, err = ec.unmarshalNInputTurn2ᚖgithubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐInputTurn(ctx, v)
+			it.Turn, err = ec.unmarshalOInputTurn2ᚖgithubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐInputTurn(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -6232,20 +6229,17 @@ func (ec *executionContext) _Game(ctx context.Context, sel ast.SelectionSet, obj
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
-		case "Handle":
-			out.Values[i] = ec._Game_Handle(ctx, field, obj)
 		case "CreatedAt":
 			out.Values[i] = ec._Game_CreatedAt(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		case "Handle":
+			out.Values[i] = ec._Game_Handle(ctx, field, obj)
 		case "Rules":
 			out.Values[i] = ec._Game_Rules(ctx, field, obj)
 		case "Turn":
 			out.Values[i] = ec._Game_Turn(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
 		case "PlayerIDs":
 			out.Values[i] = ec._Game_PlayerIDs(ctx, field, obj)
 		default:
@@ -7260,20 +7254,6 @@ func (ec *executionContext) marshalNTime2timeᚐTime(ctx context.Context, sel as
 	return res
 }
 
-func (ec *executionContext) marshalNTurn2githubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐTurn(ctx context.Context, sel ast.SelectionSet, v Turn) graphql.Marshaler {
-	return ec._Turn(ctx, sel, &v)
-}
-
-func (ec *executionContext) marshalNTurn2ᚖgithubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐTurn(ctx context.Context, sel ast.SelectionSet, v *Turn) graphql.Marshaler {
-	if v == nil {
-		if !ec.HasError(graphql.GetResolverContext(ctx)) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	return ec._Turn(ctx, sel, v)
-}
-
 func (ec *executionContext) marshalNUser2githubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐUser(ctx context.Context, sel ast.SelectionSet, v User) graphql.Marshaler {
 	return ec._User(ctx, sel, &v)
 }
@@ -7922,6 +7902,18 @@ func (ec *executionContext) unmarshalOInputSignup2ᚖgithubᚗcomᚋdylanlottᚋ
 	return &res, err
 }
 
+func (ec *executionContext) unmarshalOInputTurn2githubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐInputTurn(ctx context.Context, v interface{}) (InputTurn, error) {
+	return ec.unmarshalInputInputTurn(ctx, v)
+}
+
+func (ec *executionContext) unmarshalOInputTurn2ᚖgithubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐInputTurn(ctx context.Context, v interface{}) (*InputTurn, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalOInputTurn2githubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐInputTurn(ctx, v)
+	return &res, err
+}
+
 func (ec *executionContext) unmarshalOInputUser2ᚕᚖgithubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐInputUserᚄ(ctx context.Context, v interface{}) ([]*InputUser, error) {
 	var vSlice []interface{}
 	if v != nil {
@@ -8124,6 +8116,17 @@ func (ec *executionContext) marshalOTime2ᚖtimeᚐTime(ctx context.Context, sel
 		return graphql.Null
 	}
 	return ec.marshalOTime2timeᚐTime(ctx, sel, *v)
+}
+
+func (ec *executionContext) marshalOTurn2githubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐTurn(ctx context.Context, sel ast.SelectionSet, v Turn) graphql.Marshaler {
+	return ec._Turn(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalOTurn2ᚖgithubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐTurn(ctx context.Context, sel ast.SelectionSet, v *Turn) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._Turn(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalOUser2ᚕᚖgithubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐUserᚄ(ctx context.Context, sel ast.SelectionSet, v []*User) graphql.Marshaler {

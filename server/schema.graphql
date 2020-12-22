@@ -74,10 +74,10 @@ type Deck {
 
 type Game {
   ID: String!
-  Handle: String
   CreatedAt: Time!
+  Handle: String
   Rules: [Rule!]
-  Turn: Turn!
+  Turn: Turn
   PlayerIDs: [User!]
 }
 
@@ -191,7 +191,7 @@ input InputCreateGame {
 
 input InputGame {
   ID: String!
-  Turn: InputTurn!
+  Turn: InputTurn
   Created_At: Time
   Handle: String
   PlayerIDs: [InputUser!]
