@@ -165,7 +165,7 @@ export default {
     };
   },
   created () {
-    console.log('route ID: ', this.$route.params.id)
+    // console.log('route ID: ', this.$route.params.id)
   },
   methods: {
     gameID() {
@@ -232,7 +232,7 @@ export default {
         },
       })
       .then((res) => {
-        console.log('mutateBoardState#setting boardstate: ', res.data.updateBoardState)
+        // console.log('mutateBoardState#setting boardstate: ', res.data.updateBoardState)
         this.self.boardstate = res.data.updateBoardState
         return res 
       })
@@ -251,6 +251,9 @@ export default {
     sleepFor (sleepDuration) {
       var now = new Date().getTime();
       while(new Date().getTime() < now + sleepDuration){ /* do nothing */ } 
+    },
+    getPlayerIDs () {
+      return this.game.PlayerIDs
     }
   },
   watch: {
@@ -275,13 +278,10 @@ export default {
           userID: this.$currentUser(),
         },
         update(data) {
-          console.log('selfstate#update#data: ', data)
-          var updated = Object.assign(this.self.boardstate, data.boardstates[0])
-          this.self.boardstate = updated
+          this.self.boardstate = data.boardstates[0] 
         },
         results (data) {
-          console.log('selfstate#results#data: ', data)
-          return data
+          return data.boardstates[0] 
         }
       };
     },
@@ -309,7 +309,6 @@ export default {
           gameID: this.gameID(),
         },
         update(data) {
-          console.log('game query: ', data.games)
           // this.$store.dispatch('')
           if (data.games.length === 0) {
             console.error(`game with ID ${this.gameID()}`)
@@ -317,36 +316,44 @@ export default {
           }
           return data.games[0]
         },
-        subscribeToMore: {
-          // this should be the game updated subscription
-          document: gql`subscription($game: InputGame!) {
-            gameUpdated(game: $game) {
-              ID
-              PlayerIDs {
-                Username
-                ID
-              }
-              Turn {
-                Player
-                Phase
-                Number
-              }
-            }  
-          }`,
-          variables: {
-            game: {
-              ID: this.$route.params.id,
-              Turn: {
-                Player: this.self.User.Username,
-                Number: 0,
-                Phase: "" 
-              }
-            }
-          },
-          updateQuery: (prevResult, {subData}) => {
-            return subData
-          }
-        } 
+        // TODO: This code clobbers state. We need to subscribe to updates AFTER 
+        // we have set the PlayerIDs correctly for a given GameID.
+        // subscribeToMore: {
+        //   // this should be the game updated subscription
+        //   document: gql`subscription($game: InputGame!) {
+        //     gameUpdated(game: $game) {
+        //       ID
+        //       PlayerIDs {
+        //         Username
+        //         ID
+        //       }
+        //       Turn {
+        //         Player
+        //         Phase
+        //         Number
+        //       }
+        //     }  
+        //   }`,
+        //   variables: {
+        //     game: {
+        //       ID: this.$route.params.id,
+        //       Turn: {
+        //         Player: this.self.User.Username,
+        //         Number: 0,
+        //         Phase: "" 
+        //       },
+        //       PlayerIDs: this.getPlayerIDs(),
+        //     }
+        //   },
+        //   updateQuery: (prevResult, {subData}) => {
+        //     console.log('prevResult: ', prevResult)
+        //     console.log('subData: ', subData)
+        //     return subData[0]
+        //   }
+        // },
+        results (data) {
+          console.log('game query results: ', results)
+        }
       } 
     }
   },
