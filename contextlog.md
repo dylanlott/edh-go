@@ -188,3 +188,14 @@ I fixed that, but now I need to make it so that the `game()` query in Board.vue 
 Ultimately, I need to introduce a state management solution to the app via VueX to fix these issues. This will be a pretty large refactor but I suspect would lend itself heavily to the overall quality and reliability of the app.
 
 `add-vuex` branch has some work that does exactly this on it.
+
+### 22 Dec 2020
+**TODO**: 
+- [ ] Need to start grapplevining VueX into the app and get opponent boardstates working.
+- [ ] Get opponent boardstates pulling up however we have to manage it
+- [ ] Finish the Join Game user flow
+
+### 24 December 2020 
+Christmas Eve! 
+
+The app needs to set the opponent boardstates and susbcribe to updates. I have a rough query working now, it just needs to be refined to pull only the opponent states back.
