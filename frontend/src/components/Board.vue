@@ -304,9 +304,33 @@ export default {
     },
     // TODO: Need to make this pull PlayerIDs correctly and then return their boardstates.
     // TODO: This needs to be reactive to new Users joining the game via subscribeToMore method.
-    opponents () {
+    boardstates () {
       return {
-        query: gql``,
+        query: gql`query ($gameID: String!){
+          boardstates(gameID: $gameID) {
+            GameID
+            User {
+              ID
+              Username
+            }
+            Field {
+              ID
+              Name
+              ManaCost
+            }
+          }
+        } `,
+        variables: {
+          gameID: this.gameID(),
+        },
+        results (data) {
+          console.log(`boardstates data: ${data.opponents}`)
+          return data.boardstates
+        },
+        error (err) {
+          console.log(`opponents error: ${err}`)
+          return err
+        }
       }
     },
     // Queries for the Game by route ID. This is responsible for loading up opponents, 
