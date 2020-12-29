@@ -40,7 +40,7 @@
             <b-input v-model="username"></b-input>
           </b-field>
 
-          <b-button @click="handleCreateGame()" type="button" class="is-success"> Start a new game </b-button>
+          <b-button @click="handleJoinGame()" type="button" class="is-success">Start a new game </b-button>
         </div>
       </div>
     </div>
@@ -60,6 +60,7 @@ export default {
         decklist: '',
       },
       username: '',
+      game: {}
     };
   },
   computed: {
@@ -70,6 +71,9 @@ export default {
         })
         .catch((err) => console.error(err));
     },
+  },
+  created () {
+    this.gameQuery()
   },
   methods: {
     queryCommanders() {
@@ -108,58 +112,62 @@ export default {
           this.loading = false;
         });
     },
-    handleCreateGame() {
-      this.$apollo
-        .mutate({
-          mutation: gql`
-            mutation($inputGame: InputCreateGame!) {
-              createGame(input: $inputGame) {
+    handleJoinGame() {
+      const inputGame = {
+        ID: this.$route.params.id,
+        PlayerIDs: this.game.PlayerIDs.push({
+          ID: "",
+          Username: "",
+        }),
+        Decklist: "",
+        BoardState: {},
+      }
+      this.$apollo.mutate({
+        // TODO: write join game mutation
+        mutation: gql`mutation {
+          joinGame(input: inputJoinGame) {
+            ID
+          }
+        }`,
+        variables: {
+          inputJoinGame: inputGame,
+        },
+        update: (store, { data }) => {
+          console.log('handleJoinGame#update#store:', store)
+          console.log('handleJoinGame#update#data:', data)
+        }
+      })
+    },
+    gameQuery() {
+      this.$apollo.query({
+        query: gql`
+          query	($gameID: String) {
+            games(gameID: $gameID) {
+              ID
+              PlayerIDs {
+                Username
                 ID
-                CreatedAt
-                Turn {
-                  Number
-                  Player
-                  Phase
-                }
-                PlayerIDs {
-                  Username
-                }
               }
             }
-          `,
-          variables: {
-            inputGame: {
-              ID: '',
-              Players: [
-                {
-                  GameID: this.$route.params.id,
-                  User: {
-                    Username: this.username,
-                  },
-                  Life: 40,
-                  Commander: this.commander,
-                  Library: [],
-                  Decklist: this.decklist,
-                  Graveyard: [],
-                  Exiled: [],
-                  Field: [],
-                  Hand: [],
-                  Revealed: [],
-                  Controlled: [],
-                },
-              ],
-            },
-          },
-        })
-        .then((res) => {
-          console.log('pushing route to: ', res.data.createGame.ID);
-          router.push({ path: `/games/${res.data.createGame.ID}` });
-        })
-        .catch((err) => {
-          console.error('got error back: ', err);
-          return err;
-        });
-    },
+          }
+        `,
+        variables: {
+          gameID: this.$route.params.id,
+        },
+        update (data) {
+          console.log('found game: ', data.games[0])
+          this.game = data.games[0]
+        }
+      })
+      .then(({ data }) => {
+        console.log('this.gameQuery#then#data', data)
+        if (data.games[0].length === 0) {
+          console.log('failed to find game: ', this.$route.params.id)
+        }
+        this.game = data.games[0]
+        console.log('this.game: ', this.game)
+      })
+    }
   },
 };
 </script>

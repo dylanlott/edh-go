@@ -127,6 +127,7 @@ type ComplexityRoot struct {
 	Mutation struct {
 		CreateDeck       func(childComplexity int, input *InputDeck) int
 		CreateGame       func(childComplexity int, input InputCreateGame) int
+		JoinGame         func(childComplexity int, input *InputJoinGame) int
 		PostMessage      func(childComplexity int, user string, text string) int
 		Signup           func(childComplexity int, input *InputSignup) int
 		UpdateBoardState func(childComplexity int, input InputBoardState) int
@@ -173,6 +174,7 @@ type MutationResolver interface {
 	Signup(ctx context.Context, input *InputSignup) (*User, error)
 	PostMessage(ctx context.Context, user string, text string) (*Message, error)
 	CreateGame(ctx context.Context, input InputCreateGame) (*Game, error)
+	JoinGame(ctx context.Context, input *InputJoinGame) (*Game, error)
 	UpdateGame(ctx context.Context, input InputGame) (*Game, error)
 	CreateDeck(ctx context.Context, input *InputDeck) (*BoardState, error)
 	UpdateBoardState(ctx context.Context, input InputBoardState) (*BoardState, error)
@@ -604,6 +606,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.CreateGame(childComplexity, args["input"].(InputCreateGame)), true
 
+	case "Mutation.joinGame":
+		if e.complexity.Mutation.JoinGame == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_joinGame_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.JoinGame(childComplexity, args["input"].(*InputJoinGame)), true
+
 	case "Mutation.postMessage":
 		if e.complexity.Mutation.PostMessage == nil {
 			break
@@ -939,6 +953,7 @@ type Mutation {
   signup(input: InputSignup): User!
   postMessage(user: String!, text: String!): Message
   createGame(input: InputCreateGame!): Game!
+  joinGame(input: InputJoinGame): Game!
   updateGame(input: InputGame!): Game!
   createDeck(input: InputDeck): BoardState 
   updateBoardState(input: InputBoardState!): BoardState
@@ -1124,6 +1139,14 @@ input InputCreateGame {
   Players: [InputBoardState!]!
 }
 
+input InputJoinGame {
+  ID: String!
+  User: InputUser!
+  Handle: String
+  Decklist: String
+  BoardState: InputBoardState!
+}
+
 input InputGame {
   ID: String!
   Turn: InputTurn
@@ -1217,6 +1240,20 @@ func (ec *executionContext) field_Mutation_createGame_args(ctx context.Context, 
 	var arg0 InputCreateGame
 	if tmp, ok := rawArgs["input"]; ok {
 		arg0, err = ec.unmarshalNInputCreateGame2githubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐInputCreateGame(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_joinGame_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *InputJoinGame
+	if tmp, ok := rawArgs["input"]; ok {
+		arg0, err = ec.unmarshalOInputJoinGame2ᚖgithubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐInputJoinGame(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -3402,6 +3439,47 @@ func (ec *executionContext) _Mutation_createGame(ctx context.Context, field grap
 	resTmp := ec._fieldMiddleware(ctx, nil, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
 		return ec.resolvers.Mutation().CreateGame(rctx, args["input"].(InputCreateGame))
+	})
+
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*Game)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNGame2ᚖgithubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐGame(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_joinGame(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "Mutation",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_joinGame_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	rctx.Args = args
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp := ec._fieldMiddleware(ctx, nil, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().JoinGame(rctx, args["input"].(*InputJoinGame))
 	})
 
 	if resTmp == nil {
@@ -5836,6 +5914,48 @@ func (ec *executionContext) unmarshalInputInputGame(ctx context.Context, obj int
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputInputJoinGame(ctx context.Context, obj interface{}) (InputJoinGame, error) {
+	var it InputJoinGame
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "ID":
+			var err error
+			it.ID, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "User":
+			var err error
+			it.User, err = ec.unmarshalNInputUser2ᚖgithubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐInputUser(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "Handle":
+			var err error
+			it.Handle, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "Decklist":
+			var err error
+			it.Decklist, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "BoardState":
+			var err error
+			it.BoardState, err = ec.unmarshalNInputBoardState2ᚖgithubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐInputBoardState(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputInputLabel(ctx context.Context, obj interface{}) (InputLabel, error) {
 	var it InputLabel
 	var asMap = obj.(map[string]interface{})
@@ -6326,6 +6446,11 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			out.Values[i] = ec._Mutation_postMessage(ctx, field)
 		case "createGame":
 			out.Values[i] = ec._Mutation_createGame(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "joinGame":
+			out.Values[i] = ec._Mutation_joinGame(ctx, field)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
@@ -7855,6 +7980,18 @@ func (ec *executionContext) unmarshalOInputEmblem2ᚖgithubᚗcomᚋdylanlottᚋ
 		return nil, nil
 	}
 	res, err := ec.unmarshalOInputEmblem2githubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐInputEmblem(ctx, v)
+	return &res, err
+}
+
+func (ec *executionContext) unmarshalOInputJoinGame2githubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐInputJoinGame(ctx context.Context, v interface{}) (InputJoinGame, error) {
+	return ec.unmarshalInputInputJoinGame(ctx, v)
+}
+
+func (ec *executionContext) unmarshalOInputJoinGame2ᚖgithubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐInputJoinGame(ctx context.Context, v interface{}) (*InputJoinGame, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalOInputJoinGame2githubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐInputJoinGame(ctx, v)
 	return &res, err
 }
 

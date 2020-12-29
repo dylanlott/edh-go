@@ -17,6 +17,10 @@
     <!-- OPPONENTS -->
     <div class="opponents">
       <!-- Gets the game, and only shows the Opponent boardstates from the Game PlayerIDs  -->
+      <div :key="opponent.ID" v-for="opponent in boardstates">
+        {{ opponent }}
+        <div v-if="opponent.Username != self.User.Username"></div>
+      </div>
       <div :key="player.ID" v-for="player in game.PlayerIDs">
         <div v-if="player.Username !== self.User.Username">
           <h1 class="title">{{ player.Username }}</h1>
@@ -302,13 +306,11 @@ export default {
         }
       };
     },
-    // TODO: Need to make this pull PlayerIDs correctly and then return their boardstates.
     // TODO: This needs to be reactive to new Users joining the game via subscribeToMore method.
     boardstates () {
       return {
         query: gql`query ($gameID: String!){
           boardstates(gameID: $gameID) {
-            GameID
             User {
               ID
               Username
@@ -316,16 +318,21 @@ export default {
             Field {
               ID
               Name
-              ManaCost
             }
           }
         } `,
         variables: {
           gameID: this.gameID(),
         },
-        results (data) {
-          console.log(`boardstates data: ${data.opponents}`)
-          return data.boardstates
+        update (data) {
+          data.boardstates.forEach((bs) => {
+            console.log("opp: ", bs)
+            if (bs.User.Username != this.$currentUser()) {
+              console.log("found opponent: ", bs)
+            } else {
+              console.log('DEBUG: skipping myself')
+            }
+          })
         },
         error (err) {
           console.log(`opponents error: ${err}`)
@@ -364,43 +371,9 @@ export default {
           }
           return data.games[0]
         },
-        // TODO: This code clobbers state. We need to subscribe to updates AFTER 
-        // we have set the PlayerIDs correctly for a given GameID.
-        // subscribeToMore: {
-        //   // this should be the game updated subscription
-        //   document: gql`subscription($game: InputGame!) {
-        //     gameUpdated(game: $game) {
-        //       ID
-        //       PlayerIDs {
-        //         Username
-        //         ID
-        //       }
-        //       Turn {
-        //         Player
-        //         Phase
-        //         Number
-        //       }
-        //     }  
-        //   }`,
-        //   variables: {
-        //     game: {
-        //       ID: this.$route.params.id,
-        //       Turn: {
-        //         Player: this.self.User.Username,
-        //         Number: 0,
-        //         Phase: "" 
-        //       },
-        //       PlayerIDs: this.getPlayerIDs(),
-        //     }
-        //   },
-        //   updateQuery: (prevResult, {subData}) => {
-        //     console.log('prevResult: ', prevResult)
-        //     console.log('subData: ', subData)
-        //     return subData[0]
-        //   }
-        // },
         results (data) {
           console.log('game query results: ', results)
+          return data
         }
       } 
     }

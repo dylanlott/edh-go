@@ -54,10 +54,6 @@ func (s *graphQLServer) Boardstates(ctx context.Context, gameID string, username
 		return nil, errs.New("game does not exist")
 	}
 
-	// Problem: There are multiple users at this point with the same UserIDs
-	// log.Printf("there should not be multiple game.PlayerIDs: %+v\n", game.PlayerIDs)
-	// This prints multiples, so where else are we setting boardstates?
-
 	// if username is not provided, send all
 	if username == nil {
 		boardstates := []*BoardState{}
@@ -71,27 +67,31 @@ func (s *graphQLServer) Boardstates(ctx context.Context, gameID string, username
 			boardstates = append(boardstates, board)
 		}
 		return boardstates, nil
-	} else {
-		boardstates := []*BoardState{}
-		for _, p := range game.PlayerIDs {
-			if p.Username == *username {
-				board := &BoardState{}
-				boardKey := BoardStateKey(game.ID, p.Username)
-				err := s.Get(boardKey, &board)
-				if err != nil {
-					log.Printf("error fetching user boardstate from redis: %s", err)
-				}
-
-				boardstates = append(boardstates, board)
-			}
-		}
-
-		if len(boardstates) == 0 {
-			return []*BoardState{}, errs.New("no boardstate for user %s found", *username)
-		}
-
-		return boardstates, nil
 	}
+
+	boardstates := []*BoardState{}
+	for _, p := range game.PlayerIDs {
+		if p.Username == *username {
+			board := &BoardState{}
+			boardKey := BoardStateKey(game.ID, p.Username)
+			err := s.Get(boardKey, &board)
+			if err != nil {
+				log.Printf("error fetching user boardstate from redis: %s", err)
+			}
+
+			log.Printf("#BoardStates## appending boardstate: %+v\n", board)
+
+			boardstates = append(boardstates, board)
+		}
+	}
+
+	if len(boardstates) == 0 {
+		return []*BoardState{}, errs.New("no boardstate for user %s found", *username)
+	}
+
+	log.Printf("returning all boardstates: %+v\n", boardstates)
+
+	return boardstates, nil
 }
 
 func getUsers(players []*InputUser) []*User {
@@ -198,15 +198,12 @@ func (s *graphQLServer) UpdateGame(ctx context.Context, new InputGame) (*Game, e
 	if err := mergo.Merge(&new, old); err != nil {
 		return nil, errs.New("Failed to merge old game with new game: %s", err)
 	}
-	fmt.Printf("new game: %+v\n", &new)
 
 	// cast new game into Game for GraphQL
 	game := &Game{}
 	if err := mergo.Merge(game, new); err != nil {
 		return nil, errs.New("Failed to merge new game: %s", err)
 	}
-
-	fmt.Printf("fully updated game: %+v\n", game)
 
 	s.mutex.Lock()
 	s.Directory[new.ID] = game
@@ -216,19 +213,90 @@ func (s *graphQLServer) UpdateGame(ctx context.Context, new InputGame) (*Game, e
 	return game, nil
 }
 
+// JoinGame ...
+func (s *graphQLServer) JoinGame(ctx context.Context, input *InputJoinGame) (*Game, error) {
+	// TODO: We check for game existence a lot, we should probably make this a function
+	s.mutex.RLock()
+	game, ok := s.Directory[input.ID]
+	if !ok {
+		return nil, errs.New("Game with ID %s does not exist", input.ID)
+	}
+	s.mutex.RUnlock()
+
+	user := &User{
+		ID:       *input.User.ID,
+		Username: input.User.Username,
+	}
+
+	// Init default boardstate minus library and commander
+	bs := &BoardState{
+		User:       user,
+		Life:       input.BoardState.Life,
+		GameID:     game.ID,
+		Hand:       getCards(input.BoardState.Hand),
+		Exiled:     getCards(input.BoardState.Exiled),
+		Revealed:   getCards(input.BoardState.Revealed),
+		Field:      getCards(input.BoardState.Field),
+		Controlled: getCards(input.BoardState.Controlled),
+	}
+
+	library, err := s.createLibraryFromDecklist(ctx, *input.Decklist)
+	if err != nil {
+		// Fail gracefully and still populate basic cards
+		log.Printf("error creating library from decklist: %+v", err)
+		bs.Library = getCards(input.BoardState.Library)
+	} else {
+		// Happy path
+		bs.Library = library
+	}
+
+	// TODO: This will eventually have to check the rules of the game to see if it's a
+	// Commander game, but for now this works for EDH MVP.
+	if len(input.BoardState.Commander) == 0 {
+		return nil, errs.New("must supply a Commander for your deck.")
+	}
+
+	// TODO: Make this handle multiple commanders?
+	commander, err := s.Card(ctx, input.BoardState.Commander[0].Name, nil)
+	if err != nil {
+		log.Printf("error getting commander for deck: %+v", err)
+		// fail gracefully and use their card name so they can still play a game
+		cmdr := getCards(input.BoardState.Commander)
+		bs.Commander = []*Card{cmdr[0]}
+	} else {
+		bs.Commander = []*Card{commander[0]}
+	}
+
+	shuff, err := Shuffle(bs.Library)
+	if err != nil {
+		log.Printf("error shuffling library: %s", err)
+		return nil, err
+	}
+	bs.Library = shuff
+
+	game.PlayerIDs = append(game.PlayerIDs, user)
+
+	// set board state in Redis
+	boardKey := BoardStateKey(game.ID, user.Username)
+	err = s.Set(boardKey, bs)
+	if err != nil {
+		log.Printf("error persisting boardstate into redis: %s", err)
+		return nil, err
+	}
+
+	s.mutex.Lock()
+	s.Directory[game.ID] = game
+	log.Printf("JOIN GAME: game in directory: %+v\n", s.Directory[game.ID])
+	s.mutex.Unlock()
+	return game, nil
+}
+
 // createGame is untested currently
 func (s *graphQLServer) CreateGame(ctx context.Context, inputGame InputCreateGame) (*Game, error) {
 	g := &Game{
 		ID:        uuid.New().String(),
 		CreatedAt: time.Now(),
 		PlayerIDs: []*User{},
-		// NB: Turns get added once the game has "started".
-		// This is after roll for turn and mulligans happen.
-		Turn: &Turn{
-			Player: inputGame.Turn.Player,
-			Phase:  inputGame.Turn.Phase,
-			Number: inputGame.Turn.Number,
-		},
 		// NB: We're only supporting EDH at this time. We will add more flexible validation later.
 		Rules: []*Rule{
 			{
@@ -593,6 +661,9 @@ func getCards(inputCards []*InputCard) []*Card {
 }
 
 func (s *graphQLServer) createLibraryFromDecklist(ctx context.Context, decklist string) ([]*Card, error) {
+	if decklist == "" {
+		return []*Card{}, errs.New("must provide cards in decklist to create a library")
+	}
 	trimmed := strings.TrimSpace(decklist)
 	r := csv.NewReader(strings.NewReader(trimmed))
 	cards := []*Card{}

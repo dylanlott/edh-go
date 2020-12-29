@@ -145,6 +145,14 @@ type InputGame struct {
 	PlayerIDs []*InputUser `json:"PlayerIDs"`
 }
 
+type InputJoinGame struct {
+	ID         string           `json:"ID"`
+	User       *InputUser       `json:"User"`
+	Handle     *string          `json:"Handle"`
+	Decklist   *string          `json:"Decklist"`
+	BoardState *InputBoardState `json:"BoardState"`
+}
+
 type InputLabel struct {
 	Name       string `json:"Name"`
 	Value      string `json:"Value"`

@@ -199,3 +199,23 @@ Ultimately, I need to introduce a state management solution to the app via VueX 
 Christmas Eve! 
 
 The app needs to set the opponent boardstates and susbcribe to updates. I have a rough query working now, it just needs to be refined to pull only the opponent states back.
+
+### 27 Dec 2020
+Working on the Join Game flow. Currently writing the join game mutation for the view with the same name.
+
+Once this is done, I can perfect the Opponent boardstate subscription to correctly return Opponent boardstates upon `gameUpdated` events.
+
+**TODO**
+- [ ] `handleJoinGame` mutation working
+- [ ] `Board.vue` subscription working with gameUpdated events.
+- [ ] `JoinGame` function wired up
+
+### 29 Dec 2020
+Okay so while working on the Join Game flow, it occurred to me that it would be better served to just write a custom JoinGame service method through the GraphQL API to handle any of our custom logic. Joining a game is a special event and probably should be handled as such.
+
+**TODO**
+- [x] Regenerate GraphQL Schema
+- [x] Write the JoinGame method in games.go
+- [ ] Wire up the `handleJoinGame` method jin `JoinGame.vue` method to poin to that endpoint instead.
+- [ ] Tie in to the `gameUpdated` subscription events so that we can detect game changes on the front end.
+- [ ] Add tests for JoinGame and CreateGame
