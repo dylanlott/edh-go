@@ -124,24 +124,16 @@ func (s *graphQLServer) GameUpdated(ctx context.Context, game InputGame) (<-chan
 		return nil, errs.New("game does not exist with ID of %s", game.ID)
 	}
 
-	log.Printf("#### game.PlayerIDs: %+v\n", game.PlayerIDs)
-
-	output := &Game{
-		ID:        found.ID,
-		Handle:    game.Handle,
-		CreatedAt: found.CreatedAt,
-		PlayerIDs: getUsers(game.PlayerIDs),
-		Turn:      getTurn(game.Turn),
-		Rules:     found.Rules,
-	}
-
-	log.Printf("#GameUpdated#output: %+v\n", output)
+	// sketching out this interface this interface 
+	output := Translate(InputGameTranslator, game InputGame)
 
 	games := make(chan *Game, 1)
 	s.mutex.Lock()
 	s.gameChannels[game.ID] = games
+
 	// TODO: turn output into update of new and old game
-	s.Directory[game.ID] = output
+	// s.Directory[game.ID] = output
+
 	s.mutex.Unlock()
 
 	go func() {
