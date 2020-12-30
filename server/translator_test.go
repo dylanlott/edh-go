@@ -10,10 +10,13 @@ func TestInputGameTranslator(t *testing.T) {
 	var cases = []struct {
 		name string
 		from *InputGame
-		want *Game
+		want interface{}
 	}{
 		{
-			name: "test translating basic input game",
+			// just to skeletonize and set things up
+			name: "test translating empty input game",
+			from: &InputGame{},
+			want: &Game{},
 		},
 	}
 

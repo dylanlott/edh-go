@@ -1,8 +1,6 @@
 package server
 
 import (
-	"log"
-
 	"github.com/zeebo/errs"
 )
 
@@ -39,8 +37,6 @@ type polyglot struct{}
 
 // Translate applies the Translator to the received to interface
 func (p *polyglot) Translate(to, from interface{}, t Translator) error {
-	log.Printf("translating to: %+v\n", to)
-	log.Printf("translating from: %+v\n", from)
 	to, err := t(from)
 	if err != nil {
 		return errs.New("failed to translate: %+v", err)
@@ -52,7 +48,33 @@ func (p *polyglot) Translate(to, from interface{}, t Translator) error {
 // InputGameTranslator fulfills the Translator interface to be used in
 // the game subscription logic.
 func InputGameTranslator(value interface{}) (interface{}, error) {
-	return nil, errs.New("InputGameTranslator not impl")
+	g := &Game{}
+	input := value.(*InputGame)
+
+	g.ID = input.ID
+
+	if input.Handle != nil {
+		g.Handle = input.Handle
+	}
+
+	if input.CreatedAt != nil {
+		g.CreatedAt = *input.CreatedAt
+	}
+
+	for _, p := range input.PlayerIDs {
+		u := &User{}
+		if p.ID != nil {
+			u.ID = *p.ID
+		}
+	}
+
+	if input.Turn != nil {
+		g.Turn.Number = input.Turn.Number
+		g.Turn.Phase = input.Turn.Phase
+		g.Turn.Player = input.Turn.Player
+	}
+
+	return g, nil
 }
 
 // **Option 2**: Just make a bunch of interface transformers and pass it and input
@@ -61,8 +83,15 @@ func InputGameTranslator(value interface{}) (interface{}, error) {
 // it feels like a more fleixble and useful abstraction, but I'm going to leave
 // this comment as reference to see if that ends up being the case.
 
-// HandleInputGame ...
-type HandleInputGame func(input interface{}) (*Game, error)
+// Orator is an example implementation of Option 2. I think it's clunkier than
+// the first option, however there's an issue with scaling here, and this interface
+// would likely grow much larger over time. Large interfaces aren't Go idiomatic,
+// we want thin interfaces that we can compose in lots of different ways.
+// This app in particular will have a lot of data manipulation needs that
+// Option 1 does a better job of flexibly solving.
 
-// HandleInputBoardState ...
-type HandleInputBoardState func(input interface{}) (*BoardState, error)
+// Orator implmements Option 2 as an example.
+type Orator interface {
+	HandleInputGame(input *InputGame) (*Game, error)
+	HandleInputBoardState(input *InputBoardState) (*BoardState, error)
+}
