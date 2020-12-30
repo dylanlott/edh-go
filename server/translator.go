@@ -26,6 +26,8 @@ type Translator func(value interface{}) (interface{}, error)
 
 // Polyglot binds the two together above imlementations together with an interface
 type Polyglot interface {
+	// Translate should be an immutable, thread safe function that applies the
+	// Translator to the from value onto the to value and returns an error, if any.
 	Translate(to, from interface{}, t Translator) error
 }
 

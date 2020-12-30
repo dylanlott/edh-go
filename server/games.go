@@ -118,32 +118,32 @@ func getTurn(turn *InputTurn) *Turn {
 	}
 }
 
-func (s *graphQLServer) GameUpdated(ctx context.Context, game InputGame) (<-chan *Game, error) {
-	found, ok := s.Directory[game.ID]
+func (s *graphQLServer) GameUpdated(ctx context.Context, from InputGame) (<-chan *Game, error) {
+	found, ok := s.Directory[from.ID]
 	if !ok {
-		return nil, errs.New("game does not exist with ID of %s", game.ID)
+		return nil, errs.New("game does not exist with ID of %s", from.ID)
 	}
 	log.Printf("GameUpdated found a game: %+v", found)
 
-	// sketching out this interface this interface
-	output := &Game{}
-	if err := TranslateInputGame(output, &game, InputGameTranslator); err != nil {
-		return nil, errs.New("failed to translate input game: %+v\n", err)
+	p := &polyglot{}
+	to := &Game{}
+	if err := p.Translate(to, from, InputGameTranslator); err != nil {
+		return nil, errs.Wrap(err)
 	}
 
 	games := make(chan *Game, 1)
 	s.mutex.Lock()
-	s.gameChannels[game.ID] = games
+	s.gameChannels[to.ID] = games
 
 	// TODO: turn output into update of new and old game
-	// s.Directory[game.ID] = output
+	s.Directory[to.ID] = to
 
 	s.mutex.Unlock()
 
 	go func() {
 		<-ctx.Done()
 		s.mutex.Lock()
-		delete(s.gameChannels, game.ID)
+		delete(s.gameChannels, to.ID)
 		s.mutex.Unlock()
 	}()
 
