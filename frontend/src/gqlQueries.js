@@ -604,8 +604,8 @@ export const selfStateQuery = gql`
   }
 `
 
-// gameQuery powers the TurnTracker and Opponents components.
-export const gameQuery = gql`
+// gameUpdateQuery powers the TurnTracker and Opponents components.
+export const gameUpdateQuery = gql`
 subscription($game: InputGame!) {
   gameUpdated(game: $game) {
     ID
@@ -615,4 +615,21 @@ subscription($game: InputGame!) {
     }
   }
 } 
+`
+
+export const gameQuery = gql`
+query ($gameID: String) {
+  games(gameID: $gameID) {
+    ID
+    PlayerIDs {
+      Username
+      ID
+    }
+    Turn {
+      Player
+      Phase
+      Number
+    }
+  }
+}
 `

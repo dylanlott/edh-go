@@ -122,21 +122,22 @@ export default {
         Decklist: "",
         BoardState: {},
       }
-      this.$apollo.mutate({
-        // TODO: write join game mutation
-        mutation: gql`mutation {
-          joinGame(input: inputJoinGame) {
-            ID
-          }
-        }`,
-        variables: {
-          inputJoinGame: inputGame,
-        },
-        update: (store, { data }) => {
-          console.log('handleJoinGame#update#store:', store)
-          console.log('handleJoinGame#update#data:', data)
-        }
-      })
+      console.log('inputGame: ', inputGame)
+      // this.$apollo.mutate({
+      //   // TODO: write join game mutation
+      //   mutation: gql`mutation {
+      //     joinGame(input: inputJoinGame) {
+      //       ID
+      //     }
+      //   }`,
+      //   variables: {
+      //     inputJoinGame: inputGame,
+      //   },
+      //   update: (store, { data }) => {
+      //     console.log('handleJoinGame#update#store:', store)
+      //     console.log('handleJoinGame#update#data:', data)
+      //   }
+      // })
     },
     gameQuery() {
       this.$apollo.query({

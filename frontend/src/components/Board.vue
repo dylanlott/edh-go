@@ -145,6 +145,7 @@ import Opponents from '@/components/Opponents.vue'
 // import TurnTracker from '@/components/TurnTracker.vue';
 import { 
   gameQuery,
+  gameUpdateQuery,
   selfStateQuery, 
   updateBoardStateQuery,
   boardstates,
@@ -186,7 +187,7 @@ export default {
     };
   },
   created () {
-    // console.log('route ID: ', this.$route.params.id)
+    this.subscribeToGameUpdates()
   },
   methods: {
     gameID() {
@@ -262,19 +263,40 @@ export default {
         return err
       })
     },
-    mutateGameState() {
-      // console.log
-    },
     handleActivity(val) {
       return
       // console.log('logging activity: ', val)
     },
-    sleepFor (sleepDuration) {
-      var now = new Date().getTime();
-      while(new Date().getTime() < now + sleepDuration){ /* do nothing */ } 
-    },
     getPlayerIDs () {
       return this.game.PlayerIDs
+    },
+    subscribeToGameUpdates() {
+      this.$apollo.query({
+        query: gameQuery,// TODO: Add the right query  
+        variables: {
+          gameID: this.$route.params.id,
+        }
+      })
+      .then(data => {
+        console.log('initial gameQuery: ', data)
+        this.$apollo.subscribe({
+          query: gameUpdateQuery,// nb: this is where we use the subscription { } query
+          variables: {
+            game: {
+              ID: this.$route.params.id,
+              PlayerIDs: this.getPlayerIDs()
+            }
+          }
+        })
+        .subscribe({
+          next(data) {
+            console.log('received updated game data: ', data)
+          },
+          error(err) {
+            console.log('game subscription error: ', err)
+          }
+        })
+      })
     }
   },
   watch: {
@@ -326,11 +348,8 @@ export default {
         },
         update (data) {
           data.boardstates.forEach((bs) => {
-            console.log("opp: ", bs)
             if (bs.User.Username != this.$currentUser()) {
               console.log("found opponent: ", bs)
-            } else {
-              console.log('DEBUG: skipping myself')
             }
           })
         },
