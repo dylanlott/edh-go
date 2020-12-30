@@ -123,9 +123,13 @@ func (s *graphQLServer) GameUpdated(ctx context.Context, game InputGame) (<-chan
 	if !ok {
 		return nil, errs.New("game does not exist with ID of %s", game.ID)
 	}
+	log.Printf("GameUpdated found a game: %+v", found)
 
-	// sketching out this interface this interface 
-	output := Translate(InputGameTranslator, game InputGame)
+	// sketching out this interface this interface
+	output := &Game{}
+	if err := TranslateInputGame(output, &game, InputGameTranslator); err != nil {
+		return nil, errs.New("failed to translate input game: %+v\n", err)
+	}
 
 	games := make(chan *Game, 1)
 	s.mutex.Lock()

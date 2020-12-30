@@ -1,6 +1,10 @@
 package server
 
-import "github.com/zeebo/errs"
+import (
+	"log"
+
+	"github.com/zeebo/errs"
+)
 
 // # DESIGN
 // Translator
@@ -18,22 +22,45 @@ import "github.com/zeebo/errs"
 type Translator func(value interface{}) (interface{}, error)
 
 // Translate will apply the Translator to the From value and marshal it to the To value.
-type Translate func(to, from interface{}, t Translator) error
+// type Translate func(to, from interface{}, t Translator) error
+
+// Polyglot binds the two together above imlementations together with an interface
+type Polyglot interface {
+	Translate(to, from interface{}, t Translator) error
+}
+
+// # IMPLEMENTATION
+// ## Option 1
+
+// polyglot fulfills Polyglot to translate structs around in a functional way
+type polyglot struct{}
+
+// Translate applies the Translator to the received to interface
+func (p *polyglot) Translate(to, from interface{}, t Translator) error {
+	log.Printf("translating to: %+v\n", to)
+	log.Printf("translating from: %+v\n", from)
+	to, err := t(from)
+	if err != nil {
+		return errs.New("failed to translate: %+v", err)
+	}
+
+	return nil
+}
+
+// InputGameTranslator fulfills the Translator interface to be used in
+// the game subscription logic.
+func InputGameTranslator(value interface{}) (interface{}, error) {
+	return nil, errs.New("InputGameTranslator not impl")
+}
 
 // **Option 2**: Just make a bunch of interface transformers and pass it and input
 // type and let it handle all the custom logic.
 // I think I'm going to choose Option 1 for now, because
 // it feels like a more fleixble and useful abstraction, but I'm going to leave
 // this comment as reference to see if that ends up being the case.
+
+// HandleInputGame ...
 type HandleInputGame func(input interface{}) (*Game, error)
+
+// HandleInputBoardState ...
 type HandleInputBoardState func(input interface{}) (*BoardState, error)
-
-// # IMPLEMENTATION
-// ## Option 1
-func InputGameTranslator(input *InputGame) (*Game, error) {
-	return nil, errs.New("InputGameTranslator not impl")
-}
-
-func TranslateInputGame(to *Game, from *InputGame, t InputGameTranslator) error {
-	return errs.New("TranslateInputGame not impl")
-}
