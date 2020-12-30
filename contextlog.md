@@ -2,6 +2,10 @@
 
 Established: 23 July 2020
 
+## References 
+[Vue-Apollo Subscription Examples](https://hasura.io/learn/graphql/vue/realtime-feed/2-sync-todo/) Super helpful and better than the actual vue apollo docs themselves. 
+
+
 ## Table Of Contents
 
 1. What is this?
@@ -219,3 +223,22 @@ Okay so while working on the Join Game flow, it occurred to me that it would be 
 - [ ] Wire up the `handleJoinGame` method jin `JoinGame.vue` method to poin to that endpoint instead.
 - [ ] Tie in to the `gameUpdated` subscription events so that we can detect game changes on the front end.
 - [x] Add tests for JoinGame and CreateGame // CreateGame tests are in progress
+
+### 30 Dec 2020 
+Working on Join Game functionality still. Found a bug in decklists and library creation where tab characters werent' being processed right. Table testing the CreateGame function exposed the bug, so that was pretty sick. Now the decklist will be a regression test itself for handling tab characters. Neat!
+
+Working on the front end for the Join Game flow now, since the backend has been mostly figured out thanks to the tests. This is a personal lesson in how much faster front end development can go with a proper backend test suite. I already know the exact payloads to send, and GraphQL makes it fast to wire up a very precise request and turn it into a feature.
+
+#### The Translator Problem 
+
+I came up with two implementation ideas, and decided to puruse the first one
+because I felt it was the better concept.
+
+I'm quite happy with how this Polyglot interface is coming together.
+It's easy to test, it's functional, it will be thread safe, and it's an easy 
+way to handle the deeper intricacies that we can face with Board and Game state 
+changes that will require subtle and specific handling.
+
+**TODO**
+- [ ] Wire up `JoinGame` mutation to `handleJoinGame()` function.
+- [ ] Test the subscriptions on `Board.vue` to see if we're even listening for Game Update events.
