@@ -679,7 +679,8 @@ func (s *graphQLServer) createLibraryFromDecklist(ctx context.Context, decklist 
 			return nil, errs.New("failed to parse CSV: %s", err)
 		}
 
-		quantity, err := strconv.ParseInt(record[0], 0, 64)
+		trimmed := strings.TrimSpace(record[0])
+		quantity, err := strconv.ParseInt(trimmed, 0, 64)
 		if err != nil {
 			// handle error
 			log.Printf("error parsing quantity: %+v\n", err)

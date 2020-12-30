@@ -218,4 +218,4 @@ Okay so while working on the Join Game flow, it occurred to me that it would be 
 - [x] Write the JoinGame method in games.go
 - [ ] Wire up the `handleJoinGame` method jin `JoinGame.vue` method to poin to that endpoint instead.
 - [ ] Tie in to the `gameUpdated` subscription events so that we can detect game changes on the front end.
-- [ ] Add tests for JoinGame and CreateGame
+- [ ] Add tests for JoinGame and CreateGame // CreateGame tests are in progress
