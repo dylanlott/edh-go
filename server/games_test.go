@@ -2,10 +2,13 @@ package server
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"testing"
+	"time"
 
 	"github.com/dylanlott/edh-go/persistence"
+	"github.com/google/go-cmp/cmp"
 	"github.com/google/uuid"
 )
 
@@ -13,7 +16,7 @@ func TestCreateGame(t *testing.T) {
 	var cases = []struct {
 		name  string
 		input *InputCreateGame
-		want  interface{}
+		want  *Game
 		err   error
 	}{
 		{
@@ -35,6 +38,8 @@ func TestCreateGame(t *testing.T) {
 					},
 				},
 			},
+			want: nil,
+			err:  nil,
 		},
 		{
 			name: "should allow for two commanders",
@@ -58,6 +63,8 @@ func TestCreateGame(t *testing.T) {
 					},
 				},
 			},
+			want: nil, // TODO: make this test actually compare output results.
+			err:  nil,
 		},
 	}
 
@@ -65,17 +72,104 @@ func TestCreateGame(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			s := getNewServer(t)
 			result, err := s.CreateGame(context.Background(), *tt.input)
-			if err != nil {
-				if tt.err != err {
-					t.Errorf("undesired error: %+v", err)
-				}
-			}
 			if result.ID == "" {
 				t.Errorf("games must have an ID")
 			}
 			if len(result.PlayerIDs) != len(tt.input.Players) {
 				t.Errorf("failed to add correct amount of players to the game")
 			}
+
+			diff := cmp.Diff(tt.want, result)
+			t.Logf("diff: %+v", diff)
+
+			if tt.err != nil {
+				if diff := cmp.Diff(tt.err, err); diff != "" {
+					t.Errorf("wanted error: %+v - got error: %+v", tt.err, err)
+				}
+			}
+		})
+	}
+}
+
+func TestJoinGame(t *testing.T) {
+	var cases = []struct {
+		name  string
+		input InputJoinGame
+		want  interface{}
+		err   error
+	}{
+		{
+			name: "join game happy path",
+			input: InputJoinGame{
+				ID:       "", // has to be set later on, so leave it blank
+				Decklist: decklist(),
+				BoardState: &InputBoardState{
+					Commander: []*InputCard{
+						{
+							Name: "Gavi, Nest Warden",
+						},
+					},
+				},
+				User: &InputUser{
+					ID:       randomUserID(),
+					Username: "joingameid",
+				},
+			},
+			err: nil,
+		},
+	}
+
+	for _, tt := range cases {
+		t.Run(tt.name, func(t *testing.T) {
+			s := getNewServer(t)
+			input := InputCreateGame{
+				Players: []*InputBoardState{
+					{
+						User: &InputUser{
+							ID:       randomUserID(),
+							Username: "shakezula",
+						},
+						Life:     40,
+						Decklist: decklist(),
+						Commander: []*InputCard{
+							{
+								Name: "Gavi, Nest Warden",
+							},
+						},
+					},
+				},
+			}
+
+			host, err := s.CreateGame(context.Background(), input)
+			if err != nil {
+				t.Errorf("failed to get host game: %+v\n", err)
+			}
+
+			t.Logf("joining host game: %+v\n", host)
+
+			// hack to emulated client knowledge by setting input Game ID to host ID
+			tt.input.ID = host.ID
+
+			joined, err := s.JoinGame(context.Background(), &tt.input)
+			if err != nil {
+				fmt.Printf("JOIN GAME ERROR: %+v\n", err)
+				if tt.err != nil {
+					if diff := cmp.Diff(tt.err, err); diff != "" {
+						t.Errorf("wanted: %+v - got: %+v\n", tt.want, err)
+					}
+				}
+			}
+
+			if tt.want != nil {
+				// set result.CreatedAt to now for testing comparison, since
+				// we only use it reference.
+				joined.CreatedAt = time.Time{}
+				if diff := cmp.Diff(tt.want, joined); diff != "" {
+					t.Errorf("wanted: %+v - got: %+v\n", tt.want, diff)
+				}
+			}
+
+			t.Logf("joined successfully: %+v\n", joined)
 		})
 	}
 }
