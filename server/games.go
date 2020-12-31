@@ -12,7 +12,6 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/imdario/mergo"
 	"github.com/zeebo/errs"
 )
 
@@ -188,20 +187,19 @@ func (s *graphQLServer) BoardUpdate(ctx context.Context, bs InputBoardState) (<-
 func (s *graphQLServer) UpdateGame(ctx context.Context, new InputGame) (*Game, error) {
 	log.Printf("UpdateGame called with %+v\n", new)
 	// check existence of game, fail if not found
-	old, ok := s.Directory[new.ID]
+	_, ok := s.Directory[new.ID]
 	if !ok {
 		return nil, errs.New("Game with ID %s does not exist", new.ID)
 	}
 
-	// update old game with new game data
-	if err := mergo.Merge(&new, old); err != nil {
-		return nil, errs.New("Failed to merge old game with new game: %s", err)
+	b, err := json.Marshal(new)
+	if err != nil {
+		return nil, errs.New("failed to marshal input game: %s", err)
 	}
-
-	// cast new game into Game for GraphQL
 	game := &Game{}
-	if err := mergo.Merge(game, new); err != nil {
-		return nil, errs.New("Failed to merge new game: %s", err)
+	err = json.Unmarshal(b, &game)
+	if err != nil {
+		return nil, errs.New("failed to unmarshal game: %s", err)
 	}
 
 	s.mutex.Lock()
@@ -256,6 +254,7 @@ func (s *graphQLServer) JoinGame(ctx context.Context, input *InputJoinGame) (*Ga
 	}
 
 	// TODO: Make this handle multiple commanders?
+	fmt.Printf("input boardstate commander: %+v\n", input.BoardState.Commander)
 	commander, err := s.Card(ctx, input.BoardState.Commander[0].Name, nil)
 	if err != nil {
 		log.Printf("error getting commander for deck: %+v", err)
