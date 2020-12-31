@@ -15,24 +15,28 @@ func TestInputGameTranslator(t *testing.T) {
 		{
 			// just to skeletonize and set things up
 			name: "test translating empty input game",
-			from: &InputGame{},
-			want: &Game{},
+			from: &InputGame{
+				ID: "test123",
+			},
+			want: Game{
+				ID:     "test123",
+				Handle: nil,
+			},
 		},
 	}
 
 	for _, tt := range cases {
 		t.Run(tt.name, func(t *testing.T) {
-			to := &Game{}
+			to := Game{}
 			poly := &polyglot{}
-			err := poly.Translate(to, tt.from, InputGameTranslator)
+			err := poly.Translate(&to, tt.from, InputGameTranslator)
 			if err != nil {
-				if diff := cmp.Diff(tt.want, err); diff != "" {
-					t.Errorf("wanted: %+v - got: %+v", tt.want, err)
-				}
+				t.Errorf("failed to translate: %+v\n", err)
 			}
 
+			t.Logf("got here: %+v", to)
 			if diff := cmp.Diff(tt.want, to); diff != "" {
-				t.Errorf("wanted: %+v - got %+v", tt.want, to)
+				t.Errorf("failed to translate: %+v\n", diff)
 			}
 		})
 	}

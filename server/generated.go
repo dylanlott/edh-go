@@ -1150,7 +1150,7 @@ input InputJoinGame {
 input InputGame {
   ID: String!
   Turn: InputTurn
-  Created_At: Time
+  CreatedAt: Time
   Handle: String
   PlayerIDs: [InputUser!]
 }
@@ -5890,7 +5890,7 @@ func (ec *executionContext) unmarshalInputInputGame(ctx context.Context, obj int
 			if err != nil {
 				return it, err
 			}
-		case "Created_At":
+		case "CreatedAt":
 			var err error
 			it.CreatedAt, err = ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
 			if err != nil {

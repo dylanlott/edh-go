@@ -119,31 +119,34 @@ func getTurn(turn *InputTurn) *Turn {
 }
 
 func (s *graphQLServer) GameUpdated(ctx context.Context, from InputGame) (<-chan *Game, error) {
-	found, ok := s.Directory[from.ID]
+	_, ok := s.Directory[from.ID]
 	if !ok {
 		return nil, errs.New("game does not exist with ID of %s", from.ID)
 	}
-	log.Printf("GameUpdated found a game: %+v", found)
 
-	p := &polyglot{}
-	to := &Game{}
-	if err := p.Translate(to, from, InputGameTranslator); err != nil {
-		return nil, errs.Wrap(err)
+	// HACK: This gets around us having to do a lot of complicated
+	// checking and assignment and let's the json/encoder library
+	// handle the type conversion instead.
+	b, err := json.Marshal(from)
+	if err != nil {
+		return nil, errs.New("error marshaling from: %+v", err)
+	}
+	game := &Game{}
+	err = json.Unmarshal(b, &game)
+	if err != nil {
+		return nil, errs.New("failed to unmarshal into *Game: %+v", err)
 	}
 
 	games := make(chan *Game, 1)
 	s.mutex.Lock()
-	s.gameChannels[to.ID] = games
-
-	// TODO: turn output into update of new and old game
-	s.Directory[to.ID] = to
-
+	s.Directory[game.ID] = game
+	s.gameChannels[game.ID] = games
 	s.mutex.Unlock()
 
 	go func() {
 		<-ctx.Done()
 		s.mutex.Lock()
-		delete(s.gameChannels, to.ID)
+		delete(s.gameChannels, game.ID)
 		s.mutex.Unlock()
 	}()
 

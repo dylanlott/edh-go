@@ -37,10 +37,12 @@ type polyglot struct{}
 
 // Translate applies the Translator to the received to interface
 func (p *polyglot) Translate(to, from interface{}, t Translator) error {
-	to, err := t(from)
+	out, err := t(from)
 	if err != nil {
 		return errs.New("failed to translate: %+v", err)
 	}
+
+	to = out
 
 	return nil
 }

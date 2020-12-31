@@ -230,7 +230,6 @@ Working on Join Game functionality still. Found a bug in decklists and library c
 Working on the front end for the Join Game flow now, since the backend has been mostly figured out thanks to the tests. This is a personal lesson in how much faster front end development can go with a proper backend test suite. I already know the exact payloads to send, and GraphQL makes it fast to wire up a very precise request and turn it into a feature.
 
 #### The Translator Problem 
-
 I came up with two implementation ideas, and decided to puruse the first one
 because I felt it was the better concept.
 

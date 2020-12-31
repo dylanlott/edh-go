@@ -201,7 +201,7 @@ input InputJoinGame {
 input InputGame {
   ID: String!
   Turn: InputTurn
-  Created_At: Time
+  CreatedAt: Time
   Handle: String
   PlayerIDs: [InputUser!]
 }
