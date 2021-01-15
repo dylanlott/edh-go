@@ -13,6 +13,10 @@ Established: 23 July 2020
 3. Module Documentation
 4. To Dos and General Notes
 
+Note: To dos are ephemeral in terms of where they fall in the log and may be moved around. If I add it to the to do list in one date entry, I might carry it with me
+down to another date entry to remind myself to do it. This is essentially a living document to be viewed through the lens of git as a way to track the evolution of
+this project log. Consider this like patchnotes or a changelog but tied to dates instead of deployments or versions.
+
 ## What is this
 
 This is the context log for this project. The idea is to completely dump my thought process behind the development of this application as a side project.
@@ -30,10 +34,26 @@ _EDH-Go should be:_
 - Easy to use across all device sizes
 - Format-agnostic
 
+_EDH-Go should aim to be_
+
+- Intuitive to use
+- Resource efficient
+- Light
+
 ### What is EDH-Go
 
 EDH-Go is going to be a boardstate emulator. It is not meant to enforce rules, merely aid in representing and tracking them.
 That being said, there are some rules we can and should enforce - such as deck size, deck legality, turn orders, etc...
+
+### What is EDH-GO _not_? 
+
+EDH Go is _not_ meant to be
+
+- A rules engine. We're trying to facilitate online play with the spirit of the social contract.
+- Strict. We're trying to embrace Rule 0 in a digital way that's still accurate to real table games.
+- Official. We're not trying to enforce rules, we're trying to showcase games.
+
+Any rules imposed by our app should be (eventually) able to be changed.
 
 ## Logs
 
@@ -107,7 +127,6 @@ https://css-tricks.com/scaled-proportional-blocks-with-css-and-javascript/ We ca
 - [x] Write a GraphQL resolver for returning only opponent boardstates. Update: Instead, I'm just going to handle this at the component level by requesting them individually to be bandwidth optimized.
 - [*] Only reference players by ID and username on Games.
 - [*] Decouple BoardStates from Game model
-- [ ] Persist the Game directory to Redis
 
 *Notes*
 One of the real benefits of GraphQL is that the client can change their appetite themselves. They can take in the whole massive data object or they can build more complex interactions with specific pieces of data from different areas choosing to return only what they need.
@@ -195,9 +214,9 @@ Ultimately, I need to introduce a state management solution to the app via VueX 
 
 ### 22 Dec 2020
 **TODO**: 
-- [ ] Need to start grapplevining VueX into the app and get opponent boardstates working.
-- [ ] Get opponent boardstates pulling up however we have to manage it
-- [ ] Finish the Join Game user flow
+- [x] Need to start grapplevining VueX into the app and get opponent boardstates working.
+- [x] Get opponent boardstates pulling up however we have to manage it
+- [x] Finish the Join Game user flow
 
 ### 24 December 2020 
 Christmas Eve! 
@@ -220,8 +239,7 @@ Okay so while working on the Join Game flow, it occurred to me that it would be 
 **TODO**
 - [x] Regenerate GraphQL Schema
 - [x] Write the JoinGame method in games.go
-- [ ] Wire up the `handleJoinGame` method jin `JoinGame.vue` method to poin to that endpoint instead.
-- [ ] Tie in to the `gameUpdated` subscription events so that we can detect game changes on the front end.
+- [x] Wire up the `handleJoinGame` method jin `JoinGame.vue` method to poin to that endpoint instead.
 - [x] Add tests for JoinGame and CreateGame // CreateGame tests are in progress
 
 ### 30 Dec 2020 
@@ -239,5 +257,32 @@ way to handle the deeper intricacies that we can face with Board and Game state
 changes that will require subtle and specific handling.
 
 **TODO**
-- [ ] Wire up `JoinGame` mutation to `handleJoinGame()` function.
-- [ ] Test the subscriptions on `Board.vue` to see if we're even listening for Game Update events.
+- [x] Wire up `JoinGame` mutation to `handleJoinGame()` function.
+- [x] Test the subscriptions on `Board.vue` to see if we're even listening for Game Update events.
+
+### 31 Dec 2020 
+New Years Eve
+
+Backend is working much more smoothly now that I've discovered a cute little json encoding
+hack to get around type issues between GraphQL and Go.
+
+### 9 Jan 2021 
+Carrying over the TO DO list from New Years Eve 2020 entry. Need to work on the Join Game query for an Opponent now.
+
+**TODO**
+- [x] Wire up JoinGame mutation to Front end 
+
+### 14 Jan 2021
+
+Added vue-cookies to solve the user ID issue on the front end. This will get around auth for now but we'll need
+a more reliable way to sign up users and track them. We can keep it lite for now though.
+
+** TODO ** 
+- [ ] Add json/encoding hack to the Boardstates logic
+- [ ] Get Game subscription working
+- [ ] Test boardstate subscriptions for opponents in other views
+- [ ] Work on Decktester feature
+- [ ] Add vuex state for BoardState
+- [ ] Add vuex state for Game
+- [ ] Tie in to the `gameUpdated` subscription events so that we can detect game changes on the front end.
+- [ ] Persist the Game directory to Redis

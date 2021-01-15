@@ -23,6 +23,7 @@
     "subscriptions-transport-ws": "^0.9.18",
     "vue": "^2.6.12",
     "vue-apollo": "^3.0.5",
+    "vue-cookies": "^1.7.4",
     "vue-router": "^3.4.7",
     "vuedraggable": "^2.24.2",
     "vuex": "^3.5.1"

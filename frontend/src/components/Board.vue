@@ -28,6 +28,7 @@
 
         <!-- {{ game.PlayerIDs }} -->
         <div :key="p.ID" v-for="p in game.PlayerIDs">
+          username: {{ p.Username }} {{ self.User.Username}}
           <div v-if="p.Username !== self.User.Username">
             {{ p }}
           </div>

@@ -212,6 +212,8 @@ func (s *graphQLServer) UpdateGame(ctx context.Context, new InputGame) (*Game, e
 
 // JoinGame ...
 func (s *graphQLServer) JoinGame(ctx context.Context, input *InputJoinGame) (*Game, error) {
+	fmt.Printf("join game: %+v\n", input)
+
 	// TODO: We check for game existence a lot, we should probably make this a function
 	s.mutex.RLock()
 	game, ok := s.Directory[input.ID]
@@ -220,10 +222,14 @@ func (s *graphQLServer) JoinGame(ctx context.Context, input *InputJoinGame) (*Ga
 	}
 	s.mutex.RUnlock()
 
+	fmt.Printf("JoinGame#input: %+v\n", input)
+
 	user := &User{
-		ID:       *input.User.ID,
+		// ID:       *input.User.ID,
 		Username: input.User.Username,
 	}
+
+	fmt.Printf("user: %+v\n", user)
 
 	// Init default boardstate minus library and commander
 	bs := &BoardState{
@@ -236,6 +242,8 @@ func (s *graphQLServer) JoinGame(ctx context.Context, input *InputJoinGame) (*Ga
 		Field:      getCards(input.BoardState.Field),
 		Controlled: getCards(input.BoardState.Controlled),
 	}
+
+	fmt.Printf("boardstate: %+v\n", bs)
 
 	library, err := s.createLibraryFromDecklist(ctx, *input.Decklist)
 	if err != nil {

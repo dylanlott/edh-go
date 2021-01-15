@@ -14,6 +14,12 @@ const AuthPlugin = {
       window.localStorage.removeItem('user')
       delete Vue.prototype.user
     };
+    Vue.prototype.$setUsername = function (user) {
+      Vue.$cookies.set('username', user)
+    };
+    Vue.prototype.$getUsername = function () {
+      return Vue.$cookies.get('username')
+    };
   },
 };
 

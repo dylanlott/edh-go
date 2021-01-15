@@ -3,19 +3,20 @@ import { ApolloClient } from 'apollo-client';
 import { HttpLink } from 'apollo-link-http';
 import { InMemoryCache } from 'apollo-cache-inmemory';
 import VueApollo from 'vue-apollo';
-import Vuex from 'vuex'
 import { split } from 'apollo-link';
 import { WebSocketLink } from 'apollo-link-ws';
 import { getMainDefinition } from 'apollo-utilities';
-
-// TODO: Remove bootstrap cause it sucks
-// import 'bootstrap';
 
 // Buefy
 import Buefy from 'buefy'
 import 'buefy/dist/buefy.css'
 import './scss/custom.scss';
 Vue.use(Buefy)
+
+// VueCookies
+import VueCookies from 'vue-cookies'
+Vue.use(VueCookies)
+Vue.$cookies.config('7d')
 
 import router from './router';
 import App from './App.vue';
