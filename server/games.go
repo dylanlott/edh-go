@@ -92,7 +92,7 @@ func (s *graphQLServer) Boardstates(ctx context.Context, gameID string, username
 }
 
 func getUsers(players []*InputUser) []*User {
-	log.Printf("getUsers input: %+v\n", players)
+	// TODO: Use json Marshaling hack here
 	users := []*User{}
 	for _, p := range players {
 		u := &User{
@@ -100,10 +100,8 @@ func getUsers(players []*InputUser) []*User {
 			Username: p.Username,
 		}
 		users = append(users, u)
-		log.Printf("users after append: %+v\n", users)
 	}
 
-	log.Printf("getUsers returning: %+v\n", users)
 	return users
 }
 
@@ -183,7 +181,6 @@ func (s *graphQLServer) BoardUpdate(ctx context.Context, bs InputBoardState) (<-
 // NB: We eventually need a stronger support for combining two structs of different types
 // for GraphQL. Something like https://play.golang.org/p/UBCq0waIEe should eventually be used.
 func (s *graphQLServer) UpdateGame(ctx context.Context, new InputGame) (*Game, error) {
-	log.Printf("UpdateGame called with %+v\n", new)
 	// check existence of game, fail if not found
 	_, ok := s.Directory[new.ID]
 	if !ok {
@@ -214,12 +211,12 @@ func (s *graphQLServer) JoinGame(ctx context.Context, input *InputJoinGame) (*Ga
 	s.mutex.RLock()
 	game, ok := s.Directory[input.ID]
 	if !ok {
+		log.Printf("game lookup for id %s failed", input.ID)
 		return nil, errs.New("Game with ID %s does not exist", input.ID)
 	}
 	s.mutex.RUnlock()
 
 	user := &User{
-		// ID:       *input.User.ID,
 		Username: input.User.Username,
 	}
 
@@ -458,7 +455,6 @@ func getPlayerIDs(inputUsers []*InputUser) []*User {
 }
 
 func boardStateFromInput(bs InputBoardState) (*BoardState, error) {
-	log.Printf("boardStateFromInput: %+v\n", bs)
 	data, err := json.Marshal(bs)
 	if err != nil {
 		return nil, errs.New("failed to marshal input game: %s", err)
@@ -469,7 +465,6 @@ func boardStateFromInput(bs InputBoardState) (*BoardState, error) {
 		return nil, errs.New("failed to unmarshal game: %s", err)
 	}
 
-	log.Printf("returning new boardstate: %+v\n", new)
 	return new, nil
 }
 
@@ -565,6 +560,15 @@ func BoardStateKey(gameID, username string) string {
 	return fmt.Sprintf("%s:%s", gameID, username)
 }
 
+// GameKey formats the keys for Games in our Directory
+func GameKey(gameID string) string {
+	return fmt.Sprintf("%s", gameID)
+}
+
+// TODO: Need to access Set and Get through Persistence interface instead
+// of directly from the Server object. Persistence should be created and
+// attached to the Server instead of directly attaching the Redis client.
+
 // Set will set a value into the Redis client and returns an error, if any
 func (s *graphQLServer) Set(key string, value interface{}) error {
 	// TODO: Need to set this to an env variable
@@ -574,6 +578,7 @@ func (s *graphQLServer) Set(key string, value interface{}) error {
 	}
 	p, err := json.Marshal(value)
 	if err != nil {
+		log.Printf("failed to marshal value in Set: %s", err)
 		return err
 	}
 
@@ -584,6 +589,7 @@ func (s *graphQLServer) Set(key string, value interface{}) error {
 func (s *graphQLServer) Get(key string, dest interface{}) error {
 	p, err := s.redisClient.Get(key).Result()
 	if err != nil {
+		log.Printf("failed to get key from redis: %s", err)
 		return err
 	}
 	return json.Unmarshal([]byte(p), dest)
