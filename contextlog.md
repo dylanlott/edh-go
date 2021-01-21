@@ -277,6 +277,9 @@ Carrying over the TO DO list from New Years Eve 2020 entry. Need to work on the 
 Added vue-cookies to solve the user ID issue on the front end. This will get around auth for now but we'll need
 a more reliable way to sign up users and track them. We can keep it lite for now though.
 
+### 20 Jan 2021
+Need to look into best way to handle auth. 
+
 ** TODO ** 
 - [ ] Add json/encoding hack to the Boardstates logic
 - [ ] Get Game subscription working
