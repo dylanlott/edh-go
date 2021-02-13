@@ -178,8 +178,6 @@ func (s *graphQLServer) BoardUpdate(ctx context.Context, bs InputBoardState) (<-
 // UpdateGame is what's used to change the name of the game, format, insert
 // or remove players, or change other meta informatin about a game.
 // NB: Game _can_ touch boardstate right now, and it probably shouldn't.
-// NB: We eventually need a stronger support for combining two structs of different types
-// for GraphQL. Something like https://play.golang.org/p/UBCq0waIEe should eventually be used.
 func (s *graphQLServer) UpdateGame(ctx context.Context, new InputGame) (*Game, error) {
 	// check existence of game, fail if not found
 	_, ok := s.Directory[new.ID]
@@ -199,6 +197,7 @@ func (s *graphQLServer) UpdateGame(ctx context.Context, new InputGame) (*Game, e
 
 	s.mutex.Lock()
 	s.Directory[new.ID] = game
+	log.Printf("pushing new game on channel: %+v", game)
 	s.gameChannels[new.ID] <- game
 	s.mutex.Unlock()
 
@@ -276,10 +275,24 @@ func (s *graphQLServer) JoinGame(ctx context.Context, input *InputJoinGame) (*Ga
 		return nil, err
 	}
 
-	s.mutex.Lock()
-	s.Directory[game.ID] = game
-	log.Printf("Game [%s] joined: %+v", game.ID, s.Directory[game.ID])
-	s.mutex.Unlock()
+	ig := InputGame{}
+	b, err := json.Marshal(game)
+	if err != nil {
+		log.Printf("failed to marshal input game in JoinGame: %s", err)
+		return nil, err
+	}
+	err = json.Unmarshal(b, &ig)
+	if err != nil {
+		log.Printf("failed to unmarshal input game in JoinGame: %s", err)
+		return nil, err
+	}
+
+	log.Printf("JoinGame#UpdateGame: %+v", ig)
+	s.UpdateGame(ctx, ig)
+
+	// s.mutex.Lock()
+	// s.Directory[game.ID] = game
+	// s.mutex.Unlock()
 	return game, nil
 }
 

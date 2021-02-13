@@ -20,6 +20,9 @@ const AuthPlugin = {
     Vue.prototype.$getUsername = function () {
       return Vue.$cookies.get('username')
     };
+    Vue.prototype.$setToken = function (token) {
+      return Vue.$cookies.set('token', token)
+    }
   },
 };
 
