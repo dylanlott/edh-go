@@ -4,9 +4,34 @@ import (
 	"database/sql"
 	"log"
 
+	"github.com/golang-migrate/migrate/v4"
+	"github.com/golang-migrate/migrate/v4/database/sqlite3"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/zeebo/errs"
 )
+
+var (
+	// Directory used for loading migrations
+	migrationsDir = "file://./persistence/migrations/"
+)
+
+// NewAppDatabase returns a migrated app database or an error
+func NewAppDatabase(path string) (*DB, error) {
+	wrapped, err := NewSQLite(path)
+	if err != nil {
+		return nil, errs.Wrap(err)
+	}
+
+	migrated, err := applyMigrations(wrapped.db)
+	if err != nil {
+		return nil, errs.Wrap(err)
+	}
+	log.Printf("successfully migrated sqlite3 db: %+v", migrated)
+	return &DB{
+		db: migrated,
+	}, nil
+}
 
 // NewSQLite returns a DB object to persist data for the application.
 func NewSQLite(path string) (*DB, error) {
@@ -24,10 +49,33 @@ func NewSQLite(path string) (*DB, error) {
 	}
 
 	log.Printf("database connection established: %+v\n", db)
-
+	// return db
 	return &DB{
 		db: db,
 	}, nil
+}
+
+func applyMigrations(db *sql.DB) (*sql.DB, error) {
+	driver, err := sqlite3.WithInstance(db, &sqlite3.Config{})
+	if err != nil {
+		log.Printf("failed to create db instance: %s", err)
+		return nil, errs.Wrap(err)
+	}
+
+	m, err := migrate.NewWithDatabaseInstance(migrationsDir, "sqlite3", driver)
+	if err != nil {
+		log.Printf("failed to create migration with database instance: %s", err)
+		return nil, errs.Wrap(err)
+	}
+	err = m.Up()
+	if err != nil {
+		if err != migrate.ErrNoChange {
+			log.Printf("failed to migrate db: %s", err)
+			return nil, errs.Wrap(err)
+		}
+	}
+
+	return db, nil
 }
 
 // Query will return a *sql.Rows or an error from the database.

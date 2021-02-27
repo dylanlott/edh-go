@@ -1,0 +1,6 @@
+CREATE TABLE IF NOT EXISTS users (
+    username VARCHAR(255),
+    password VARCHAR(255),
+    uuid VARCHAR(255) UNIQUE,
+    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+);

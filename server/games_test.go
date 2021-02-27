@@ -212,7 +212,7 @@ func TestGameUpdated(t *testing.T) {
 				ID:        testGame.ID,
 				CreatedAt: &now,
 				PlayerIDs: []*InputUser{
-					&InputUser{
+					{
 						ID:       randomUserID(),
 						Username: "joingameid",
 					},

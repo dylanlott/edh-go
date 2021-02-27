@@ -35,6 +35,8 @@ type Database interface {
 	Stats() sql.DBStats
 }
 
+// JSONStorage provides an interface that anything can fulfill to persist JSON
+// This is eventually to be used for boardstate persistence but could be anything.
 type JSONStorage interface {
 	Put(key Key, val struct{}) (struct{}, error)
 	Get(key Key) (struct{}, error)

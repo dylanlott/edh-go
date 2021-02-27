@@ -397,7 +397,7 @@ func (s *graphQLServer) UpdateBoardState(ctx context.Context, bs InputBoardState
 	updated, err := boardStateFromInput(bs)
 	if err != nil {
 		log.Printf("UpdateBoardState failed to marshal input board state correctly: %s", err)
-		return nil, errors.New(fmt.Sprintf("failed to marshal input boardstate: %s", err))
+		return nil, fmt.Errorf("failed to marshal input boardstate: %s", err)
 	}
 	boardKey := BoardStateKey(bs.GameID, bs.User.Username)
 	err = s.Set(boardKey, updated)

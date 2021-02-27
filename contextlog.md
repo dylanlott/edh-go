@@ -313,3 +313,19 @@ Need to look into best way to handle auth.
 - [ ] Simplify game handling & modeling 
     - [ ] Remove redundant user info in boardstates and games
     - [ ] Make it so games have no concept of users and only see boardstates with users attached
+
+
+27 Feb 2021
+===========
+
+My test suite has made refactoring and changes a lot faster, and for future me: I Should really make sure I start all personal projects
+with a test harness. It makes it much easier to developer on longer time scales with tests. It's also much easier to setup pipelines and 
+make small changes with a test harness. I can be much more confident about my code and bug fixes when I have passing tests.
+
+*Notes*
+- Working on migrations, they should be done soon.
+- Having to finish auth tests, but migrations were a blocker to that because we had no way to reliably update the sqlite3 database.
+- Once auth tests are done we can wire up the front end to accept different users and load multiple users into a single game.
+- Need to figure out the fast-path to MVP and take it. I keep getting side tracked on small quality of life features. 
+    - While they are helpful, we're coming up on a year after we started this project and I want to launch a beta.
+- I should write down a launch plan

@@ -22,7 +22,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	db, err := persistence.NewSQLite("./persistence/db.sqlite")
+	db, err := persistence.NewAppDatabase("./persistence/db.sqlite")
 	if err != nil {
 		log.Fatal(err)
 	}
