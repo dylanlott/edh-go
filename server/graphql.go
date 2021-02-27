@@ -4,6 +4,7 @@ package server
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -19,7 +20,11 @@ import (
 	"github.com/tinrab/retry"
 )
 
-type contextKey string
+var userCtxKey = &contextKey{"user"}
+
+type contextKey struct {
+	name string
+}
 
 // Observer must be fulfilled for anything that's listening to the events that
 // come off of a game. GraphQL mutations trigger these events, which get
@@ -105,11 +110,49 @@ func (s *graphQLServer) Serve(route string, port int) error {
 			}),
 		),
 	)
+	h := cors.AllowAll().Handler(s.auth(mux))
 	mux.Handle("/playground", handler.Playground("GraphQL", route))
 	log.Println("serving graphiql at localhost:8080/playground")
+	return http.ListenAndServe(fmt.Sprintf(":%d", port), h)
+}
 
-	handler := cors.AllowAll().Handler(mux)
-	return http.ListenAndServe(fmt.Sprintf(":%d", port), handler)
+// auth is a middleware responsible for passing header and cookie info to context
+func (s *graphQLServer) auth(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		username, err := r.Cookie("username")
+		token, err := r.Cookie("token")
+		if err != nil {
+			log.Printf("error parsing token: %s", err)
+			next.ServeHTTP(w, r)
+		}
+		if token == nil {
+			// allow unauthed users in for login/signup
+			next.ServeHTTP(w, r)
+			return
+		}
+		log.Printf("token: %s", token)
+		// find and authenticate
+		rows, err := s.db.Query("SELECT * FROM users WHERE username = ?", username)
+		if err != nil {
+			log.Printf("error querying users: %s", err)
+			next.ServeHTTP(w, r)
+			return
+		}
+
+		for rows.Next() {
+			cols, err := rows.Columns()
+			if err != nil {
+				log.Printf("error getting rows: %s", err)
+			}
+			log.Printf("columns: %s", cols)
+			continue
+		}
+
+		// TODO: Assign the found user to the request
+		// ctx := context.WithValue(r.Context(), userCtxKey, user)
+		// r = r.WithContext(ctx)
+		next.ServeHTTP(w, r)
+	})
 }
 
 func (s *graphQLServer) PostMessage(ctx context.Context, user string, text string) (*Message, error) {
@@ -164,18 +207,20 @@ func (s *graphQLServer) Messages(ctx context.Context) ([]*Message, error) {
 	return messages, nil
 }
 
-func (s *graphQLServer) Users(ctx context.Context) ([]string, error) {
-	cmd := s.redisClient.SMembers("users")
-	if cmd.Err() != nil {
-		log.Println(cmd.Err())
-		return nil, cmd.Err()
-	}
-	res, err := cmd.Result()
-	if err != nil {
-		log.Println(err)
-		return nil, err
-	}
-	return res, nil
+func (s *graphQLServer) Users(ctx context.Context, id *string) ([]string, error) {
+	// TODO: Persist to AppDB instead
+	// cmd := s.redisClient.SMembers("users")
+	// if cmd.Err() != nil {
+	// 	log.Println(cmd.Err())
+	// 	return nil, cmd.Err()
+	// }
+	// res, err := cmd.Result()
+	// if err != nil {
+	// 	log.Println(err)
+	// 	return nil, err
+	// }
+	// return res, nil
+	return []string{}, errors.New("not impl")
 }
 
 func (s *graphQLServer) MessagePosted(ctx context.Context, user string) (<-chan *Message, error) {
@@ -255,4 +300,12 @@ func (s *graphQLServer) Query() QueryResolver {
 
 func (s *graphQLServer) Subscription() SubscriptionResolver {
 	return s
+}
+
+func use(h http.HandlerFunc, middleware ...func(http.HandlerFunc) http.HandlerFunc) http.HandlerFunc {
+	for _, m := range middleware {
+		h = m(h)
+	}
+
+	return h
 }

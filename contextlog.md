@@ -289,3 +289,27 @@ Need to look into best way to handle auth.
 - [ ] Add vuex state for Game
 - [ ] Tie in to the `gameUpdated` subscription events so that we can detect game changes on the front end.
 - [ ] Persist the Game directory to Redis
+
+
+13 Feb 2021
+===========
+
+*Notes*
+- Need to remove Directory from GraphQL server struct and make it use Redis or whatever the KV store is using. 
+- Auth needs to be added and we need to figure out a graceful way to attach user data to our requests.
+    - I think for auth, we can use something like [this](https://github.com/99designs/gqlgen/blob/master/docs/content/recipes/authentication.md)
+- Need to write more tests to shore up backend functionality.
+- The app has a lot of cruft code I should get rid of right now. 
+    - I should slim things down and remove all the mental overhead of it so that I can focus on a launch priority better.
+
+
+15 Feb 2021
+===========
+
+- [ ] Setup docker compose and migrations. 
+- [ ] Get sign up and login working 
+- [ ] Pass authentication info to server context
+- [ ] Make games aware of user contexts
+- [ ] Simplify game handling & modeling 
+    - [ ] Remove redundant user info in boardstates and games
+    - [ ] Make it so games have no concept of users and only see boardstates with users attached

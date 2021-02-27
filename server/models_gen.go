@@ -197,7 +197,7 @@ type Turn struct {
 }
 
 type User struct {
-	ID       string `json:"ID"`
-	Username string `json:"Username"`
-	Deck     string `json:"Deck"`
+	ID       string  `json:"ID"`
+	Username string  `json:"Username"`
+	Token    *string `json:"Token"`
 }
