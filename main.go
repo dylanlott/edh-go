@@ -12,7 +12,8 @@ import (
 )
 
 type config struct {
-	RedisURL string `envconfig:"REDIS_URL"`
+	RedisURL    string `envconfig:"REDIS_URL"`
+	PostgresURL string `envconfig:"POSTGRES_URL"`
 }
 
 func main() {
@@ -22,7 +23,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	db, err := persistence.NewAppDatabase("./persistence/db.sqlite")
+	db, err := persistence.NewAppDatabase("./persistence/db.sqlite", "./persistence/migrations/")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -32,7 +33,8 @@ func main() {
 		log.Fatalf(errs.Wrap(err).Error())
 	}
 
-	s, err := server.NewGraphQLServer(nil, db, cardDB)
+	kv, err := persistence.NewRedis("localhost:6379", "", nil)
+	s, err := server.NewGraphQLServer(kv, db, cardDB)
 	if err != nil {
 		log.Fatal(err)
 	}

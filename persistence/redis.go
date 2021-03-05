@@ -1,9 +1,8 @@
 package persistence
 
 import (
-	"github.com/zeebo/errs"
-
 	"github.com/go-redis/redis/v7"
+	"github.com/zeebo/errs"
 )
 
 // redisDB implelement Persistence with the Redis driver
@@ -11,15 +10,24 @@ type redisDB struct {
 	client *redis.Client
 }
 
+type config struct {
+	RedisURL string `envconfig:"REDIS_URL"`
+}
+
 type Config map[string]string
 
 // NewRedis returns a new Redis Persistence that can be used
 // in the application to persist and update state.
-func NewRedis(config Config) (*redisDB, error) {
+func NewRedis(url string, pass string, opts Config) (*redisDB, error) {
+	if url == "" {
+		// use default
+		url = "localhost:6379"
+	}
+
 	client := redis.NewClient(&redis.Options{
-		Addr:     "localhost:6379",
-		Password: "", // no password set
-		DB:       0,  // use default DB
+		Addr:     url,
+		Password: pass, // no password set
+		DB:       0,    // use default DB
 	})
 
 	return &redisDB{

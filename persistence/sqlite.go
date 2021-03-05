@@ -17,13 +17,13 @@ var (
 )
 
 // NewAppDatabase returns a migrated app database or an error
-func NewAppDatabase(path string) (*DB, error) {
+func NewAppDatabase(path string, migrationsDir string) (*DB, error) {
 	wrapped, err := NewSQLite(path)
 	if err != nil {
 		return nil, errs.Wrap(err)
 	}
 
-	migrated, err := applyMigrations(wrapped.db)
+	migrated, err := applyMigrations(wrapped.db, migrationsDir)
 	if err != nil {
 		return nil, errs.Wrap(err)
 	}
@@ -55,7 +55,7 @@ func NewSQLite(path string) (*DB, error) {
 	}, nil
 }
 
-func applyMigrations(db *sql.DB) (*sql.DB, error) {
+func applyMigrations(db *sql.DB, migrationsDir string) (*sql.DB, error) {
 	driver, err := sqlite3.WithInstance(db, &sqlite3.Config{})
 	if err != nil {
 		log.Printf("failed to create db instance: %s", err)

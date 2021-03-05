@@ -32,7 +32,7 @@ func Test_graphQLServer_Signup(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			db, err := persistence.NewSQLite("../persistence/db.sqlite")
+			db, err := persistence.NewAppDatabase("../persistence/db.sqlite", "../persistence/migrations/")
 			if err != nil {
 				t.Errorf("failed to create persistence: %s", err)
 			}
@@ -46,7 +46,6 @@ func Test_graphQLServer_Signup(t *testing.T) {
 			if err != nil {
 				t.Errorf("failed to start server: %s", err)
 			}
-			t.Logf("server: %+v", s)
 			if got, err := s.Signup(context.Background(), tt.args.username, tt.args.password); !reflect.DeepEqual(got, tt.want) {
 				log.Printf("error: %s", err)
 				t.Errorf("graphQLServer.Signup() = %v, want %v", got, tt.want)

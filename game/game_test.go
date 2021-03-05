@@ -20,13 +20,16 @@ func TestNewFullGame(t *testing.T) {
 		Cards: TestDeck,
 	}
 
-	db, err := persistence.NewRedis(persistence.Config{})
+	db, err := persistence.NewRedis("localhost:6379", "", nil)
+	if err != nil {
+		t.Errorf("failed to create redis instance: %s", err)
+	}
 	assert.NoError(t, err)
 	assert.NotNil(t, db)
 }
 
 func TestBoardState(t *testing.T) {
-	db, err := persistence.NewRedis(persistence.Config{})
+	db, err := persistence.NewRedis("localhost:6379", "", nil)
 	assert.NoError(t, err)
 
 	players := make(map[UserID]Deck)

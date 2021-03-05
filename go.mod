@@ -19,5 +19,6 @@ require (
 	github.com/tinrab/retry v1.0.0
 	github.com/vektah/gqlparser v1.2.0
 	github.com/zeebo/errs v1.2.2
+	golang.org/x/crypto v0.0.0-20200709230013-948cd5f35899
 	gopkg.in/yaml.v2 v2.3.0 // indirect
 )
