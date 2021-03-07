@@ -5,8 +5,10 @@ import (
 	"log"
 
 	"github.com/golang-migrate/migrate/v4"
-	"github.com/golang-migrate/migrate/v4/database/sqlite3"
+	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
+
+	"github.com/golang-migrate/migrate/v4/database/sqlite3"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/zeebo/errs"
 )
@@ -14,22 +16,30 @@ import (
 var (
 	// Directory used for loading migrations
 	migrationsDir = "file://./persistence/migrations/"
+	defaultPGURL  = "postgres://postgres:postgres@localhost:5432/example?sslmode=disable"
 )
 
 // NewAppDatabase returns a migrated app database or an error
 func NewAppDatabase(path string, migrationsDir string) (*DB, error) {
-	wrapped, err := NewSQLite(path)
+	// wrapped, err := NewSQLite(path)
+	// if err != nil {
+	// 	return nil, errs.Wrap(err)
+	// }
+
+	// migrated, err := applySqliteMigrations(wrapped.db, migrationsDir)
+	// if err != nil {
+	// 	return nil, errs.Wrap(err)
+	// }
+	// log.Printf("successfully migrated sqlite3 db: %+v", migrated)
+	pg, err := NewPostgres(defaultPGURL, migrationsDir)
 	if err != nil {
 		return nil, errs.Wrap(err)
 	}
 
-	migrated, err := applyMigrations(wrapped.db, migrationsDir)
-	if err != nil {
-		return nil, errs.Wrap(err)
-	}
-	log.Printf("successfully migrated sqlite3 db: %+v", migrated)
+	log.Printf("pg: %+v", pg)
+
 	return &DB{
-		db: migrated,
+		db: pg,
 	}, nil
 }
 
@@ -55,7 +65,28 @@ func NewSQLite(path string) (*DB, error) {
 	}, nil
 }
 
-func applyMigrations(db *sql.DB, migrationsDir string) (*sql.DB, error) {
+// NewPostgres returns a migrated sql.DB with a Postgres database connection
+func NewPostgres(url string, migrationsDir string) (*sql.DB, error) {
+	m, err := migrate.New(
+		migrationsDir,
+		defaultPGURL,
+	)
+	if err != nil {
+		log.Fatal(err)
+	}
+	if err := m.Up(); err != nil {
+		log.Fatal(err)
+	}
+
+	db, err := sql.Open("postgres", url)
+	if err != nil {
+		log.Fatalf("failed to get postgres instance: %s", err)
+	}
+	log.Printf("[Postgres] Connection established: %+v", db)
+	return db, nil
+}
+
+func applySqliteMigrations(db *sql.DB, migrationsDir string) (*sql.DB, error) {
 	driver, err := sqlite3.WithInstance(db, &sqlite3.Config{})
 	if err != nil {
 		log.Printf("failed to create db instance: %s", err)
