@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 	"errors"
+	"log"
 
 	"github.com/google/uuid"
 	"github.com/zeebo/errs"
@@ -22,6 +23,7 @@ func (s *graphQLServer) Signup(ctx context.Context, username string, password st
 	`
 	_, err = s.db.Exec(stmt, id, username, hashed)
 	if err != nil {
+		log.Printf("Signup failed: %s", err)
 		return nil, errs.Wrap(err)
 	}
 

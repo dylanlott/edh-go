@@ -32,7 +32,7 @@ func Test_graphQLServer_Signup(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			db, err := persistence.NewAppDatabase("../persistence/db.sqlite", "../persistence/migrations/")
+			db, err := persistence.NewAppDatabase("../persistence/migrations/")
 			if err != nil {
 				t.Errorf("failed to create persistence: %s", err)
 			}

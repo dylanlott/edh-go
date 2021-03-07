@@ -21,15 +21,12 @@ var (
 )
 
 // NewAppDatabase returns a migrated app database or an error
-func NewAppDatabase(migrationsDir string) (*DB, error) {
-	log.Printf("migrationsDir: %s", migrationsDir)
-	pg, err := NewPostgres(migrationsDir)
+func NewAppDatabase(migdir string) (*DB, error) {
+	pg, err := NewPostgres(migdir)
 	if err != nil {
 		log.Printf("failed to get postgres: %s", err)
 		return nil, errs.Wrap(err)
 	}
-	log.Printf("pg: %+v", pg)
-
 	return &DB{
 		db: pg,
 	}, nil
@@ -58,7 +55,8 @@ func NewSQLite(path string) (*DB, error) {
 }
 
 // NewPostgres returns a migrated sql.DB with a Postgres database connection
-func NewPostgres(migrationsDir string) (*sql.DB, error) {
+// migdir is the relative path to the migrations directory.
+func NewPostgres(migdir string) (*sql.DB, error) {
 	// TODO: Fix before going to prod
 	host := "localhost"
 	port := 5432
@@ -79,7 +77,8 @@ func NewPostgres(migrationsDir string) (*sql.DB, error) {
 		log.Printf("failed to get postgres instance: %s", err)
 		return nil, err
 	}
-	m, err := migrate.NewWithDatabaseInstance(defaultMigrationsDir, "postgres", driver)
+	formattedMigrationsDir := fmt.Sprintf("file://%s", migdir)
+	m, err := migrate.NewWithDatabaseInstance(formattedMigrationsDir, "postgres", driver)
 	if err != nil {
 		log.Printf("failed to get instance for migration: %s", err)
 		return nil, errs.Wrap(err)
