@@ -23,8 +23,9 @@ func main() {
 		log.Fatal(err)
 	}
 
-	db, err := persistence.NewAppDatabase("./persistence/db.sqlite", "./persistence/migrations/")
+	db, err := persistence.NewAppDatabase("./persistence/migrations/")
 	if err != nil {
+		log.Printf("error getting app db: %s", err)
 		log.Fatal(err)
 	}
 

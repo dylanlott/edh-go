@@ -2,10 +2,11 @@ package persistence
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 
 	"github.com/golang-migrate/migrate/v4"
-	_ "github.com/golang-migrate/migrate/v4/database/postgres"
+	"github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 
 	"github.com/golang-migrate/migrate/v4/database/sqlite3"
@@ -15,27 +16,18 @@ import (
 
 var (
 	// Directory used for loading migrations
-	migrationsDir = "file://./persistence/migrations/"
-	defaultPGURL  = "postgres://postgres:postgres@localhost:5432/example?sslmode=disable"
+	defaultMigrationsDir = "file://./persistence/migrations/"
+	defaultPGURL         = "postgres://edhgo:edhgodev@localhost:5432/edhgo?sslmode=disable"
 )
 
 // NewAppDatabase returns a migrated app database or an error
-func NewAppDatabase(path string, migrationsDir string) (*DB, error) {
-	// wrapped, err := NewSQLite(path)
-	// if err != nil {
-	// 	return nil, errs.Wrap(err)
-	// }
-
-	// migrated, err := applySqliteMigrations(wrapped.db, migrationsDir)
-	// if err != nil {
-	// 	return nil, errs.Wrap(err)
-	// }
-	// log.Printf("successfully migrated sqlite3 db: %+v", migrated)
-	pg, err := NewPostgres(defaultPGURL, migrationsDir)
+func NewAppDatabase(migrationsDir string) (*DB, error) {
+	log.Printf("migrationsDir: %s", migrationsDir)
+	pg, err := NewPostgres(migrationsDir)
 	if err != nil {
+		log.Printf("failed to get postgres: %s", err)
 		return nil, errs.Wrap(err)
 	}
-
 	log.Printf("pg: %+v", pg)
 
 	return &DB{
@@ -66,24 +58,40 @@ func NewSQLite(path string) (*DB, error) {
 }
 
 // NewPostgres returns a migrated sql.DB with a Postgres database connection
-func NewPostgres(url string, migrationsDir string) (*sql.DB, error) {
-	m, err := migrate.New(
-		migrationsDir,
-		defaultPGURL,
-	)
+func NewPostgres(migrationsDir string) (*sql.DB, error) {
+	// TODO: Fix before going to prod
+	host := "localhost"
+	port := 5432
+	user := "edhgo"
+	password := "edhgodev"
+	dbname := "edhgo"
+	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s "+
+		"password=%s dbname=%s sslmode=disable",
+		host, port, user, password, dbname)
+
+	db, err := sql.Open("postgres", psqlInfo)
 	if err != nil {
-		log.Fatal(err)
+		log.Printf("failed to get new postgres: %s", err)
+		return nil, errs.Wrap(err)
 	}
-	if err := m.Up(); err != nil {
-		log.Fatal(err)
+	driver, err := postgres.WithInstance(db, &postgres.Config{})
+	if err != nil {
+		log.Printf("failed to get postgres instance: %s", err)
+		return nil, err
+	}
+	m, err := migrate.NewWithDatabaseInstance(defaultMigrationsDir, "postgres", driver)
+	if err != nil {
+		log.Printf("failed to get instance for migration: %s", err)
+		return nil, errs.Wrap(err)
+	}
+	err = m.Up()
+	if err != nil {
+		log.Printf("failed to run migrations: %s", err)
+		// attempt to rollback if migration fails
+		return nil, errs.Wrap(m.Down())
 	}
 
-	db, err := sql.Open("postgres", url)
-	if err != nil {
-		log.Fatalf("failed to get postgres instance: %s", err)
-	}
-	log.Printf("[Postgres] Connection established: %+v", db)
-	return db, nil
+	return db, err
 }
 
 func applySqliteMigrations(db *sql.DB, migrationsDir string) (*sql.DB, error) {
