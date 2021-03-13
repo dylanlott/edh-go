@@ -121,6 +121,13 @@ func (s *graphQLServer) Serve(route string, port int) error {
 func (s *graphQLServer) auth(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		username, err := r.Cookie("username")
+		if err != nil {
+			// log.Printf("username not present: %s", err)
+			// This means they're not attempting to auth, so we need to let them through
+			// to either sign up or login.
+			next.ServeHTTP(w, r)
+			return
+		}
 		token, err := r.Cookie("token")
 		if err != nil {
 			log.Printf("error parsing token: %s", err)
@@ -131,6 +138,8 @@ func (s *graphQLServer) auth(next http.Handler) http.Handler {
 			next.ServeHTTP(w, r)
 			return
 		}
+
+		// If they have a token, we have to compare it.
 		log.Printf("token: %s", token)
 		// find and authenticate
 		rows, err := s.db.Query("SELECT * FROM users WHERE username = ?", username)
