@@ -48,6 +48,8 @@
 </template>
 <script>
 import gql from 'graphql-tag';
+import router from '@/router'
+
 export default {
   name: 'join',
   data() {
@@ -74,6 +76,8 @@ export default {
   },
   created () {
     this.gameQuery()
+    console.log(this.$setUsername('frylock'))
+    console.log(this.$getUsername())
   },
   methods: {
     queryCommanders() {
@@ -115,27 +119,46 @@ export default {
     handleJoinGame() {
       const inputGame = {
         ID: this.$route.params.id,
-        PlayerIDs: this.game.PlayerIDs.push({
-          ID: "",
-          Username: "",
-        }),
-        Decklist: "",
-        BoardState: {},
+        Decklist: this.deck.library,
+        User: {
+          Username: this.username || "",
+        },
+        BoardState: {
+          GameID: this.$route.params.id,
+          User: {
+            Username: this.username || "",
+          },
+          Life: 40,
+          Commander: [{
+            Name: this.deck.commander,
+          }]
+        }
       }
+      console.log(inputGame)
       this.$apollo.mutate({
-        // TODO: write join game mutation
-        mutation: gql`mutation {
-          joinGame(input: inputJoinGame) {
+        mutation: gql`mutation ($InputJoinGame: InputJoinGame) {
+          joinGame(input: $InputJoinGame) {
             ID
+            PlayerIDs {
+              Username
+            }
           }
         }`,
         variables: {
-          inputJoinGame: inputGame,
+          InputJoinGame: inputGame,
         },
         update: (store, { data }) => {
           console.log('handleJoinGame#update#store:', store)
           console.log('handleJoinGame#update#data:', data)
         }
+      })
+      .then((res) => {
+        router.push({ path: `/games/${res.data.joinGame.ID}` })
+        return res
+      })
+      .catch((err) => {
+        console.log('error joining game: ', err)
+        return err
       })
     },
     gameQuery() {
@@ -155,18 +178,22 @@ export default {
           gameID: this.$route.params.id,
         },
         update (data) {
-          console.log('found game: ', data.games[0])
           this.game = data.games[0]
         }
       })
       .then(({ data }) => {
-        console.log('this.gameQuery#then#data', data)
         if (data.games[0].length === 0) {
           console.log('failed to find game: ', this.$route.params.id)
         }
         this.game = data.games[0]
         console.log('this.game: ', this.game)
       })
+    },
+    uuid () {
+      return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+          var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+          return v.toString(16);
+        });
     }
   },
 };

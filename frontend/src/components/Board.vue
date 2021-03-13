@@ -18,7 +18,6 @@
     <div class="opponents">
       <!-- Gets the game, and only shows the Opponent boardstates from the Game PlayerIDs  -->
       <div :key="opponent.ID" v-for="opponent in boardstates">
-        {{ opponent }}
         <div v-if="opponent.Username != self.User.Username"></div>
       </div>
       <div :key="player.ID" v-for="player in game.PlayerIDs">
@@ -28,6 +27,7 @@
 
         <!-- {{ game.PlayerIDs }} -->
         <div :key="p.ID" v-for="p in game.PlayerIDs">
+          username: {{ p.Username }} {{ self.User.Username}}
           <div v-if="p.Username !== self.User.Username">
             {{ p }}
           </div>
@@ -145,6 +145,7 @@ import Opponents from '@/components/Opponents.vue'
 // import TurnTracker from '@/components/TurnTracker.vue';
 import { 
   gameQuery,
+  gameUpdateQuery,
   selfStateQuery, 
   updateBoardStateQuery,
   boardstates,
@@ -186,7 +187,8 @@ export default {
     };
   },
   created () {
-    // console.log('route ID: ', this.$route.params.id)
+    this.subscribeToGameUpdates()
+    this.$store.dispatch('getGame', this.$route.params.id)
   },
   methods: {
     gameID() {
@@ -262,19 +264,45 @@ export default {
         return err
       })
     },
-    mutateGameState() {
-      // console.log
-    },
     handleActivity(val) {
       return
       // console.log('logging activity: ', val)
     },
-    sleepFor (sleepDuration) {
-      var now = new Date().getTime();
-      while(new Date().getTime() < now + sleepDuration){ /* do nothing */ } 
-    },
     getPlayerIDs () {
+      console.log('getPlayerIDs: ', this.game.PlayerIDs)
       return this.game.PlayerIDs
+    },
+    subscribeToGameUpdates() {
+      var self = this
+      console.log('subscribing to game updates')
+      this.$apollo.query({
+        query: gameQuery,// TODO: Add the right query  
+        variables: {
+          gameID: this.$route.params.id,
+        }
+      })
+      .then(data => {
+        console.log('initial gameQuery: ', data)
+        this.$apollo.subscribe({
+          query: gameUpdateQuery,// nb: this is where we use the subscription { } query
+          variables: {
+            game: {
+              ID: this.$route.params.id,
+              PlayerIDs: this.getPlayerIDs()
+            }
+          }
+        })
+        .subscribe({
+          next(data) {
+            console.log('received updated game data: ', data)
+            self.game.PlayerIDs = data.data.gameUpdated.PlayerIDs
+            self.game.Turn = data.data.gameUpdated.Turn
+          },
+          error(err) {
+            console.log('game subscription error: ', err)
+          }
+        })
+      })
     }
   },
   watch: {
@@ -326,11 +354,8 @@ export default {
         },
         update (data) {
           data.boardstates.forEach((bs) => {
-            console.log("opp: ", bs)
             if (bs.User.Username != this.$currentUser()) {
               console.log("found opponent: ", bs)
-            } else {
-              console.log('DEBUG: skipping myself')
             }
           })
         },

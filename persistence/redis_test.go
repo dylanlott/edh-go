@@ -7,8 +7,7 @@ import (
 )
 
 func TestNewRedis(t *testing.T) {
-	config := make(Config)
-	r, err := NewRedis(config)
+	r, err := NewRedis("localhost:6379", "", nil)
 	if err != nil {
 		t.Logf("FAILED: %s", err)
 		t.Fail()
@@ -35,11 +34,4 @@ func TestNewRedis(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, val)
 	assert.Equal(t, val, Value("value"))
-}
-
-func TestRedisComplex(t *testing.T) {
-	config := make(Config)
-	r, err := NewRedis(config)
-	assert.NoError(t, err)
-	assert.NotNil(t, r)
 }

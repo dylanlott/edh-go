@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/csv"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -11,8 +12,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/dylanlott/edh-go/persistence"
 	"github.com/google/uuid"
-	"github.com/imdario/mergo"
 	"github.com/zeebo/errs"
 )
 
@@ -79,8 +80,6 @@ func (s *graphQLServer) Boardstates(ctx context.Context, gameID string, username
 				log.Printf("error fetching user boardstate from redis: %s", err)
 			}
 
-			log.Printf("#BoardStates## appending boardstate: %+v\n", board)
-
 			boardstates = append(boardstates, board)
 		}
 	}
@@ -89,13 +88,11 @@ func (s *graphQLServer) Boardstates(ctx context.Context, gameID string, username
 		return []*BoardState{}, errs.New("no boardstate for user %s found", *username)
 	}
 
-	log.Printf("returning all boardstates: %+v\n", boardstates)
-
 	return boardstates, nil
 }
 
 func getUsers(players []*InputUser) []*User {
-	log.Printf("getUsers input: %+v\n", players)
+	// TODO: Use json Marshaling hack here
 	users := []*User{}
 	for _, p := range players {
 		u := &User{
@@ -103,10 +100,8 @@ func getUsers(players []*InputUser) []*User {
 			Username: p.Username,
 		}
 		users = append(users, u)
-		log.Printf("users after append: %+v\n", users)
 	}
 
-	log.Printf("getUsers returning: %+v\n", users)
 	return users
 }
 
@@ -118,30 +113,29 @@ func getTurn(turn *InputTurn) *Turn {
 	}
 }
 
-func (s *graphQLServer) GameUpdated(ctx context.Context, game InputGame) (<-chan *Game, error) {
-	found, ok := s.Directory[game.ID]
+func (s *graphQLServer) GameUpdated(ctx context.Context, from InputGame) (<-chan *Game, error) {
+	_, ok := s.Directory[from.ID]
 	if !ok {
-		return nil, errs.New("game does not exist with ID of %s", game.ID)
+		return nil, errs.New("game does not exist with ID of %s", from.ID)
 	}
 
-	log.Printf("#### game.PlayerIDs: %+v\n", game.PlayerIDs)
-
-	output := &Game{
-		ID:        found.ID,
-		Handle:    game.Handle,
-		CreatedAt: found.CreatedAt,
-		PlayerIDs: getUsers(game.PlayerIDs),
-		Turn:      getTurn(game.Turn),
-		Rules:     found.Rules,
+	// HACK: This gets around us having to do a lot of complicated
+	// checking and assignment and let's the json/encoder library
+	// handle the type conversion instead.
+	b, err := json.Marshal(from)
+	if err != nil {
+		return nil, errs.New("error marshaling from: %+v", err)
 	}
-
-	log.Printf("#GameUpdated#output: %+v\n", output)
+	game := &Game{}
+	err = json.Unmarshal(b, &game)
+	if err != nil {
+		return nil, errs.New("failed to unmarshal into *Game: %+v", err)
+	}
 
 	games := make(chan *Game, 1)
 	s.mutex.Lock()
+	s.Directory[game.ID] = game
 	s.gameChannels[game.ID] = games
-	// TODO: turn output into update of new and old game
-	s.Directory[game.ID] = output
 	s.mutex.Unlock()
 
 	go func() {
@@ -184,29 +178,26 @@ func (s *graphQLServer) BoardUpdate(ctx context.Context, bs InputBoardState) (<-
 // UpdateGame is what's used to change the name of the game, format, insert
 // or remove players, or change other meta informatin about a game.
 // NB: Game _can_ touch boardstate right now, and it probably shouldn't.
-// NB: We eventually need a stronger support for combining two structs of different types
-// for GraphQL. Something like https://play.golang.org/p/UBCq0waIEe should eventually be used.
 func (s *graphQLServer) UpdateGame(ctx context.Context, new InputGame) (*Game, error) {
-	log.Printf("UpdateGame called with %+v\n", new)
 	// check existence of game, fail if not found
-	old, ok := s.Directory[new.ID]
+	_, ok := s.Directory[new.ID]
 	if !ok {
 		return nil, errs.New("Game with ID %s does not exist", new.ID)
 	}
 
-	// update old game with new game data
-	if err := mergo.Merge(&new, old); err != nil {
-		return nil, errs.New("Failed to merge old game with new game: %s", err)
+	b, err := json.Marshal(new)
+	if err != nil {
+		return nil, errs.New("failed to marshal input game: %s", err)
 	}
-
-	// cast new game into Game for GraphQL
 	game := &Game{}
-	if err := mergo.Merge(game, new); err != nil {
-		return nil, errs.New("Failed to merge new game: %s", err)
+	err = json.Unmarshal(b, &game)
+	if err != nil {
+		return nil, errs.New("failed to unmarshal game: %s", err)
 	}
 
 	s.mutex.Lock()
 	s.Directory[new.ID] = game
+	log.Printf("pushing new game on channel: %+v", game)
 	s.gameChannels[new.ID] <- game
 	s.mutex.Unlock()
 
@@ -219,12 +210,12 @@ func (s *graphQLServer) JoinGame(ctx context.Context, input *InputJoinGame) (*Ga
 	s.mutex.RLock()
 	game, ok := s.Directory[input.ID]
 	if !ok {
+		log.Printf("game lookup for id %s failed", input.ID)
 		return nil, errs.New("Game with ID %s does not exist", input.ID)
 	}
 	s.mutex.RUnlock()
 
 	user := &User{
-		ID:       *input.User.ID,
 		Username: input.User.Username,
 	}
 
@@ -284,10 +275,24 @@ func (s *graphQLServer) JoinGame(ctx context.Context, input *InputJoinGame) (*Ga
 		return nil, err
 	}
 
-	s.mutex.Lock()
-	s.Directory[game.ID] = game
-	log.Printf("JOIN GAME: game in directory: %+v\n", s.Directory[game.ID])
-	s.mutex.Unlock()
+	ig := InputGame{}
+	b, err := json.Marshal(game)
+	if err != nil {
+		log.Printf("failed to marshal input game in JoinGame: %s", err)
+		return nil, err
+	}
+	err = json.Unmarshal(b, &ig)
+	if err != nil {
+		log.Printf("failed to unmarshal input game in JoinGame: %s", err)
+		return nil, err
+	}
+
+	log.Printf("JoinGame#UpdateGame: %+v", ig)
+	s.UpdateGame(ctx, ig)
+
+	// s.mutex.Lock()
+	// s.Directory[game.ID] = game
+	// s.mutex.Unlock()
 	return game, nil
 }
 
@@ -389,9 +394,13 @@ func (s *graphQLServer) CreateGame(ctx context.Context, inputGame InputCreateGam
 }
 
 func (s *graphQLServer) UpdateBoardState(ctx context.Context, bs InputBoardState) (*BoardState, error) {
-	updated := boardStateFromInput(bs)
+	updated, err := boardStateFromInput(bs)
+	if err != nil {
+		log.Printf("UpdateBoardState failed to marshal input board state correctly: %s", err)
+		return nil, fmt.Errorf("failed to marshal input boardstate: %s", err)
+	}
 	boardKey := BoardStateKey(bs.GameID, bs.User.Username)
-	err := s.Set(boardKey, updated)
+	err = s.Set(boardKey, updated)
 	if err != nil {
 		log.Printf("error updating boardstate in redis: %s", err)
 	}
@@ -401,6 +410,16 @@ func (s *graphQLServer) UpdateBoardState(ctx context.Context, bs InputBoardState
 	s.mutex.Unlock()
 	pushBoardStateUpdate(ctx, s.observers, bs)
 	return updated, nil
+}
+
+// Save saves a Game to the Persistence. TODO
+func (g *Game) Save(ctx context.Context, db persistence.Persistence) (*Game, error) {
+	return nil, errors.New("not impl")
+}
+
+// Save saves a BoardState to the Persistence interface. TODO
+func (bs *BoardState) Save(ctx context.Context, db persistence.Persistence) (*BoardState, error) {
+	return nil, errors.New("not impl")
 }
 
 func pushBoardStateUpdate(ctx context.Context, observers []Observer, input InputBoardState) {
@@ -448,198 +467,18 @@ func getPlayerIDs(inputUsers []*InputUser) []*User {
 	return u
 }
 
-func boardStateFromInput(bs InputBoardState) *BoardState {
-	out := &BoardState{
-		Life: bs.Life,
-		User: &User{
-			Username: bs.User.Username,
-		},
-		GameID: bs.GameID,
+func boardStateFromInput(bs InputBoardState) (*BoardState, error) {
+	data, err := json.Marshal(bs)
+	if err != nil {
+		return nil, errs.New("failed to marshal input game: %s", err)
+	}
+	new := &BoardState{}
+	err = json.Unmarshal(data, &new)
+	if err != nil {
+		return nil, errs.New("failed to unmarshal game: %s", err)
 	}
 
-	for _, c := range bs.Commander {
-		out.Commander = append(out.Commander, &Card{
-			Name:     c.Name,
-			ID:       *c.ID,
-			Quantity: c.Quantity,
-			Tapped:   c.Tapped,
-			Flipped:  c.Flipped,
-			// TODO: Handle counters and labels
-			// Counters:      c.Counters,
-			Colors:        c.Colors,
-			ColorIdentity: c.ColorIdentity,
-			Cmc:           c.Cmc,
-			ManaCost:      c.ManaCost,
-			UUID:          c.UUID,
-			Power:         c.Power,
-			Toughness:     c.Toughness,
-			Types:         c.Types,
-			Subtypes:      c.Subtypes,
-			Supertypes:    c.Supertypes,
-			IsTextless:    c.IsTextless,
-			Text:          c.Text,
-			Tcgid:         c.Tcgid,
-			ScryfallID:    c.ScryfallID,
-		})
-	}
-
-	for _, c := range bs.Library {
-		out.Library = append(out.Library, &Card{
-			Name:     c.Name,
-			ID:       *c.ID,
-			Quantity: c.Quantity,
-			Tapped:   c.Tapped,
-			Flipped:  c.Flipped,
-			// TODO: Handle counters and labels
-			// Counters:      c.Counters,
-			Colors:        c.Colors,
-			ColorIdentity: c.ColorIdentity,
-			Cmc:           c.Cmc,
-			ManaCost:      c.ManaCost,
-			UUID:          c.UUID,
-			Power:         c.Power,
-			Toughness:     c.Toughness,
-			Types:         c.Types,
-			Subtypes:      c.Subtypes,
-			Supertypes:    c.Supertypes,
-			IsTextless:    c.IsTextless,
-			Text:          c.Text,
-			Tcgid:         c.Tcgid,
-			ScryfallID:    c.ScryfallID,
-		})
-	}
-
-	for _, c := range bs.Exiled {
-		out.Exiled = append(out.Exiled, &Card{
-			Name:     c.Name,
-			ID:       *c.ID,
-			Quantity: c.Quantity,
-			Tapped:   c.Tapped,
-			Flipped:  c.Flipped,
-			// TODO: Handle counters and labels
-			// Counters:      c.Counters,
-			Colors:        c.Colors,
-			ColorIdentity: c.ColorIdentity,
-			Cmc:           c.Cmc,
-			ManaCost:      c.ManaCost,
-			UUID:          c.UUID,
-			Power:         c.Power,
-			Toughness:     c.Toughness,
-			Types:         c.Types,
-			Subtypes:      c.Subtypes,
-			Supertypes:    c.Supertypes,
-			IsTextless:    c.IsTextless,
-			Text:          c.Text,
-			Tcgid:         c.Tcgid,
-			ScryfallID:    c.ScryfallID,
-		})
-	}
-
-	for _, c := range bs.Field {
-		out.Field = append(out.Field, &Card{
-			Name:     c.Name,
-			ID:       *c.ID,
-			Quantity: c.Quantity,
-			Tapped:   c.Tapped,
-			Flipped:  c.Flipped,
-			// TODO: Handle counters and labels
-			// Counters:      c.Counters,
-			Colors:        c.Colors,
-			ColorIdentity: c.ColorIdentity,
-			Cmc:           c.Cmc,
-			ManaCost:      c.ManaCost,
-			UUID:          c.UUID,
-			Power:         c.Power,
-			Toughness:     c.Toughness,
-			Types:         c.Types,
-			Subtypes:      c.Subtypes,
-			Supertypes:    c.Supertypes,
-			IsTextless:    c.IsTextless,
-			Text:          c.Text,
-			Tcgid:         c.Tcgid,
-			ScryfallID:    c.ScryfallID,
-		})
-	}
-
-	for _, c := range bs.Hand {
-		out.Hand = append(out.Hand, &Card{
-			Name:     c.Name,
-			ID:       *c.ID,
-			Quantity: c.Quantity,
-			Tapped:   c.Tapped,
-			Flipped:  c.Flipped,
-			// TODO: Handle counters and labels
-			// Counters:      c.Counters,
-			Colors:        c.Colors,
-			ColorIdentity: c.ColorIdentity,
-			Cmc:           c.Cmc,
-			ManaCost:      c.ManaCost,
-			UUID:          c.UUID,
-			Power:         c.Power,
-			Toughness:     c.Toughness,
-			Types:         c.Types,
-			Subtypes:      c.Subtypes,
-			Supertypes:    c.Supertypes,
-			IsTextless:    c.IsTextless,
-			Text:          c.Text,
-			Tcgid:         c.Tcgid,
-			ScryfallID:    c.ScryfallID,
-		})
-	}
-
-	for _, c := range bs.Controlled {
-		out.Controlled = append(out.Controlled, &Card{
-			Name:     c.Name,
-			ID:       *c.ID,
-			Quantity: c.Quantity,
-			Tapped:   c.Tapped,
-			Flipped:  c.Flipped,
-			// TODO: Handle counters and labels
-			// Counters:      c.Counters,
-			Colors:        c.Colors,
-			ColorIdentity: c.ColorIdentity,
-			Cmc:           c.Cmc,
-			ManaCost:      c.ManaCost,
-			UUID:          c.UUID,
-			Power:         c.Power,
-			Toughness:     c.Toughness,
-			Types:         c.Types,
-			Subtypes:      c.Subtypes,
-			Supertypes:    c.Supertypes,
-			IsTextless:    c.IsTextless,
-			Text:          c.Text,
-			Tcgid:         c.Tcgid,
-			ScryfallID:    c.ScryfallID,
-		})
-	}
-
-	for _, c := range bs.Revealed {
-		out.Revealed = append(out.Revealed, &Card{
-			Name:     c.Name,
-			ID:       *c.ID,
-			Quantity: c.Quantity,
-			Tapped:   c.Tapped,
-			Flipped:  c.Flipped,
-			// TODO: Handle counters and labels
-			// Counters:      c.Counters,
-			Colors:        c.Colors,
-			ColorIdentity: c.ColorIdentity,
-			Cmc:           c.Cmc,
-			ManaCost:      c.ManaCost,
-			UUID:          c.UUID,
-			Power:         c.Power,
-			Toughness:     c.Toughness,
-			Types:         c.Types,
-			Subtypes:      c.Subtypes,
-			Supertypes:    c.Supertypes,
-			IsTextless:    c.IsTextless,
-			Text:          c.Text,
-			Tcgid:         c.Tcgid,
-			ScryfallID:    c.ScryfallID,
-		})
-	}
-
-	return out
+	return new, nil
 }
 
 func getCards(inputCards []*InputCard) []*Card {
@@ -734,14 +573,25 @@ func BoardStateKey(gameID, username string) string {
 	return fmt.Sprintf("%s:%s", gameID, username)
 }
 
+// GameKey formats the keys for Games in our Directory
+func GameKey(gameID string) string {
+	return fmt.Sprintf("%s", gameID)
+}
+
+// TODO: Need to access Set and Get through Persistence interface instead
+// of directly from the Server object. Persistence should be created and
+// attached to the Server instead of directly attaching the Redis client.
+
 // Set will set a value into the Redis client and returns an error, if any
 func (s *graphQLServer) Set(key string, value interface{}) error {
+	// TODO: Need to set this to an env variable
 	exp, err := time.ParseDuration("12h")
 	if err != nil {
 		exp = 0
 	}
 	p, err := json.Marshal(value)
 	if err != nil {
+		log.Printf("failed to marshal value in Set: %s", err)
 		return err
 	}
 
@@ -752,6 +602,7 @@ func (s *graphQLServer) Set(key string, value interface{}) error {
 func (s *graphQLServer) Get(key string, dest interface{}) error {
 	p, err := s.redisClient.Get(key).Result()
 	if err != nil {
+		log.Printf("failed to get key from redis: %s", err)
 		return err
 	}
 	return json.Unmarshal([]byte(p), dest)

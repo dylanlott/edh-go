@@ -2,12 +2,20 @@
 
 Established: 23 July 2020
 
+## References 
+[Vue-Apollo Subscription Examples](https://hasura.io/learn/graphql/vue/realtime-feed/2-sync-todo/) Super helpful and better than the actual vue apollo docs themselves. 
+
+
 ## Table Of Contents
 
 1. What is this?
 2. The Context Log
 3. Module Documentation
 4. To Dos and General Notes
+
+Note: To dos are ephemeral in terms of where they fall in the log and may be moved around. If I add it to the to do list in one date entry, I might carry it with me
+down to another date entry to remind myself to do it. This is essentially a living document to be viewed through the lens of git as a way to track the evolution of
+this project log. Consider this like patchnotes or a changelog but tied to dates instead of deployments or versions.
 
 ## What is this
 
@@ -26,10 +34,26 @@ _EDH-Go should be:_
 - Easy to use across all device sizes
 - Format-agnostic
 
+_EDH-Go should aim to be_
+
+- Intuitive to use
+- Resource efficient
+- Light
+
 ### What is EDH-Go
 
 EDH-Go is going to be a boardstate emulator. It is not meant to enforce rules, merely aid in representing and tracking them.
 That being said, there are some rules we can and should enforce - such as deck size, deck legality, turn orders, etc...
+
+### What is EDH-GO _not_? 
+
+EDH Go is _not_ meant to be
+
+- A rules engine. We're trying to facilitate online play with the spirit of the social contract.
+- Strict. We're trying to embrace Rule 0 in a digital way that's still accurate to real table games.
+- Official. We're not trying to enforce rules, we're trying to showcase games.
+
+Any rules imposed by our app should be (eventually) able to be changed.
 
 ## Logs
 
@@ -103,7 +127,6 @@ https://css-tricks.com/scaled-proportional-blocks-with-css-and-javascript/ We ca
 - [x] Write a GraphQL resolver for returning only opponent boardstates. Update: Instead, I'm just going to handle this at the component level by requesting them individually to be bandwidth optimized.
 - [*] Only reference players by ID and username on Games.
 - [*] Decouple BoardStates from Game model
-- [ ] Persist the Game directory to Redis
 
 *Notes*
 One of the real benefits of GraphQL is that the client can change their appetite themselves. They can take in the whole massive data object or they can build more complex interactions with specific pieces of data from different areas choosing to return only what they need.
@@ -191,9 +214,9 @@ Ultimately, I need to introduce a state management solution to the app via VueX 
 
 ### 22 Dec 2020
 **TODO**: 
-- [ ] Need to start grapplevining VueX into the app and get opponent boardstates working.
-- [ ] Get opponent boardstates pulling up however we have to manage it
-- [ ] Finish the Join Game user flow
+- [x] Need to start grapplevining VueX into the app and get opponent boardstates working.
+- [x] Get opponent boardstates pulling up however we have to manage it
+- [x] Finish the Join Game user flow
 
 ### 24 December 2020 
 Christmas Eve! 
@@ -216,6 +239,108 @@ Okay so while working on the Join Game flow, it occurred to me that it would be 
 **TODO**
 - [x] Regenerate GraphQL Schema
 - [x] Write the JoinGame method in games.go
-- [ ] Wire up the `handleJoinGame` method jin `JoinGame.vue` method to poin to that endpoint instead.
-- [ ] Tie in to the `gameUpdated` subscription events so that we can detect game changes on the front end.
+- [x] Wire up the `handleJoinGame` method jin `JoinGame.vue` method to poin to that endpoint instead.
 - [x] Add tests for JoinGame and CreateGame // CreateGame tests are in progress
+
+### 30 Dec 2020 
+Working on Join Game functionality still. Found a bug in decklists and library creation where tab characters werent' being processed right. Table testing the CreateGame function exposed the bug, so that was pretty sick. Now the decklist will be a regression test itself for handling tab characters. Neat!
+
+Working on the front end for the Join Game flow now, since the backend has been mostly figured out thanks to the tests. This is a personal lesson in how much faster front end development can go with a proper backend test suite. I already know the exact payloads to send, and GraphQL makes it fast to wire up a very precise request and turn it into a feature.
+
+#### The Translator Problem 
+I came up with two implementation ideas, and decided to puruse the first one
+because I felt it was the better concept.
+
+I'm quite happy with how this Polyglot interface is coming together.
+It's easy to test, it's functional, it will be thread safe, and it's an easy 
+way to handle the deeper intricacies that we can face with Board and Game state 
+changes that will require subtle and specific handling.
+
+**TODO**
+- [x] Wire up `JoinGame` mutation to `handleJoinGame()` function.
+- [x] Test the subscriptions on `Board.vue` to see if we're even listening for Game Update events.
+
+### 31 Dec 2020 
+New Years Eve
+
+Backend is working much more smoothly now that I've discovered a cute little json encoding
+hack to get around type issues between GraphQL and Go.
+
+### 9 Jan 2021 
+Carrying over the TO DO list from New Years Eve 2020 entry. Need to work on the Join Game query for an Opponent now.
+
+**TODO**
+- [x] Wire up JoinGame mutation to Front end 
+
+### 14 Jan 2021
+
+Added vue-cookies to solve the user ID issue on the front end. This will get around auth for now but we'll need
+a more reliable way to sign up users and track them. We can keep it lite for now though.
+
+### 20 Jan 2021
+Need to look into best way to handle auth. 
+
+** TODO ** 
+- [ ] Add json/encoding hack to the Boardstates logic
+- [ ] Get Game subscription working
+- [ ] Test boardstate subscriptions for opponents in other views
+- [ ] Work on Decktester feature
+- [ ] Add vuex state for BoardState
+- [ ] Add vuex state for Game
+- [ ] Tie in to the `gameUpdated` subscription events so that we can detect game changes on the front end.
+- [ ] Persist the Game directory to Redis
+
+
+13 Feb 2021
+===========
+
+*Notes*
+- Need to remove Directory from GraphQL server struct and make it use Redis or whatever the KV store is using. 
+- Auth needs to be added and we need to figure out a graceful way to attach user data to our requests.
+    - I think for auth, we can use something like [this](https://github.com/99designs/gqlgen/blob/master/docs/content/recipes/authentication.md)
+- Need to write more tests to shore up backend functionality.
+- The app has a lot of cruft code I should get rid of right now. 
+    - I should slim things down and remove all the mental overhead of it so that I can focus on a launch priority better.
+
+
+15 Feb 2021
+===========
+
+- [x] Setup docker compose and migrations. 
+- [ ] Get sign up and login working 
+- [ ] Pass authentication info to server context
+- [ ] Make games aware of user contexts
+- [ ] Simplify game handling & modeling 
+    - [ ] Remove redundant user info in boardstates and games
+    - [ ] Make it so games have no concept of users and only see boardstates with users attached
+
+
+27 Feb 2021
+===========
+
+My test suite has made refactoring and changes a lot faster, and for future me: I Should really make sure I start all personal projects
+with a test harness. It makes it much easier to developer on longer time scales with tests. It's also much easier to setup pipelines and 
+make small changes with a test harness. I can be much more confident about my code and bug fixes when I have passing tests.
+
+*Notes*
+- Working on migrations, they should be done soon.
+- Having to finish auth tests, but migrations were a blocker to that because we had no way to reliably update the sqlite3 database.
+- Once auth tests are done we can wire up the front end to accept different users and load multiple users into a single game.
+- Need to figure out the fast-path to MVP and take it. I keep getting side tracked on small quality of life features. 
+    - While they are helpful, we're coming up on a year after we started this project and I want to launch a beta.
+- I should write down a launch plan
+
+7 Mar 2021
+===========
+
+Postgres is working with migrations and we're back to a rapid test driven development cycle. 
+
+Need to add postgres support for JSON and then switch out Redis with Postgres.
+https://www.cloudbees.com/blog/unleash-the-power-of-storing-json-in-postgres/
+
+The game log also needs to just push to Postgres stores. 
+Game log should be committed on each "resolution". But we'll need to figure out targeting to make resolution work.
+
+First up is getting auth working. 
+
+

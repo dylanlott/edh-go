@@ -174,6 +174,74 @@ func TestJoinGame(t *testing.T) {
 	}
 }
 
+func TestGameUpdated(t *testing.T) {
+	s := getNewServer(t)
+
+	testGame, err := s.CreateGame(context.Background(), InputCreateGame{
+		Players: []*InputBoardState{
+			{
+				User: &InputUser{
+					ID:       randomUserID(),
+					Username: "shakezula",
+				},
+				Life:     40,
+				Decklist: decklist(),
+				Commander: []*InputCard{
+					{
+						Name: "Gavi, Nest Warden",
+					},
+				},
+			},
+		},
+	})
+	if err != nil {
+		t.Errorf("failed to create test game for TestGameUpdated: %s", err)
+	}
+
+	now := time.Now()
+
+	var cases = []struct {
+		name  string
+		input InputGame
+		want  interface{}
+		err   error
+	}{
+		{
+			name: "test happy path game updated",
+			input: InputGame{
+				ID:        testGame.ID,
+				CreatedAt: &now,
+				PlayerIDs: []*InputUser{
+					{
+						ID:       randomUserID(),
+						Username: "joingameid",
+					},
+				},
+				Turn: &InputTurn{
+					Number: 1,
+					Phase:  "start",
+					Player: "shakezula",
+				},
+			},
+		},
+	}
+
+	for _, tt := range cases {
+		_, err := s.GameUpdated(context.Background(), tt.input)
+		if err != nil {
+			t.Errorf("failed to update game: %+v", err)
+		}
+
+		// get game from directory and then check it's values
+		g, ok := s.Directory[tt.input.ID]
+		if !ok {
+			t.Errorf("failed to set game ID correctly into Directory")
+		}
+
+		t.Logf("game after update: %+v\n", g)
+	}
+}
+
 func getNewServer(t *testing.T) *graphQLServer {
 	path, err := os.Getwd()
 	if err != nil {

@@ -140,7 +140,7 @@ type InputEmblem struct {
 type InputGame struct {
 	ID        string       `json:"ID"`
 	Turn      *InputTurn   `json:"Turn"`
-	CreatedAt *time.Time   `json:"Created_At"`
+	CreatedAt *time.Time   `json:"CreatedAt"`
 	Handle    *string      `json:"Handle"`
 	PlayerIDs []*InputUser `json:"PlayerIDs"`
 }
@@ -197,7 +197,7 @@ type Turn struct {
 }
 
 type User struct {
-	ID       string `json:"ID"`
-	Username string `json:"Username"`
-	Deck     string `json:"Deck"`
+	ID       string  `json:"ID"`
+	Username string  `json:"Username"`
+	Token    *string `json:"Token"`
 }

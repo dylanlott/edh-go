@@ -34,4 +34,7 @@ build-server:
 	docker build -f ./Dockerfile -t dylanlott/edh-go:server .
 run-docker:
 # TODO: Write a docker-compose for this whole setup.
+# compose:
 
+# TODO: Write a curl command to download the latest MTG-JSON database.
+# database_update:

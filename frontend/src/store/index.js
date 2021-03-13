@@ -63,7 +63,11 @@ const Game = {
 
         },
     },
-    actions: {}
+    actions: {
+        getGame({ commit }, ID) {
+            console.log("getGame: ", ID)
+        }
+    }
 }
 
 const User = {

@@ -201,7 +201,7 @@ export default {
         this.loading = false
       })
     }
-  },
+  }
 }
 </script>
 <style>

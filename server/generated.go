@@ -128,8 +128,9 @@ type ComplexityRoot struct {
 		CreateDeck       func(childComplexity int, input *InputDeck) int
 		CreateGame       func(childComplexity int, input InputCreateGame) int
 		JoinGame         func(childComplexity int, input *InputJoinGame) int
+		Login            func(childComplexity int, username string, password string) int
 		PostMessage      func(childComplexity int, user string, text string) int
-		Signup           func(childComplexity int, input *InputSignup) int
+		Signup           func(childComplexity int, username string, password string) int
 		UpdateBoardState func(childComplexity int, input InputBoardState) int
 		UpdateGame       func(childComplexity int, input InputGame) int
 	}
@@ -142,7 +143,7 @@ type ComplexityRoot struct {
 		Games       func(childComplexity int, gameID *string) int
 		Messages    func(childComplexity int) int
 		Search      func(childComplexity int, name *string, colors []*string, colorIdentity []*string, keywords []*string) int
-		Users       func(childComplexity int) int
+		Users       func(childComplexity int, userID *string) int
 	}
 
 	Rule struct {
@@ -164,14 +165,15 @@ type ComplexityRoot struct {
 	}
 
 	User struct {
-		Deck     func(childComplexity int) int
 		ID       func(childComplexity int) int
+		Token    func(childComplexity int) int
 		Username func(childComplexity int) int
 	}
 }
 
 type MutationResolver interface {
-	Signup(ctx context.Context, input *InputSignup) (*User, error)
+	Signup(ctx context.Context, username string, password string) (*User, error)
+	Login(ctx context.Context, username string, password string) (*User, error)
 	PostMessage(ctx context.Context, user string, text string) (*Message, error)
 	CreateGame(ctx context.Context, input InputCreateGame) (*Game, error)
 	JoinGame(ctx context.Context, input *InputJoinGame) (*Game, error)
@@ -181,7 +183,7 @@ type MutationResolver interface {
 }
 type QueryResolver interface {
 	Messages(ctx context.Context) ([]*Message, error)
-	Users(ctx context.Context) ([]string, error)
+	Users(ctx context.Context, userID *string) ([]string, error)
 	Games(ctx context.Context, gameID *string) ([]*Game, error)
 	Boardstates(ctx context.Context, gameID string, userID *string) ([]*BoardState, error)
 	Decks(ctx context.Context, userID string) ([]*Deck, error)
@@ -618,6 +620,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.JoinGame(childComplexity, args["input"].(*InputJoinGame)), true
 
+	case "Mutation.login":
+		if e.complexity.Mutation.Login == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_login_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.Login(childComplexity, args["username"].(string), args["password"].(string)), true
+
 	case "Mutation.postMessage":
 		if e.complexity.Mutation.PostMessage == nil {
 			break
@@ -640,7 +654,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.Signup(childComplexity, args["input"].(*InputSignup)), true
+		return e.complexity.Mutation.Signup(childComplexity, args["username"].(string), args["password"].(string)), true
 
 	case "Mutation.updateBoardState":
 		if e.complexity.Mutation.UpdateBoardState == nil {
@@ -750,7 +764,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			break
 		}
 
-		return e.complexity.Query.Users(childComplexity), true
+		args, err := ec.field_Query_users_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.Users(childComplexity, args["userID"].(*string)), true
 
 	case "Rule.Name":
 		if e.complexity.Rule.Name == nil {
@@ -835,19 +854,19 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Turn.Player(childComplexity), true
 
-	case "User.Deck":
-		if e.complexity.User.Deck == nil {
-			break
-		}
-
-		return e.complexity.User.Deck(childComplexity), true
-
 	case "User.ID":
 		if e.complexity.User.ID == nil {
 			break
 		}
 
 		return e.complexity.User.ID(childComplexity), true
+
+	case "User.Token":
+		if e.complexity.User.Token == nil {
+			break
+		}
+
+		return e.complexity.User.Token(childComplexity), true
 
 	case "User.Username":
 		if e.complexity.User.Username == nil {
@@ -950,7 +969,8 @@ var parsedSchema = gqlparser.MustLoadSchema(
 	&ast.Source{Name: "schema.graphql", Input: `scalar Time
 
 type Mutation {
-  signup(input: InputSignup): User!
+  signup(username: String!, password: String!): User!
+  login(username: String!, password: String!): User!
   postMessage(user: String!, text: String!): Message
   createGame(input: InputCreateGame!): Game!
   joinGame(input: InputJoinGame): Game!
@@ -961,7 +981,7 @@ type Mutation {
 
 type Query {
   messages: [Message!]!
-  users: [String!]!
+  users(userID: String): [String!]!
   games(gameID: String): [Game!]!
   boardstates(gameID: String!, userID: String): [BoardState!]!
   decks(userID: String!): [Deck!]
@@ -1012,7 +1032,7 @@ type Card {
 type User {
   ID: String!
   Username: String!
-  Deck: String!
+  Token: String
 }
 
 type Deck {
@@ -1150,7 +1170,7 @@ input InputJoinGame {
 input InputGame {
   ID: String!
   Turn: InputTurn
-  Created_At: Time
+  CreatedAt: Time
   Handle: String
   PlayerIDs: [InputUser!]
 }
@@ -1262,6 +1282,28 @@ func (ec *executionContext) field_Mutation_joinGame_args(ctx context.Context, ra
 	return args, nil
 }
 
+func (ec *executionContext) field_Mutation_login_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["username"]; ok {
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["username"] = arg0
+	var arg1 string
+	if tmp, ok := rawArgs["password"]; ok {
+		arg1, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["password"] = arg1
+	return args, nil
+}
+
 func (ec *executionContext) field_Mutation_postMessage_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -1287,14 +1329,22 @@ func (ec *executionContext) field_Mutation_postMessage_args(ctx context.Context,
 func (ec *executionContext) field_Mutation_signup_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 *InputSignup
-	if tmp, ok := rawArgs["input"]; ok {
-		arg0, err = ec.unmarshalOInputSignup2ᚖgithubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐInputSignup(ctx, tmp)
+	var arg0 string
+	if tmp, ok := rawArgs["username"]; ok {
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["input"] = arg0
+	args["username"] = arg0
+	var arg1 string
+	if tmp, ok := rawArgs["password"]; ok {
+		arg1, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["password"] = arg1
 	return args, nil
 }
 
@@ -1461,6 +1511,20 @@ func (ec *executionContext) field_Query_search_args(ctx context.Context, rawArgs
 		}
 	}
 	args["keywords"] = arg3
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_users_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *string
+	if tmp, ok := rawArgs["userID"]; ok {
+		arg0, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["userID"] = arg0
 	return args, nil
 }
 
@@ -3359,7 +3423,48 @@ func (ec *executionContext) _Mutation_signup(ctx context.Context, field graphql.
 	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
 	resTmp := ec._fieldMiddleware(ctx, nil, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().Signup(rctx, args["input"].(*InputSignup))
+		return ec.resolvers.Mutation().Signup(rctx, args["username"].(string), args["password"].(string))
+	})
+
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*User)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNUser2ᚖgithubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐUser(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_login(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "Mutation",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_login_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	rctx.Args = args
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp := ec._fieldMiddleware(ctx, nil, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().Login(rctx, args["username"].(string), args["password"].(string))
 	})
 
 	if resTmp == nil {
@@ -3661,10 +3766,17 @@ func (ec *executionContext) _Query_users(ctx context.Context, field graphql.Coll
 		IsMethod: true,
 	}
 	ctx = graphql.WithResolverContext(ctx, rctx)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Query_users_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	rctx.Args = args
 	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
 	resTmp := ec._fieldMiddleware(ctx, nil, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Users(rctx)
+		return ec.resolvers.Query().Users(rctx, args["userID"].(*string))
 	})
 
 	if resTmp == nil {
@@ -4423,7 +4535,7 @@ func (ec *executionContext) _User_Username(ctx context.Context, field graphql.Co
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _User_Deck(ctx context.Context, field graphql.CollectedField, obj *User) (ret graphql.Marshaler) {
+func (ec *executionContext) _User_Token(ctx context.Context, field graphql.CollectedField, obj *User) (ret graphql.Marshaler) {
 	ctx = ec.Tracer.StartFieldExecution(ctx, field)
 	defer func() {
 		if r := recover(); r != nil {
@@ -4442,19 +4554,16 @@ func (ec *executionContext) _User_Deck(ctx context.Context, field graphql.Collec
 	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
 	resTmp := ec._fieldMiddleware(ctx, obj, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Deck, nil
+		return obj.Token, nil
 	})
 
 	if resTmp == nil {
-		if !ec.HasError(rctx) {
-			ec.Errorf(ctx, "must not be null")
-		}
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(*string)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalNString2string(ctx, field.Selections, res)
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) ___Directive_name(ctx context.Context, field graphql.CollectedField, obj *introspection.Directive) (ret graphql.Marshaler) {
@@ -5890,7 +5999,7 @@ func (ec *executionContext) unmarshalInputInputGame(ctx context.Context, obj int
 			if err != nil {
 				return it, err
 			}
-		case "Created_At":
+		case "CreatedAt":
 			var err error
 			it.CreatedAt, err = ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
 			if err != nil {
@@ -6442,6 +6551,11 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		case "login":
+			out.Values[i] = ec._Mutation_login(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		case "postMessage":
 			out.Values[i] = ec._Mutation_postMessage(ctx, field)
 		case "createGame":
@@ -6723,11 +6837,8 @@ func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
-		case "Deck":
-			out.Values[i] = ec._User_Deck(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
+		case "Token":
+			out.Values[i] = ec._User_Token(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -8024,18 +8135,6 @@ func (ec *executionContext) unmarshalOInputLabel2ᚖgithubᚗcomᚋdylanlottᚋe
 		return nil, nil
 	}
 	res, err := ec.unmarshalOInputLabel2githubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐInputLabel(ctx, v)
-	return &res, err
-}
-
-func (ec *executionContext) unmarshalOInputSignup2githubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐInputSignup(ctx context.Context, v interface{}) (InputSignup, error) {
-	return ec.unmarshalInputInputSignup(ctx, v)
-}
-
-func (ec *executionContext) unmarshalOInputSignup2ᚖgithubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐInputSignup(ctx context.Context, v interface{}) (*InputSignup, error) {
-	if v == nil {
-		return nil, nil
-	}
-	res, err := ec.unmarshalOInputSignup2githubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐInputSignup(ctx, v)
 	return &res, err
 }
 
