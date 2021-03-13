@@ -27,17 +27,6 @@ type contextKey struct {
 	name string
 }
 
-// Observer must be fulfilled for anything that's listening to the events that
-// come off of a game. GraphQL mutations trigger these events, which get
-// pushed out to the rest of the users in the game.
-// These are pure functions for a reason - channels can get incredibly messy
-// and event emitters can already be very complicated.
-type Observer interface {
-	Joined(ctx context.Context, game *Game) (*Game, error)
-	Updated(ctx context.Context, game *Game)
-	Errored(ctx context.Context, game *Game, err error)
-}
-
 // graphQLServer binds the whole app together.
 type graphQLServer struct {
 	mutex sync.RWMutex
