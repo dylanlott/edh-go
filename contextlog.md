@@ -306,7 +306,7 @@ Need to look into best way to handle auth.
 15 Feb 2021
 ===========
 
-- [ ] Setup docker compose and migrations. 
+- [x] Setup docker compose and migrations. 
 - [ ] Get sign up and login working 
 - [ ] Pass authentication info to server context
 - [ ] Make games aware of user contexts
@@ -329,3 +329,18 @@ make small changes with a test harness. I can be much more confident about my co
 - Need to figure out the fast-path to MVP and take it. I keep getting side tracked on small quality of life features. 
     - While they are helpful, we're coming up on a year after we started this project and I want to launch a beta.
 - I should write down a launch plan
+
+7 Mar 2021
+===========
+
+Postgres is working with migrations and we're back to a rapid test driven development cycle. 
+
+Need to add postgres support for JSON and then switch out Redis with Postgres.
+https://www.cloudbees.com/blog/unleash-the-power-of-storing-json-in-postgres/
+
+The game log also needs to just push to Postgres stores. 
+Game log should be committed on each "resolution". But we'll need to figure out targeting to make resolution work.
+
+First up is getting auth working. 
+
+

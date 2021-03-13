@@ -3,10 +3,11 @@ package server
 import (
 	"context"
 	"log"
-	"reflect"
 	"testing"
 
 	"github.com/dylanlott/edh-go/persistence"
+	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 )
 
 func Test_graphQLServer_Signup(t *testing.T) {
@@ -46,9 +47,10 @@ func Test_graphQLServer_Signup(t *testing.T) {
 			if err != nil {
 				t.Errorf("failed to start server: %s", err)
 			}
-			if got, err := s.Signup(context.Background(), tt.args.username, tt.args.password); !reflect.DeepEqual(got, tt.want) {
-				log.Printf("error: %s", err)
-				t.Errorf("graphQLServer.Signup() = %v, want %v", got, tt.want)
+			got, err := s.Signup(context.Background(), tt.args.username, tt.args.password)
+			if diff := cmp.Diff(got, tt.want, cmpopts.IgnoreFields(User{}, "ID")); diff != "" {
+				log.Printf("DIFF: %s", diff)
+				t.Errorf("wanted: %+v - got: %+v", tt.want, got)
 			}
 		})
 	}

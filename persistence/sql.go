@@ -125,6 +125,7 @@ func (db *DB) Query(query string, args ...interface{}) (*sql.Rows, error) {
 // Exec will run a statement and return the result or an error.
 // NB: Exec does not need cleanup.
 func (db *DB) Exec(query string, args ...interface{}) (sql.Result, error) {
+	log.Printf("DB: %+v", db)
 	return db.db.Exec(query, args...)
 }
 
