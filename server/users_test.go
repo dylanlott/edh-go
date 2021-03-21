@@ -16,9 +16,10 @@ func Test_graphQLServer_Signup(t *testing.T) {
 		password string
 	}
 	tests := []struct {
-		name string
-		args args
-		want *User
+		name    string
+		args    args
+		want    *User
+		wantErr bool
 	}{
 		{
 			name: "should create a user and persist it to the appDB.",
@@ -29,29 +30,86 @@ func Test_graphQLServer_Signup(t *testing.T) {
 			want: &User{
 				Username: "shakezula",
 			},
+			wantErr: false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			db, err := persistence.NewAppDatabase("../persistence/migrations/")
-			if err != nil {
-				t.Errorf("failed to create persistence: %s", err)
-			}
-
-			cardDB, err := persistence.NewSQLite("../persistence/AllPrintings.sqlite")
-			if err != nil {
-				t.Errorf("failed to create cardDB: %s", err)
-			}
-
-			s, err := NewGraphQLServer(nil, db, cardDB)
-			if err != nil {
-				t.Errorf("failed to start server: %s", err)
-			}
+			s := newServer(t)
 			got, err := s.Signup(context.Background(), tt.args.username, tt.args.password)
 			if diff := cmp.Diff(got, tt.want, cmpopts.IgnoreFields(User{}, "ID")); diff != "" {
-				log.Printf("DIFF: %s", diff)
-				t.Errorf("wanted: %+v - got: %+v", tt.want, got)
+				t.Errorf("graphQLServer.Signup: wanted: %+v - got: %+v", tt.want, got)
+			}
+			if (err != nil) != tt.wantErr {
+				t.Errorf("graphQLServer.Signup() error = %v, wantErr %v", err, tt.wantErr)
+				return
 			}
 		})
 	}
+}
+
+func Test_graphQLServer_Login(t *testing.T) {
+	type args struct {
+		ctx      context.Context
+		username string
+		password string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    *User
+		wantErr bool
+	}{
+		{
+			name: "should log in a user and give them a token",
+			args: args{
+				username: "shakezula",
+				password: "password",
+			},
+			want: &User{
+				Username: "shakezula",
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := newServer(t)
+			log.Printf("SERVER: %+v", s)
+			log.Printf("SERVER db: %+v", s.db)
+			got, err := s.Login(tt.args.ctx, tt.args.username, tt.args.password)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("graphQLServer.Login() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if diff := cmp.Diff(tt.want, got,
+				cmpopts.IgnoreFields(User{}, "ID", "Token"),
+				cmpopts.IgnoreUnexported(User{}),
+			); diff != "" {
+				t.Errorf("Login: wanted: %+v - got: %+v", tt.want, got)
+			}
+		})
+	}
+}
+func newServer(t *testing.T) *graphQLServer {
+	db, err := persistence.NewAppDatabase("../persistence/migrations/")
+	if err != nil {
+		t.Errorf("failed to create persistence: %s", err)
+	}
+
+	kv, err := persistence.NewRedis("localhost:6379", "", persistence.Config{})
+	if err != nil {
+		t.Errorf("failed to create a KV instance: %s", err)
+	}
+
+	cardDB, err := persistence.NewSQLite("../persistence/AllPrintings.sqlite")
+	if err != nil {
+		t.Errorf("failed to create cardDB: %s", err)
+	}
+
+	s, err := NewGraphQLServer(kv, db, cardDB)
+	if err != nil {
+		t.Errorf("failed to start server: %s", err)
+	}
+	return s
 }

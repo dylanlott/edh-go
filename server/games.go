@@ -24,6 +24,10 @@ type IPersistence interface {
 	Get(key string, dest interface{}) error
 }
 
+// Observer is an interface that will eventually get fulfilled for
+// emitting game state updates.
+type Observer interface{}
+
 var _ IPersistence = (&graphQLServer{})
 
 // Games returns a list of Games.
@@ -408,7 +412,6 @@ func (s *graphQLServer) UpdateBoardState(ctx context.Context, bs InputBoardState
 	s.mutex.Lock()
 	s.boardChannels[bs.User.Username] <- updated
 	s.mutex.Unlock()
-	pushBoardStateUpdate(ctx, s.observers, bs)
 	return updated, nil
 }
 

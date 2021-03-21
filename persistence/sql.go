@@ -47,7 +47,7 @@ func NewSQLite(path string) (*DB, error) {
 		return nil, errs.Wrap(err)
 	}
 
-	log.Printf("database connection established: %+v\n", db)
+	log.Printf("[DB] database connection established: %+v\n", db)
 	// return db
 	return &DB{
 		db: db,
@@ -90,6 +90,7 @@ func NewPostgres(migdir string) (*sql.DB, error) {
 		return nil, errs.Wrap(m.Down())
 	}
 
+	log.Printf("returning NewPostgres db: %+v", db)
 	return db, err
 }
 
@@ -113,6 +114,7 @@ func applySqliteMigrations(db *sql.DB, migrationsDir string) (*sql.DB, error) {
 		}
 	}
 
+	log.Printf("returning applyMigrations db: %+v", db)
 	return db, nil
 }
 

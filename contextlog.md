@@ -344,3 +344,9 @@ Game log should be committed on each "resolution". But we'll need to figure out 
 First up is getting auth working. 
 
 
+13 March 2021
+==============
+
+* Spruced up my terminal with powerlevel10k.
+* Got the Signup tests passing.
+* Adding login and auth tests 

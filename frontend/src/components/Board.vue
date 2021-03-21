@@ -205,6 +205,8 @@ export default {
       this.mutateBoardState()
     },
 
+    // TODO: Generics for boardstate manipulations? 
+
     // @param `src` is the source field of cards the target card is in. 
     // @param `target` is the card that's being fetched
     // @param `dst` is the destination field of the fetched card

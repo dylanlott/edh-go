@@ -80,8 +80,9 @@ func TestCreateGame(t *testing.T) {
 			}
 
 			diff := cmp.Diff(tt.want, result)
-			t.Logf("diff: %+v", diff)
-
+			if diff != "" {
+				t.Errorf("failed to create game: %s", diff)
+			}
 			if tt.err != nil {
 				if diff := cmp.Diff(tt.err, err); diff != "" {
 					t.Errorf("wanted error: %+v - got error: %+v", tt.err, err)

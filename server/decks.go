@@ -7,11 +7,6 @@ import (
 	"github.com/zeebo/errs"
 )
 
-// Returns a list of queryable decks. NOT IMPL RIGHT NOW.
-func (s *graphQLServer) Decks(ctx context.Context, userID string) ([]*Deck, error) {
-	return nil, errs.New("not impl")
-}
-
 // CreateDeck is used when a Game has been created and a User is adding a Deck to the BoardState
 func (s *graphQLServer) CreateDeck(ctx context.Context, deck *InputDeck) (*BoardState, error) {
 	if deck == nil {

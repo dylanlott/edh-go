@@ -47,9 +47,6 @@ type graphQLServer struct {
 	boardChannels   map[string]chan *BoardState
 	messageChannels map[string]chan *Message
 	userChannels    map[string]chan string
-
-	// Observers for listening and logging events
-	observers []Observer
 }
 
 // NewGraphQLServer creates a new server to attach the database, game engine,
@@ -84,7 +81,6 @@ func NewGraphQLServer(
 		gameChannels:    map[string]chan *Game{},
 		boardChannels:   map[string]chan *BoardState{},
 		Directory:       make(map[string]*Game),
-		observers:       []Observer{},
 	}, nil
 }
 

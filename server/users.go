@@ -2,13 +2,17 @@ package server
 
 import (
 	"context"
-	"errors"
+	"database/sql"
+	"fmt"
 	"log"
 
+	"github.com/dgrijalva/jwt-go"
 	"github.com/google/uuid"
 	"github.com/zeebo/errs"
 	"golang.org/x/crypto/bcrypt"
 )
+
+var jwtSecret []byte = []byte("TODO:SET THIS TO FROM AN ENV VAR")
 
 // CreateTokenEndpoint ...
 func (s *graphQLServer) Signup(ctx context.Context, username string, password string) (*User, error) {
@@ -34,7 +38,56 @@ func (s *graphQLServer) Signup(ctx context.Context, username string, password st
 }
 
 func (s *graphQLServer) Login(ctx context.Context, username string, password string) (*User, error) {
-	return nil, errors.New("not impl")
+	if password == "" {
+		return nil, errs.New("must provide a password for authentication")
+	}
+	if username == "" {
+		return nil, errs.New("must provide a username for authentication")
+	}
+
+	// check passwor
+	log.Printf("attempting: %s - %s", username, password)
+	log.Printf("attempting with db: %+v", s.db)
+	rows, err := s.db.Query(`SELECT uuid, username, password FROM users WHERE username = $1`, username)
+	if err != nil {
+		log.Printf("failed to get row: %s", err)
+		if errs.Is(err, sql.ErrNoRows) {
+			return nil, nil
+		}
+		log.Printf("error Is: %s", err)
+	}
+	defer rows.Close()
+	var user *User
+	cols, _ := rows.Columns()
+	log.Printf("cols: %s", cols)
+	if rows == nil {
+		log.Printf("ROWS IS NIL")
+	}
+	if err := rows.Scan(user.ID, user.Username, user.Password); err != nil {
+		log.Printf("failed to scan rows into user: %s", err)
+		return nil, errs.Wrap(err)
+	}
+	log.Printf("#USER: %+v", user)
+	valid := checkPasswordHash(password, *user.Password)
+	if !valid {
+		return nil, errs.New("failed to authenticate")
+	}
+	log.Printf("valid: %+v", valid)
+
+	// we're valid, so generate a new token and assign it to the user
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"username": user.Username,
+		"password": user.Password,
+	})
+	t, error := token.SignedString(jwtSecret)
+	if error != nil {
+		fmt.Println(error)
+	}
+
+	// set token in redis for session comparison
+	log.Printf("token generated: %s", t)
+	user.Token = &t
+	return user, nil
 }
 
 func hashPassword(password string) (string, error) {

@@ -49,13 +49,6 @@ type Counter struct {
 	Value string `json:"Value"`
 }
 
-type Deck struct {
-	ID        string   `json:"ID"`
-	Name      string   `json:"Name"`
-	Commander string   `json:"Commander"`
-	Library   []string `json:"Library"`
-}
-
 type Emblem struct {
 	Name   string `json:"Name"`
 	Value  string `json:"Value"`
@@ -199,5 +192,6 @@ type Turn struct {
 type User struct {
 	ID       string  `json:"ID"`
 	Username string  `json:"Username"`
+	Password *string `json:"Password"`
 	Token    *string `json:"Token"`
 }

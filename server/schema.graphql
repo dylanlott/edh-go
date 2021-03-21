@@ -16,7 +16,6 @@ type Query {
   users(userID: String): [String!]!
   games(gameID: String): [Game!]!
   boardstates(gameID: String!, userID: String): [BoardState!]!
-  decks(userID: String!): [Deck!]
   card(name: String!, id: String): [Card!]
   cards(list: [String!]): [Card!]!
   search(name: String, colors: [String], colorIdentity: [String], keywords: [String]): [Card]
@@ -64,14 +63,8 @@ type Card {
 type User {
   ID: String!
   Username: String!
+  Password: String
   Token: String
-}
-
-type Deck {
-  ID: String!
-  Name: String!
-  Commander: String!
-  Library: [String!]
 }
 
 type Game {
