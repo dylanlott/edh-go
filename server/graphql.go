@@ -60,7 +60,6 @@ type graphQLServer struct {
 // NewGraphQLServer creates a new server to attach the database, game engine,
 // and graphql connections together
 func NewGraphQLServer(
-	kv persistence.KV,
 	appDB persistence.Database,
 	cardDB persistence.Database,
 ) (*graphQLServer, error) {

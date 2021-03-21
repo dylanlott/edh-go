@@ -32,7 +32,7 @@ func main() {
 		log.Fatalf(errs.Wrap(err).Error())
 	}
 
-	s, err := server.NewGraphQLServer(nil, db, cardDB)
+	s, err := server.NewGraphQLServer(db, cardDB)
 	if err != nil {
 		log.Fatal(err)
 	}

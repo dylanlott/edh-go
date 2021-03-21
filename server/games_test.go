@@ -191,7 +191,7 @@ func getNewServer(t *testing.T) *graphQLServer {
 		t.Errorf("failed to open appDB for games_test: %s", err)
 	}
 
-	s, err := NewGraphQLServer(nil, appDB, cardDB)
+	s, err := NewGraphQLServer(appDB, cardDB)
 	if err != nil {
 		t.Errorf("failed to create new test server: %+v", err)
 	}
