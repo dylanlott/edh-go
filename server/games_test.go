@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"strings"
 	"testing"
 	"time"
 
@@ -25,7 +26,7 @@ func TestCreateGame(t *testing.T) {
 				Players: []*InputBoardState{
 					{
 						User: &InputUser{
-							ID:       randomUserID(),
+							ID:       NewUserID(""),
 							Username: "shakezula",
 						},
 						Life:     40,
@@ -47,7 +48,7 @@ func TestCreateGame(t *testing.T) {
 				Players: []*InputBoardState{
 					{
 						User: &InputUser{
-							ID:       randomUserID(),
+							ID:       NewUserID(""),
 							Username: "shakezula",
 						},
 						Life:     40,
@@ -111,7 +112,7 @@ func TestJoinGame(t *testing.T) {
 					},
 				},
 				User: &InputUser{
-					ID:       randomUserID(),
+					ID:       NewUserID(""),
 					Username: "joingameid",
 				},
 			},
@@ -126,7 +127,7 @@ func TestJoinGame(t *testing.T) {
 				Players: []*InputBoardState{
 					{
 						User: &InputUser{
-							ID:       randomUserID(),
+							ID:       NewUserID(""),
 							Username: "shakezula",
 						},
 						Life:     40,
@@ -198,12 +199,20 @@ func getNewServer(t *testing.T) *graphQLServer {
 	return s
 }
 
-// NB: necessary to get a reference to a string because of this problem
+// NB: necessary to get a reference to a string because of this problem,
+// but also allows us the chance to trim and prep user IDs.
 // https://stackoverflow.com/questions/10535743/address-of-a-temporary-in-go
 
-// randomUserID returns a stringified UUID that is used for Player generation
-func randomUserID() *string {
-	var id = uuid.New().String()
+// NewUserID returns a trimmed and spaces removed string for ID generation.
+// If no ID is passed, then it will return a randomly generated UUID.
+// For normal operation, we just pass a "".
+func NewUserID(id string) *string {
+	if id == "" {
+		id = uuid.New().String()
+		return &id
+	}
+
+	id = strings.TrimSpace(id)
 	return &id
 }
 

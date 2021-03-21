@@ -79,10 +79,10 @@ func NewGraphQLServer(
 	})
 
 	return &graphQLServer{
-		mutex:           sync.RWMutex{},
-		cardDB:          cardDB,
-		db:              appDB,
-		kv:              kv,
+		mutex:  sync.RWMutex{},
+		cardDB: cardDB,
+		db:     appDB,
+		// kv:              kv,
 		redisClient:     client,
 		messageChannels: map[string]chan *Message{},
 		userChannels:    map[string]chan string{},
