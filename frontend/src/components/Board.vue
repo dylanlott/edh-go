@@ -329,6 +329,9 @@ export default {
           userID: this.$currentUser(),
         },
         update(data) {
+          this.$store.dispatch("mutateBoardStates")
+          // need to update boardstate here 
+          // this.$store.mutateBoardState(data.boardstates)
           this.self.boardstate = data.boardstates[0] 
         },
         results (data) {
@@ -338,6 +341,7 @@ export default {
     },
     // TODO: This needs to be reactive to new Users joining the game via subscribeToMore method.
     boardstates () {
+      const self = this
       return {
         query: gql`query ($gameID: String!){
           boardstates(gameID: $gameID) {
@@ -355,6 +359,7 @@ export default {
           gameID: this.gameID(),
         },
         update (data) {
+          self.$store.dispatch("mutateBoardStates", data.boardstates)
           data.boardstates.forEach((bs) => {
             if (bs.User.Username != this.$currentUser()) {
               console.log("found opponent: ", bs)

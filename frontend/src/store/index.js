@@ -1,13 +1,13 @@
 import Vuex from 'vuex'
 import Vue from 'vue'
-import gql from 'graphql-tag';
-
+// import gql from 'graphql-tag'
+// import api from '../gqlclient.js'
 
 Vue.use(Vuex)
 
 const BoardStates = {
     state: {
-        boardstate: {},
+        boardstates: {},
         loading: false,
         error: undefined
     },
@@ -22,14 +22,20 @@ const BoardStates = {
         },
         update (state, payload) {
             state.loading = false
-            state.boardstate = payload
-        }
+            state.boardstates = payload
+        },
     },
     actions: {
-        mutateBoardState ({ commit }, payload) {
-            console.log('vuex mutate boardstate hit: ', payload)
-            console.log('apollo? ', this.$apollo)
+        mutateBoardStates ({ commit, state }, payload) {
+            console.log('store#mutateBoardStates: ', payload)
             commit('update', payload)
+            console.log("state? ", state)
+            // Should we put this logic here or just update all boardstates
+            // and make view logic handle which opponent sees what?
+            // If we wanted to keep it separate, we could do 
+            // different commit 
+            // commit('updateSelf', payload)
+            // commit('updateOpponents', payload)
         },
     }
 }
@@ -51,7 +57,6 @@ const Game = {
 
         },
         updateTurnFailed (state, err) {
-
         },
         updateTurnSuccess (state, turn) {
             // state.Game.Turn 
@@ -65,7 +70,8 @@ const Game = {
     },
     actions: {
         getGame({ commit }, ID) {
-            console.log("getGame: ", ID)
+            // console.log("api? ", api)
+            console.log("getGame#ID: ", ID)
         }
     }
 }
