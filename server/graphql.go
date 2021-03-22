@@ -203,19 +203,7 @@ func (s *graphQLServer) Messages(ctx context.Context) ([]*Message, error) {
 }
 
 func (s *graphQLServer) Users(ctx context.Context, id *string) ([]string, error) {
-	// TODO: Persist to AppDB instead
-	// cmd := s.redisClient.SMembers("users")
-	// if cmd.Err() != nil {
-	// 	log.Println(cmd.Err())
-	// 	return nil, cmd.Err()
-	// }
-	// res, err := cmd.Result()
-	// if err != nil {
-	// 	log.Println(err)
-	// 	return nil, err
-	// }
-	// return res, nil
-	return []string{}, errors.New("not impl")
+	return nil, errors.New("not impl")
 }
 
 func (s *graphQLServer) MessagePosted(ctx context.Context, user string) (<-chan *Message, error) {

@@ -210,6 +210,7 @@ func (s *graphQLServer) UpdateGame(ctx context.Context, new InputGame) (*Game, e
 
 // JoinGame ...
 func (s *graphQLServer) JoinGame(ctx context.Context, input *InputJoinGame) (*Game, error) {
+	// TODO: Check context for User auth and append user info that way
 	// TODO: We check for game existence a lot, we should probably make this a function
 	s.mutex.RLock()
 	game, ok := s.Directory[input.ID]
@@ -221,6 +222,7 @@ func (s *graphQLServer) JoinGame(ctx context.Context, input *InputJoinGame) (*Ga
 
 	user := &User{
 		Username: input.User.Username,
+		ID:       *input.User.ID,
 	}
 
 	// Init default boardstate minus library and commander
