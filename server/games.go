@@ -213,6 +213,13 @@ func (s *graphQLServer) JoinGame(ctx context.Context, input *InputJoinGame) (*Ga
 	// TODO: Check context for User auth and append user info that way
 	// TODO: We check for game existence a lot, we should probably make this a function
 	s.mutex.RLock()
+	if input.User.ID == nil {
+		return nil, errors.New("must provide a user ID to join a game")
+	}
+	if input.User.Username == "" {
+		return nil, errors.New("must provide a username to join a game")
+	}
+
 	game, ok := s.Directory[input.ID]
 	if !ok {
 		log.Printf("game lookup for id %s failed", input.ID)
