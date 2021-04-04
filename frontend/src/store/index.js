@@ -1,7 +1,11 @@
 import Vuex from 'vuex'
 import Vue from 'vue'
 // import gql from 'graphql-tag'
-// import api from '../gqlclient.js'
+import api from '@/gqlclient'
+
+import {
+    gameQuery,
+} from '@/gqlQueries'
 
 Vue.use(Vuex)
 
@@ -50,9 +54,18 @@ const Game = {
                 Number: 0
             },
             PlayerIDs: []
-        }
+        },
+        Error: undefined ,
+        Loading: false,
     },
     mutations: {
+        loading (state, payload) {
+            state.loading = payload
+        },
+        updateGame (state, game) {
+            console.log('updateGame: ', game)
+            // state.Game.ID = game.ID
+        },
         updateTurnRequest (state) {
 
         },
@@ -67,11 +80,25 @@ const Game = {
         opponentsSuccess (state, opps) {
 
         },
+        gameFailure(state, error) {
+            state.error = error
+        }
     },
     actions: {
         getGame({ commit }, ID) {
             // console.log("api? ", api)
             console.log("getGame#ID: ", ID)
+            api.query({
+                query: gameQuery,// TODO: Add the right query  
+                variables: {
+                  gameID: ID,
+                }
+            }).then((data) => {
+                commit('updateGame', data.data.games[0])
+            }).catch((err) => {
+                console.log('vuex failed to get game: ', err)
+                commit('gameFailure', err)
+            }) 
         }
     }
 }
