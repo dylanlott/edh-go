@@ -46,6 +46,7 @@ func (s *graphQLServer) Games(ctx context.Context, gameID *string) ([]*Game, err
 		return nil, errs.New("game [%+v] does not exist", gameID)
 	}
 
+	log.Printf("Games#returning game: %+v", game)
 	return []*Game{game}, nil
 }
 
@@ -53,9 +54,11 @@ func (s *graphQLServer) Games(ctx context.Context, gameID *string) ([]*Game, err
 func (s *graphQLServer) Boardstates(ctx context.Context, gameID string, username *string) ([]*BoardState, error) {
 	game, ok := s.Directory[gameID]
 	if game == nil {
+		log.Printf("Game is nil: %s %+v", gameID, s.Directory)
 		return nil, errs.New("game does not exist")
 	}
 	if !ok {
+		log.Printf("game is !ok: %+v", s.Directory)
 		return nil, errs.New("game does not exist")
 	}
 
@@ -122,6 +125,7 @@ func (s *graphQLServer) GameUpdated(ctx context.Context, from InputGame) (<-chan
 	if !ok {
 		return nil, errs.New("game does not exist with ID of %s", from.ID)
 	}
+	log.Printf("GameUpdated: %+v", from)
 
 	// HACK: This gets around us having to do a lot of complicated
 	// checking and assignment and let's the json/encoder library
@@ -138,6 +142,7 @@ func (s *graphQLServer) GameUpdated(ctx context.Context, from InputGame) (<-chan
 
 	games := make(chan *Game, 1)
 	s.mutex.Lock()
+	log.Printf("GameUpdated#game is set: %+v", game)
 	s.Directory[game.ID] = game
 	s.gameChannels[game.ID] = games
 	s.mutex.Unlock()
@@ -184,6 +189,7 @@ func (s *graphQLServer) BoardUpdate(ctx context.Context, bs InputBoardState) (<-
 // NB: Game _can_ touch boardstate right now, and it probably shouldn't.
 func (s *graphQLServer) UpdateGame(ctx context.Context, new InputGame) (*Game, error) {
 	// check existence of game, fail if not found
+	log.Printf("UpdateGame#input: %+v", new)
 	_, ok := s.Directory[new.ID]
 	if !ok {
 		return nil, errs.New("Game with ID %s does not exist", new.ID)
@@ -199,6 +205,7 @@ func (s *graphQLServer) UpdateGame(ctx context.Context, new InputGame) (*Game, e
 		return nil, errs.New("failed to unmarshal game: %s", err)
 	}
 
+	log.Printf("UpdateGame#setting game: %+v", game)
 	s.mutex.Lock()
 	s.Directory[new.ID] = game
 	log.Printf("pushing new game on channel: %+v", game)
@@ -210,6 +217,7 @@ func (s *graphQLServer) UpdateGame(ctx context.Context, new InputGame) (*Game, e
 
 // JoinGame ...
 func (s *graphQLServer) JoinGame(ctx context.Context, input *InputJoinGame) (*Game, error) {
+	log.Printf("InputJoinGame: %+v", input)
 	// TODO: Check context for User auth and append user info that way
 	// TODO: We check for game existence a lot, we should probably make this a function
 	s.mutex.RLock()
@@ -303,9 +311,6 @@ func (s *graphQLServer) JoinGame(ctx context.Context, input *InputJoinGame) (*Ga
 	log.Printf("JoinGame#UpdateGame: %+v", ig)
 	s.UpdateGame(ctx, ig)
 
-	// s.mutex.Lock()
-	// s.Directory[game.ID] = game
-	// s.mutex.Unlock()
 	return game, nil
 }
 
@@ -391,6 +396,7 @@ func (s *graphQLServer) CreateGame(ctx context.Context, inputGame InputCreateGam
 		s.mutex.Unlock()
 	}
 
+	log.Printf("createGame#game being set: %+v", g)
 	// Set game in directory for access
 	s.mutex.Lock()
 	s.gameChannels[g.ID] = make(chan *Game, 1)

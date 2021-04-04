@@ -1,22 +1,24 @@
 <template>
   <div class="board shell">
+    <pre>
+      {{ game }}
+    </pre>
     <!-- <h1 class="title shell">{{ gameID }}</h1> -->
 
   <!-- LIFE TRACKER -->
   <div class="columns">
-    <div class="shell column is-9">
-      <!-- <TurnTracker gameID="GameID" /> -->
-    </div>
-    <div class="shell column is-3">
+    <!-- <div class="shell column is-9">
+      <TurnTracker gameID="GameID" />
+    </div> -->
+    <!-- <div class="shell column is-3">
       <div class="title is-4">{{ self.boardstate.Life }}</div>
       <button class="button is-small" @click="increaseLife()">Increase</button>
       <button class="button is-small" @click="decreaseLife()">Decrease</button>
-    </div>
+    </div> -->
   </div>
 
     <!-- OPPONENTS -->
-    <div class="opponents">
-      <!-- Gets the game, and only shows the Opponent boardstates from the Game PlayerIDs  -->
+    <!-- <div class="opponents">
       <div :key="opponent.ID" v-for="opponent in boardstates">
         <div v-if="opponent.Username != self.User.Username"></div>
       </div>
@@ -25,7 +27,6 @@
           <h1 class="title">{{ player.Username }}</h1>
         </div>
 
-        <!-- {{ game.PlayerIDs }} -->
         <div :key="p.ID" v-for="p in game.PlayerIDs">
           username: {{ p.Username }} {{ self.User.Username}}
           <div v-if="p.Username !== self.User.Username">
@@ -35,15 +36,12 @@
             You are {{ p }}
           </div>
         </div>
-        <!-- <div v-if="game.PlayerIDs.length === 1">
-          <h1>No other players have joined this game.</h1>
-        </div> -->
       </div>
-    </div>
-    <hr />
+    </div> -->
 
-    <!-- SELF -->
-    <div class="self shell">
+    <!-- <hr /> -->
+
+    <!-- <div class="self shell">
       <h1 class="title">
         {{ self.boardstate.User.username }}
         <p class="subtitle">{{ 
@@ -109,11 +107,10 @@
         </div>
         <hr />
       </div>
-      <!-- END OF SELF STATE -->
-    </div>
+    </div> -->
 
     <!-- CONTROL PANEL -->
-    <div class="shell controlpanel columns">
+    <!-- <div class="shell controlpanel columns">
       <div class="columns">
         <div class="column">
           <button class="button is-small is-primary">Collapse All</button>
@@ -131,7 +128,7 @@
           <button @click="mill()" class="button is-small is-primary">Mill</button>
         </div>
       </div>
-    </div>
+    </div> -->
   </div>
 </template>
 <script>
@@ -143,169 +140,27 @@ import PlayerState from '@/components/PlayerState.vue';
 import SelfState from '@/components/SelfState.vue';
 import Opponents from '@/components/Opponents.vue'
 // import TurnTracker from '@/components/TurnTracker.vue';
-import { 
-  gameQuery,
-  gameUpdateQuery,
-  selfStateQuery, 
-  updateBoardStateQuery,
-  boardstates,
-  boardstatesSubscription
-} from '@/gqlQueries';
-import router from '@/router'
+// import router from '@/router'
+import { mapState } from 'vuex'
 
 export default {
   name: 'board',
   data() {
     return {
-      locked: false, // `locked` is set to true once the players and turn order are decided.
-      mulligan: true, // `mulligan` is set to true until no one is mulling anymore.
-      game: {
-        PlayerIDs: [],
-        Turn: {
-          Player: this.$currentUser(),
-          Phase: "setup",
-          Number: 0
-        },
-      },
-      self: {
-        GameID: this.$route.params.id,
-        User: {
-          Username: this.$currentUser(),
-        },
-        Turn: {
-          Phase: "",
-          Number: 0,
-          Player: "",
-        },
-        boardstate: {
-          GameID: this.$route.params.id,
-          User: {
-            Username: this.$currentUser(),
-          },
-        },
-      },
     };
   },
   created () {
-    this.subscribeToGameUpdates()
     this.$store.dispatch('getGame', this.$route.params.id)
+    this.$store.dispatch('subscribeToGame', this.$route.params.id)
   },
   methods: {
     gameID() {
       return this.$route.params.id
     },
-    draw() {
-      const card = this.self.boardstate.Library.shift();
-      this.self.boardstate.Hand.push(card);
-      this.mutateBoardState()
-    },
-    mill() {
-      const card = this.self.boardstate.Library.shift();
-      this.self.boardstate.Graveyard.push(card);
-      this.mutateBoardState()
-    },
-
-    // TODO: Generics for boardstate manipulations? 
-
-    // @param `src` is the source field of cards the target card is in. 
-    // @param `target` is the card that's being fetched
-    // @param `dst` is the destination field of the fetched card
-    // NB: We always want to pass cards around by ID, since we're 
-    // planning on these being unique.
-    // @returns: `src`, `dst`
-    fetch (src, target, dst) {
-      let obj = src.find((v, idx)=> {
-        if (v.ID === target.ID) {
-          console.log(`target found, moving ${target} from ${src} -> ${dst}`)
-          src2 = src.splice(1, idx)
-          dst2 = dst.push(v)
-          console.log(`target moved: src: ${src2} dst: ${dst2}`)
-          // TODO: this.mutateBoardState()
-          return src2, dst2
-        }
-      })
-      if (obj === undefined) {
-        console.error(`unable to find target ${target}`)
-        return src, dst
-      }
-      // if we get here, we have a weird result. 
-      // log and return src.
-      console.log('weird, we shouldnt be here', src, dst)
-      return src, dst
-    },
-    increaseLife () {
-      this.self.boardstate.Life++
-      this.mutateBoardState()
-    },
-    decreaseLife() {
-      this.self.boardstate.Life--
-      this.mutateBoardState()
-    },
-    tap(card) {
-      card.Tapped = !card.Tapped
-      this.mutateBoardState()
-    },
-    mutateBoardState() {
-      this.self.boardstate.User = {
-        Username: this.$currentUser()
-      }
-      this.self.boardstate.GameID = this.$route.params.id
-      this.$apollo.mutate({
-        mutation: updateBoardStateQuery,
-        variables: {
-          boardstate: this.self.boardstate,
-        },
-      })
-      .then((res) => {
-        // console.log('mutateBoardState#setting boardstate: ', res.data.updateBoardState)
-        this.self.boardstate = res.data.updateBoardState
-        return res 
-      })
-      .catch((err) => {
-        console.log('error mutating boardstate: ', err)
-        return err
-      })
-    },
     handleActivity(val) {
       return
       // console.log('logging activity: ', val)
     },
-    getPlayerIDs () {
-      console.log('getPlayerIDs: ', this.game.PlayerIDs)
-      return this.game.PlayerIDs
-    },
-    subscribeToGameUpdates() {
-      var self = this
-      console.log('subscribing to game updates')
-      this.$apollo.query({
-        query: gameQuery,// TODO: Add the right query  
-        variables: {
-          gameID: this.$route.params.id,
-        }
-      })
-      .then(data => {
-        console.log('initial gameQuery: ', data)
-        this.$apollo.subscribe({
-          query: gameUpdateQuery,// nb: this is where we use the subscription { } query
-          variables: {
-            game: {
-              ID: this.$route.params.id,
-              PlayerIDs: this.getPlayerIDs()
-            }
-          }
-        })
-        .subscribe({
-          next(data) {
-            console.log('received updated game data: ', data)
-            self.game.PlayerIDs = data.data.gameUpdated.PlayerIDs
-            self.game.Turn = data.data.gameUpdated.Turn
-          },
-          error(err) {
-            console.log('game subscription error: ', err)
-          }
-        })
-      })
-    }
   },
   watch: {
     self: {
@@ -314,102 +169,15 @@ export default {
         // or else we'll get infinite loops.
         // This is only where we should emit ActivityLog events.
         // this.handleActivity(newVal)
+
+        // TODO: Call mutate board state action here.
       },
       deep: true
     }
   },
-  apollo: {
-    // Loads the user's state from the Route and UserID.
-    // Selfstate is used for interacting with the Player's board.
-    selfstate() {
-      return {
-        query: selfStateQuery,
-        variables: {
-          gameID: this.$route.params.id,
-          userID: this.$currentUser(),
-        },
-        update(data) {
-          this.$store.dispatch("mutateBoardStates")
-          // need to update boardstate here 
-          // this.$store.mutateBoardState(data.boardstates)
-          this.self.boardstate = data.boardstates[0] 
-        },
-        results (data) {
-          return data.boardstates[0] 
-        }
-      };
-    },
-    // TODO: This needs to be reactive to new Users joining the game via subscribeToMore method.
-    boardstates () {
-      const self = this
-      return {
-        query: gql`query ($gameID: String!){
-          boardstates(gameID: $gameID) {
-            User {
-              ID
-              Username
-            }
-            Field {
-              ID
-              Name
-            }
-          }
-        } `,
-        variables: {
-          gameID: this.gameID(),
-        },
-        update (data) {
-          self.$store.dispatch("mutateBoardStates", data.boardstates)
-          data.boardstates.forEach((bs) => {
-            if (bs.User.Username != this.$currentUser()) {
-              console.log("found opponent: ", bs)
-            }
-          })
-        },
-        error (err) {
-          console.log(`opponents error: ${err}`)
-          return err
-        }
-      }
-    },
-    // Queries for the Game by route ID. This is responsible for loading up opponents, 
-    // turn tracking, and eventually chat and metagame functionality.
-    game() {
-      return {
-        query: gql`
-          query	($gameID: String) {
-            games(gameID: $gameID) {
-              ID
-              PlayerIDs {
-                Username
-                ID
-              }
-              Turn {
-                Player
-                Phase
-                Number
-              }
-            }
-          }
-        `,
-        variables: {
-          gameID: this.gameID(),
-        },
-        update(data) {
-          // this.$store.dispatch('')
-          if (data.games.length === 0) {
-            console.error(`game with ID ${this.gameID()}`)
-            return []
-          }
-          return data.games[0]
-        },
-        results (data) {
-          console.log('game query results: ', results)
-          return data
-        }
-      } 
-    }
-  },
+  computed: mapState({
+    game: state => state
+  }),
   components: {
     draggable,
     Card,

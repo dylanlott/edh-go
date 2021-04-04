@@ -91,6 +91,8 @@ export default {
       }]
     },
     username () {
+      // TODO
+      // return this.$store.getUser()
       return this.$currentUser()
     },
     commander () {

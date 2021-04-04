@@ -613,6 +613,11 @@ subscription($game: InputGame!) {
       Username
       ID
     }
+    Turn {
+      Player
+      Phase
+      Number
+    }
   }
 } 
 `

@@ -40,7 +40,7 @@
             <b-input v-model="username"></b-input>
           </b-field>
 
-          <b-button @click="handleJoinGame()" type="button" class="is-success">Start a new game </b-button>
+          <b-button @click="handleJoinGame()" type="button" class="is-success">Join Game</b-button>
         </div>
       </div>
     </div>
@@ -76,8 +76,6 @@ export default {
   },
   created () {
     this.gameQuery()
-    console.log(this.$setUsername('frylock'))
-    console.log(this.$getUsername())
   },
   methods: {
     queryCommanders() {
@@ -117,48 +115,25 @@ export default {
         });
     },
     handleJoinGame() {
-      const inputGame = {
-        ID: this.$route.params.id,
-        Decklist: this.deck.library,
-        User: {
-          Username: this.username || "",
-        },
-        BoardState: {
-          GameID: this.$route.params.id,
+      this.$store.dispatch('joinGame', {
+        inputGame: {
+          ID: this.$route.params.id,
+          Decklist: this.deck.library,
           User: {
+            ID: this.uuid(),
             Username: this.username || "",
           },
-          Life: 40,
-          Commander: [{
-            Name: this.deck.commander,
-          }]
-        }
-      }
-      console.log(inputGame)
-      this.$apollo.mutate({
-        mutation: gql`mutation ($InputJoinGame: InputJoinGame) {
-          joinGame(input: $InputJoinGame) {
-            ID
-            PlayerIDs {
-              Username
-            }
+          BoardState: {
+            GameID: this.$route.params.id,
+            User: {
+              Username: this.username || "",
+            },
+            Life: 40,
+            Commander: [{
+              Name: this.deck.commander,
+            }]
           }
-        }`,
-        variables: {
-          InputJoinGame: inputGame,
-        },
-        update: (store, { data }) => {
-          console.log('handleJoinGame#update#store:', store)
-          console.log('handleJoinGame#update#data:', data)
         }
-      })
-      .then((res) => {
-        router.push({ path: `/games/${res.data.joinGame.ID}` })
-        return res
-      })
-      .catch((err) => {
-        console.log('error joining game: ', err)
-        return err
       })
     },
     gameQuery() {

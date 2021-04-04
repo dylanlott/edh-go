@@ -1,39 +1,43 @@
 import Vuex from 'vuex'
 import Vue from 'vue'
-// import gql from 'graphql-tag'
 import api from '@/gqlclient'
+import gql from 'graphql-tag';
+// import router from '@/router'
 
 import {
     gameQuery,
+    gameUpdateQuery
 } from '@/gqlQueries'
 
 Vue.use(Vuex)
 
 const BoardStates = {
     state: {
+        // NB: Should self act as a cache to the server? 
+        self: {},
         boardstates: {},
         loading: false,
         error: undefined
     },
     mutations: {
-        request (state, payload) {
+        request(state) {
             state.loading = true
             state.error = undefined
         },
-        error (state, payload) {
+        error(state, payload) {
             state.loading = false
             state.error = payload
         },
-        update (state, payload) {
+        update(state, payload) {
             state.loading = false
             state.boardstates = payload
         },
     },
     actions: {
-        mutateBoardStates ({ commit, state }, payload) {
+        mutateBoardStates({ commit, state }, payload) {
             console.log('store#mutateBoardStates: ', payload)
             commit('update', payload)
-            console.log("state? ", state)
+            console.log("state: ", state.boardstates)
             // Should we put this logic here or just update all boardstates
             // and make view logic handle which opponent sees what?
             // If we wanted to keep it separate, we could do 
@@ -46,7 +50,9 @@ const BoardStates = {
 
 const Game = {
     state: {
-        Game: {
+        // game should be identical in structure to the object we get 
+        // back from the server. Thus the capitalization.
+        game: {
             ID: "",
             Turn: {
                 Player: "",
@@ -55,51 +61,146 @@ const Game = {
             },
             PlayerIDs: []
         },
-        Error: undefined ,
-        Loading: false,
+        error: undefined,
+        loading: false,
     },
     mutations: {
-        loading (state, payload) {
+        loading(state, payload) {
             state.loading = payload
         },
-        updateGame (state, game) {
-            console.log('updateGame: ', game)
-            // state.Game.ID = game.ID
+        error(state, err) {
+            state.error = err 
         },
-        updateTurnRequest (state) {
-
+        updateGame(state, game) {
+            state.game.ID = game.ID
+            state.game.PlayerIDs = game.PlayerIDs.map((v) => {
+                return { Username: v.Username, ID: v.ID }
+            }),
+            state.game.Turn = game.Turn
         },
-        updateTurnFailed (state, err) {
-        },
-        updateTurnSuccess (state, turn) {
-            // state.Game.Turn 
-        },
-        opponentsRequest (state) {
-
-        },
-        opponentsSuccess (state, opps) {
-
+        updateTurn(state, turn) {
+            state.game.Turn = turn
         },
         gameFailure(state, error) {
             state.error = error
-        }
+        },
+        setStack(state, error) {
+
+        },
     },
     actions: {
         getGame({ commit }, ID) {
-            // console.log("api? ", api)
-            console.log("getGame#ID: ", ID)
             api.query({
                 query: gameQuery,// TODO: Add the right query  
                 variables: {
-                  gameID: ID,
+                    gameID: ID,
                 }
             }).then((data) => {
                 commit('updateGame', data.data.games[0])
             }).catch((err) => {
                 console.log('vuex failed to get game: ', err)
                 commit('gameFailure', err)
-            }) 
-        }
+            })
+        },
+        subscribeToGame({ commit, state }, ID) {
+            api.query({
+                query: gameQuery,// TODO: Add the right query  
+                variables: {
+                    gameID: ID,
+                }
+            })
+            .then(data => {
+                if (data.data.games.length === 0) {
+                    console.log('no game received from subscription')
+                    return
+                }
+                commit('updateGame', data.data.games[0])
+                api.subscribe({
+                    query: gameUpdateQuery,// nb: this is where we use the subscription { } query
+                    variables: {
+                        game: {
+                            ID: ID,
+                            PlayerIDs: state.game.PlayerIDs.map((v) => {
+                                return { Username: v.Username, ID: v.ID }
+                            }),
+                        }
+                    }
+                })
+                .subscribe({
+                    next(data) {
+                        console.log('subscribeToGame received data: ', data)
+                        commit('updateGame', data.data.games[0])
+                        // self.game.PlayerIDs = data.data.gameUpdated.PlayerIDs
+                        // self.game.Turn = data.data.gameUpdated.Turn
+                    },
+                    error(err) {
+                        commit('error', err)
+                        console.log('vuex error: subscribeToGame: game subscription error: ', err)
+                    }
+                })
+            })
+        },
+        // TODO: Should joinGame simultaneously subscribe to Game?
+        joinGame({ state }, payload) {
+            console.log('joinGame#payload: ', payload)
+            api.mutate({
+                mutation: gql`mutation ($InputJoinGame: InputJoinGame) {
+                  joinGame(input: $InputJoinGame) {
+                    ID
+                    PlayerIDs {
+                      Username
+                    }
+                  }
+                }`,
+                variables: {
+                    InputJoinGame: payload.inputGame,
+                },
+                update: (store, { data }) => {
+                    console.log('handleJoinGame#update#store:', store)
+                    console.log('handleJoinGame#update#data:', data)
+                }
+            })
+            .then((res) => {
+                console.log('joinGame#state: ', state)
+                console.log('joinGame#payload: ', payload)
+                router.push({ path: `/games/${res.data.joinGame.ID}` })
+                return res
+            })
+            .catch((err) => {
+                console.log('error joining game: ', err)
+                return err
+            })
+        },
+        createGame({ state }, payload) {
+            console.log('createGame#state: ', state)
+            this.$apollo.mutate({
+                mutation: gql`mutation ($inputGame: InputCreateGame!) {
+                  createGame(input: $inputGame){
+                    ID	
+                    CreatedAt 
+                    Turn {
+                      Number
+                      Player
+                      Phase
+                    }
+                    PlayerIDs {
+                      Username
+                    }
+                  }
+                }`,
+                variables: {
+                    inputGame: payload.inputGame
+                }
+            })
+            .then((res) => {
+                console.log('pushing route to: ', res.data.createGame.ID)
+                router.push({ path: `/games/${res.data.createGame.ID}` })
+            })
+            .catch((err) => {
+                console.error('got error back: ', err)
+                return err
+            })
+        },
     }
 }
 
@@ -109,6 +210,14 @@ const User = {
             Username: "",
             ID: "",
             Token: ""
+        }
+    },
+    mutations:{
+    },
+    actions:{
+        login() {
+        },
+        logout() {
         }
     }
 }
