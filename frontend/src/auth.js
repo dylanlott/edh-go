@@ -1,24 +1,18 @@
 const AuthPlugin = {
   install(Vue, options) {
     Vue.prototype.$setCurrentUser = function (user) {
-      return window.localStorage.setItem('user', user)
+      return Vue.$cookies.set('username', user)
     };
     Vue.prototype.$currentUser = function () {
-      const user = window.localStorage.getItem('user')
-      if (!user) {
-        return undefined
-      }
-      return window.localStorage.getItem('user')
+      return Vue.$cookies.get('username')
+    };
+    Vue.prototype.$currentUserID = function () {
+      return Vue.$cookies.get('userID')
     };
     Vue.prototype.$logoutUser = function () {
-      window.localStorage.removeItem('user')
-      delete Vue.prototype.user
-    };
-    Vue.prototype.$setUsername = function (user) {
-      Vue.$cookies.set('username', user)
-    };
-    Vue.prototype.$getUsername = function () {
-      return Vue.$cookies.get('username')
+      Vue.$cookies.set('username', '')
+      Vue.$cookies.set('userID', '')
+      Vue.$cookies.set('token', '')
     };
     Vue.prototype.$setToken = function (token) {
       return Vue.$cookies.set('token', token)

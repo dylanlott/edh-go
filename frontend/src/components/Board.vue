@@ -133,7 +133,7 @@
 </template>
 <script>
 import _ from 'lodash';
-import gql from 'graphql-tag';
+// import gql from 'graphql-tag';
 import draggable from 'vuedraggable';
 import Card from '@/components/Card';
 import PlayerState from '@/components/PlayerState.vue';
@@ -152,6 +152,7 @@ export default {
   created () {
     this.$store.dispatch('getGame', this.$route.params.id)
     this.$store.dispatch('subscribeToGame', this.$route.params.id)
+    // this.$store.dispatch('boardstates', )
   },
   methods: {
     gameID() {

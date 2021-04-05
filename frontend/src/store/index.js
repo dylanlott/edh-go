@@ -85,7 +85,6 @@ const Game = {
             state.error = error
         },
         setStack(state, error) {
-
         },
     },
     actions: {
@@ -115,7 +114,7 @@ const Game = {
                     return
                 }
                 commit('updateGame', data.data.games[0])
-                api.subscribe({
+                const sub = api.subscribe({
                     query: gameUpdateQuery,// nb: this is where we use the subscription { } query
                     variables: {
                         game: {
@@ -123,15 +122,14 @@ const Game = {
                             PlayerIDs: state.game.PlayerIDs.map((v) => {
                                 return { Username: v.Username, ID: v.ID }
                             }),
+                            Turn: state.Turn,
                         }
                     }
                 })
-                .subscribe({
+                sub.subscribe({
                     next(data) {
-                        console.log('subscribeToGame received data: ', data)
-                        commit('updateGame', data.data.games[0])
-                        // self.game.PlayerIDs = data.data.gameUpdated.PlayerIDs
-                        // self.game.Turn = data.data.gameUpdated.Turn
+                        console.log('GAME SUBSCRIPTION DATA RECEIVED: ', data)
+                        commit('updateGame', data.data.gameUpdated)
                     },
                     error(err) {
                         commit('error', err)
@@ -140,7 +138,6 @@ const Game = {
                 })
             })
         },
-        // TODO: Should joinGame simultaneously subscribe to Game?
         joinGame({ commit }, payload) {
             console.log('joinGame#payload: ', payload)
             api.mutate({
@@ -158,7 +155,7 @@ const Game = {
             })
             .then((res) => {
                 console.log('joinGame#res: ', res)
-                commit('updateGame', res.data.games[0])
+                commit('updateGame', res.data.joinGame)
                 router.push({ path: `/games/${res.data.joinGame.ID}` })
                 return Promise.resolve(res)
             })

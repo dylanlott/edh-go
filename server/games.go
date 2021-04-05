@@ -50,82 +50,11 @@ func (s *graphQLServer) Games(ctx context.Context, gameID *string) ([]*Game, err
 	return []*Game{game}, nil
 }
 
-// Boardstates queries Redis for different boardstates per player or game
-func (s *graphQLServer) Boardstates(ctx context.Context, gameID string, username *string) ([]*BoardState, error) {
-	game, ok := s.Directory[gameID]
-	if game == nil {
-		log.Printf("Game is nil: %s %+v", gameID, s.Directory)
-		return nil, errs.New("game does not exist")
-	}
-	if !ok {
-		log.Printf("game is !ok: %+v", s.Directory)
-		return nil, errs.New("game does not exist")
-	}
-
-	// if username is not provided, send all
-	if username == nil {
-		boardstates := []*BoardState{}
-		for _, p := range game.PlayerIDs {
-			board := &BoardState{}
-			boardKey := BoardStateKey(game.ID, p.Username)
-			err := s.Get(boardKey, &board)
-			if err != nil {
-				log.Printf("error fetching user boardstate from redis: %s", err)
-			}
-			boardstates = append(boardstates, board)
-		}
-		return boardstates, nil
-	}
-
-	boardstates := []*BoardState{}
-	for _, p := range game.PlayerIDs {
-		if p.Username == *username {
-			board := &BoardState{}
-			boardKey := BoardStateKey(game.ID, p.Username)
-			err := s.Get(boardKey, &board)
-			if err != nil {
-				log.Printf("error fetching user boardstate from redis: %s", err)
-			}
-
-			boardstates = append(boardstates, board)
-		}
-	}
-
-	if len(boardstates) == 0 {
-		return []*BoardState{}, errs.New("no boardstate for user %s found", *username)
-	}
-
-	return boardstates, nil
-}
-
-func getUsers(players []*InputUser) []*User {
-	// TODO: Use json Marshaling hack here
-	users := []*User{}
-	for _, p := range players {
-		u := &User{
-			ID:       *p.ID,
-			Username: p.Username,
-		}
-		users = append(users, u)
-	}
-
-	return users
-}
-
-func getTurn(turn *InputTurn) *Turn {
-	return &Turn{
-		Number: turn.Number,
-		Phase:  turn.Phase,
-		Player: turn.Player,
-	}
-}
-
 func (s *graphQLServer) GameUpdated(ctx context.Context, from InputGame) (<-chan *Game, error) {
 	_, ok := s.Directory[from.ID]
 	if !ok {
 		return nil, errs.New("game does not exist with ID of %s", from.ID)
 	}
-	log.Printf("GameUpdated: %+v", from)
 
 	// HACK: This gets around us having to do a lot of complicated
 	// checking and assignment and let's the json/encoder library
@@ -140,11 +69,16 @@ func (s *graphQLServer) GameUpdated(ctx context.Context, from InputGame) (<-chan
 		return nil, errs.New("failed to unmarshal into *Game: %+v", err)
 	}
 
-	games := make(chan *Game, 1)
+	// Update game in the directory
 	s.mutex.Lock()
-	log.Printf("GameUpdated#game is set: %+v", game)
+	// assign the game to the directory for finding
 	s.Directory[game.ID] = game
+	// create a new gameChannel to announce Game updates over
+	games := make(chan *Game, 1)
+	// set the gameChannels to have the new receiving channel
 	s.gameChannels[game.ID] = games
+	// announce the game over the GameChannels
+	games <- game
 	s.mutex.Unlock()
 
 	go func() {
@@ -154,33 +88,6 @@ func (s *graphQLServer) GameUpdated(ctx context.Context, from InputGame) (<-chan
 		s.mutex.Unlock()
 	}()
 
-	return games, nil
-}
-
-// BoardUpdate returns a channel that emits all the Boardstate's over it and then
-// listens for ctx.Done and then cleans up after itself.
-func (s *graphQLServer) BoardUpdate(ctx context.Context, bs InputBoardState) (<-chan *Game, error) {
-	// Make a boardstates channel to emit all the events on, and assign it to
-	// the user who submitted to the update.
-	boardstates := make(chan *BoardState, 1)
-	s.mutex.Lock()
-	s.boardChannels[bs.User.Username] = boardstates
-	s.mutex.Unlock()
-
-	go func() {
-		<-ctx.Done()
-		s.mutex.Lock()
-		delete(s.boardChannels, bs.User.Username)
-		s.mutex.Unlock()
-	}()
-
-	game, ok := s.Directory[bs.GameID]
-	if !ok {
-		return nil, errs.New("game %s does not exist", bs.GameID)
-	}
-
-	games := make(chan *Game, 1)
-	games <- game
 	return games, nil
 }
 
@@ -211,6 +118,8 @@ func (s *graphQLServer) UpdateGame(ctx context.Context, new InputGame) (*Game, e
 	log.Printf("pushing new game on channel: %+v", game)
 	s.gameChannels[new.ID] <- game
 	s.mutex.Unlock()
+
+	s.GameUpdated(ctx, new)
 
 	return game, nil
 }
@@ -412,24 +321,6 @@ func (s *graphQLServer) CreateGame(ctx context.Context, inputGame InputCreateGam
 	return g, nil
 }
 
-func (s *graphQLServer) UpdateBoardState(ctx context.Context, bs InputBoardState) (*BoardState, error) {
-	updated, err := boardStateFromInput(bs)
-	if err != nil {
-		log.Printf("UpdateBoardState failed to marshal input board state correctly: %s", err)
-		return nil, fmt.Errorf("failed to marshal input boardstate: %s", err)
-	}
-	boardKey := BoardStateKey(bs.GameID, bs.User.Username)
-	err = s.Set(boardKey, updated)
-	if err != nil {
-		log.Printf("error updating boardstate in redis: %s", err)
-	}
-
-	s.mutex.Lock()
-	s.boardChannels[bs.User.Username] <- updated
-	s.mutex.Unlock()
-	return updated, nil
-}
-
 // Save saves a Game to the Persistence. TODO
 func (g *Game) Save(ctx context.Context, db persistence.Persistence) (*Game, error) {
 	return nil, errors.New("not impl")
@@ -445,28 +336,6 @@ func pushBoardStateUpdate(ctx context.Context, observers []Observer, input Input
 		log.Printf("observers being notified: %+v\n", obs)
 		log.Printf("board state updated: %+v\n", input)
 	}
-}
-
-// gameFromInput transforms an InputGame to a *Game type
-func gameFromInput(game InputGame) *Game {
-	out := &Game{
-		ID:        game.ID,
-		PlayerIDs: getPlayerIDs(game.PlayerIDs),
-	}
-	if game.Turn == nil {
-		out.Turn = &Turn{
-			Player: game.Turn.Player,
-			Phase:  game.Turn.Phase,
-			Number: game.Turn.Number,
-		}
-	}
-
-	if game.CreatedAt != nil {
-		fmt.Printf("gameFromInput#createdAt: %+v\n", *game.CreatedAt)
-		out.CreatedAt = *game.CreatedAt
-	}
-
-	return out
 }
 
 func getPlayerIDs(inputUsers []*InputUser) []*User {
@@ -580,11 +449,6 @@ func (s *graphQLServer) createLibraryFromDecklist(ctx context.Context, decklist 
 	}
 
 	return cards, nil
-}
-
-// BoardStateKey formats a board state key for boardstate to user mapping.
-func BoardStateKey(gameID, username string) string {
-	return fmt.Sprintf("%s:%s", gameID, username)
 }
 
 // GameKey formats the keys for Games in our Directory
