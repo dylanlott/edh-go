@@ -154,11 +154,11 @@ const Game = {
                 }`,
                 variables: {
                     InputJoinGame: payload.inputGame,
-                },
-                update: (store, { data }) => {
-                    console.log('handleJoinGame#update#store:', store)
-                    console.log('handleJoinGame#update#data:', data)
                 }
+                // update: (store, { data }) => {
+                //     console.log('handleJoinGame#update#store:', store)
+                //     console.log('handleJoinGame#update#data:', data)
+                // }
             })
             .then((res) => {
                 console.log('joinGame#state: ', state)

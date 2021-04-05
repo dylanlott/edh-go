@@ -55,10 +55,6 @@ func InputGameTranslator(value interface{}) (interface{}, error) {
 
 	g.ID = input.ID
 
-	if input.Handle != nil {
-		g.Handle = input.Handle
-	}
-
 	if input.CreatedAt != nil {
 		g.CreatedAt = *input.CreatedAt
 	}

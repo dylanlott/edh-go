@@ -466,10 +466,6 @@ func gameFromInput(game InputGame) *Game {
 		out.CreatedAt = *game.CreatedAt
 	}
 
-	if game.Handle != nil {
-		out.Handle = game.Handle
-	}
-
 	return out
 }
 
