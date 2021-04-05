@@ -1,11 +1,12 @@
 <template>
   <div class="join shell">
+    <!-- <pre>{{ game }}</pre> -->
     <div class="container">
       <div class="columns is-mobile is-centered">
         <div class="column is-half">
           <h1 class="title is-1">Join Game</h1>
+          <p>There are {{ game.PlayerIDs.length }} other players in this game.</p>
           <p class="title is-4">Pick your commander</p>
-          <!-- <p class="content" v-if="!!selected"><b>Commander:</b> {{ selected.name }}</p> -->
           <b-field label="Select a Commander">
             <b-autocomplete
               :data="data"
@@ -48,6 +49,7 @@
 </template>
 <script>
 import gql from 'graphql-tag';
+import { mapState } from 'vuex';
 import router from '@/router'
 
 export default {
@@ -62,7 +64,6 @@ export default {
         decklist: '',
       },
       username: '',
-      game: {}
     };
   },
   computed: {
@@ -73,9 +74,12 @@ export default {
         })
         .catch((err) => console.error(err));
     },
+    ...mapState({
+      game: state => state.Game.game,
+    })
   },
   created () {
-    this.gameQuery()
+    this.$store.dispatch('getGame', this.$route.params.id)
   },
   methods: {
     queryCommanders() {
@@ -135,33 +139,10 @@ export default {
           }
         }
       })
-    },
-    gameQuery() {
-      this.$apollo.query({
-        query: gql`
-          query	($gameID: String) {
-            games(gameID: $gameID) {
-              ID
-              PlayerIDs {
-                Username
-                ID
-              }
-            }
-          }
-        `,
-        variables: {
-          gameID: this.$route.params.id,
-        },
-        update (data) {
-          this.game = data.games[0]
-        }
-      })
-      .then(({ data }) => {
-        if (data.games[0].length === 0) {
-          console.log('failed to find game: ', this.$route.params.id)
-        }
-        this.game = data.games[0]
-        console.log('this.game: ', this.game)
+      .then((data) => {
+        console.log('joinGame#then#data: ', data)
+        router.push({ path: `/games/${this.$route.params.id}` })
+        return data
       })
     },
     uuid () {

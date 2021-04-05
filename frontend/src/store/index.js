@@ -2,7 +2,7 @@ import Vuex from 'vuex'
 import Vue from 'vue'
 import api from '@/gqlclient'
 import gql from 'graphql-tag';
-// import router from '@/router'
+import router from '@/router'
 
 import {
     gameQuery,
@@ -141,7 +141,7 @@ const Game = {
             })
         },
         // TODO: Should joinGame simultaneously subscribe to Game?
-        joinGame({ state }, payload) {
+        joinGame({ commit }, payload) {
             console.log('joinGame#payload: ', payload)
             api.mutate({
                 mutation: gql`mutation ($InputJoinGame: InputJoinGame) {
@@ -155,18 +155,15 @@ const Game = {
                 variables: {
                     InputJoinGame: payload.inputGame,
                 }
-                // update: (store, { data }) => {
-                //     console.log('handleJoinGame#update#store:', store)
-                //     console.log('handleJoinGame#update#data:', data)
-                // }
             })
             .then((res) => {
-                console.log('joinGame#state: ', state)
-                console.log('joinGame#payload: ', payload)
+                console.log('joinGame#res: ', res)
+                commit('updateGame', res.data.games[0])
                 router.push({ path: `/games/${res.data.joinGame.ID}` })
-                return res
+                return Promise.resolve(res)
             })
             .catch((err) => {
+                commit('error', 'error joining game')
                 console.log('error joining game: ', err)
                 return err
             })
@@ -197,6 +194,7 @@ const Game = {
                 router.push({ path: `/games/${res.data.createGame.ID}` })
             })
             .catch((err) => {
+                commit('error', err)
                 console.error('got error back: ', err)
                 return err
             })
@@ -218,15 +216,27 @@ const User = {
         login() {
         },
         logout() {
+        },
+        getUser() {
         }
     }
+}
+
+const Cards = {
+    state: {
+        list: [],
+        error: undefined,
+    },
+    mutations: {},
+    actions: {},
 }
 
 const store = new Vuex.Store({
     modules: {
         BoardStates,
         Game,
-        User
+        User,
+        Cards,
     }
 })
 
