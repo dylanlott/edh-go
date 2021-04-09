@@ -350,3 +350,11 @@ First up is getting auth working.
 * Spruced up my terminal with powerlevel10k.
 * Got the Signup tests passing.
 * Adding login and auth tests 
+
+5 April 2021
+============
+
+* Started major refactor of the state management and front end interaction 
+    * Completely blew away all of the component state management and instead force everything to go through vuex actions.
+* There's some bugs in the Game update logic
+    - I should probably write some tests for this part rather than trying to hand-test it.
