@@ -21,8 +21,8 @@ var (
 )
 
 // NewAppDatabase returns a migrated app database or an error
-func NewAppDatabase(migdir string) (*DB, error) {
-	pg, err := NewPostgres(migdir)
+func NewAppDatabase(migdir, dbURL string) (*DB, error) {
+	pg, err := NewPostgres(migdir, dbURL)
 	if err != nil {
 		log.Printf("failed to get postgres: %s", err)
 		return nil, errs.Wrap(err)
@@ -56,18 +56,9 @@ func NewSQLite(path string) (*DB, error) {
 
 // NewPostgres returns a migrated sql.DB with a Postgres database connection
 // migdir is the relative path to the migrations directory.
-func NewPostgres(migdir string) (*sql.DB, error) {
-	// TODO: Fix before going to prod
-	host := "localhost"
-	port := 5432
-	user := "edhgo"
-	password := "edhgodev"
-	dbname := "edhgo"
-	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s "+
-		"password=%s dbname=%s sslmode=disable",
-		host, port, user, password, dbname)
-
-	db, err := sql.Open("postgres", psqlInfo)
+func NewPostgres(migdir string, dbURL string) (*sql.DB, error) {
+	// These need to directly match the Heroku environment
+	db, err := sql.Open("postgres", dbURL)
 	if err != nil {
 		log.Printf("failed to get new postgres: %s", err)
 		return nil, errs.Wrap(err)

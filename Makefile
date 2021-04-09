@@ -22,19 +22,16 @@ run:
 		$(GOCMD) run ./
 generate:
 		$(GOCMD) generate ./...
+migrate:
+	# TODO 
 dev:
 		# dev target requires watchexec to be installed
 		watchexec $(GOCMD) run ./
-# Cross compilation
+build-heroku:
+	go build -o bin/edh-go -v .
 build-linux:
 		CGO_ENABLED=0 GOOS=linux GOARCH=amd64 $(GOBUILD) -o $(BINARY_UNIX) -v
 build-client:
 	docker build -f ./frontend/Dockerfile -t dylanlott/edh-go:client ./frontend
 build-server:
 	docker build -f ./Dockerfile -t dylanlott/edh-go:server .
-run-docker:
-# TODO: Write a docker-compose for this whole setup.
-# compose:
-
-# TODO: Write a curl command to download the latest MTG-JSON database.
-# database_update:

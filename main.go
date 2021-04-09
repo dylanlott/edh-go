@@ -4,29 +4,23 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/kelseyhightower/envconfig"
 	"github.com/zeebo/errs"
 
 	"github.com/dylanlott/edh-go/persistence"
 	"github.com/dylanlott/edh-go/server"
+	"github.com/kelseyhightower/envconfig"
 )
 
-type config struct {
-	RedisURL    string `envconfig:"REDIS_URL"`
-	PostgresURL string `envconfig:"POSTGRES_URL"`
-}
-
 func main() {
-	var cfg config
+	var cfg server.Conf
 	err := envconfig.Process("", &cfg)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	db, err := persistence.NewAppDatabase("./persistence/migrations/")
+	db, err := persistence.NewAppDatabase("./persistence/migrations/", cfg.PostgresURL)
 	if err != nil {
-		log.Printf("error getting app db: %s", err)
-		log.Fatal(err)
+		log.Fatal(errs.Wrap(err))
 	}
 
 	cardDB, err := persistence.NewSQLite("./persistence/AllPrintings.sqlite")
@@ -34,17 +28,20 @@ func main() {
 		log.Fatalf(errs.Wrap(err).Error())
 	}
 
-	kv, err := persistence.NewRedis("localhost:6379", "", nil)
-	s, err := server.NewGraphQLServer(kv, db, cardDB)
+	kv, err := persistence.NewRedis(cfg.RedisURL, "", nil)
+	if err != nil {
+		log.Fatalf("failed to start redis: %s", errs.Wrap(err))
+	}
+	s, err := server.NewGraphQLServer(kv, db, cardDB, cfg)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	err = s.Serve("/graphql", 8080)
+	err = s.Serve("/graphql", cfg.DefaultPort)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	fmt.Printf("server listening on localhost:%d", 8080)
-	fmt.Printf("serving graphiql playground at localhost:8080/playground")
+	fmt.Printf("serving /graphql at :%d", cfg.DefaultPort)
+	fmt.Printf("serving graphiql playground at :%d/playground", cfg.DefaultPort)
 }

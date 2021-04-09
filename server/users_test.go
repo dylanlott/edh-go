@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"testing"
 
@@ -92,7 +93,19 @@ func Test_graphQLServer_Login(t *testing.T) {
 	}
 }
 func newServer(t *testing.T) *graphQLServer {
-	db, err := persistence.NewAppDatabase("../persistence/migrations/")
+	host := "localhost"
+	port := 5432
+	user := "edhgo"
+	password := "edhgodev"
+	dbname := "edhgo"
+	localPG := fmt.Sprintf("host=%s port=%d user=%s "+
+		"password=%s dbname=%s sslmode=disable",
+		host, port, user, password, dbname)
+
+	cfg := Conf{
+		PostgresURL: localPG,
+	}
+	db, err := persistence.NewAppDatabase("../persistence/migrations/", cfg.PostgresURL)
 	if err != nil {
 		t.Errorf("failed to create persistence: %s", err)
 	}
@@ -107,7 +120,7 @@ func newServer(t *testing.T) *graphQLServer {
 		t.Errorf("failed to create cardDB: %s", err)
 	}
 
-	s, err := NewGraphQLServer(kv, db, cardDB)
+	s, err := NewGraphQLServer(kv, db, cardDB, cfg)
 	if err != nil {
 		t.Errorf("failed to start server: %s", err)
 	}

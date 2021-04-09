@@ -19,6 +19,7 @@ import (
 	"github.com/rs/cors"
 	"github.com/segmentio/ksuid"
 	"github.com/tinrab/retry"
+	"github.com/zeebo/errs"
 )
 
 var userCtxKey = &contextKey{"user"}
@@ -27,7 +28,7 @@ type contextKey struct {
 	name string
 }
 
-// graphQLServer binds the whole app together.
+// graphQLServer binds the whole app together and implements the GraphQL interfac
 type graphQLServer struct {
 	mutex sync.RWMutex
 
@@ -49,18 +50,28 @@ type graphQLServer struct {
 	userChannels    map[string]chan string
 }
 
+// Conf takes configuration values and loads them from the environment into our struct.
+type Conf struct {
+	RedisURL    string `envconfig:"REDIS_URL"`
+	PostgresURL string `envconfig:"DATABASE_URL"`
+	DefaultPort int    `envconfig:"PORT"`
+}
+
 // NewGraphQLServer creates a new server to attach the database, game engine,
 // and graphql connections together
 func NewGraphQLServer(
 	kv persistence.KV,
 	appDB persistence.Database,
 	cardDB persistence.Database,
+	cfg Conf,
 ) (*graphQLServer, error) {
 	// TODO: Remove this redis client and wire chat up to KV interface instead
-	client := redis.NewClient(&redis.Options{
-		// TODO: Make this take an environment variable instead
-		Addr: "localhost:6379",
-	})
+	opts, err := redis.ParseURL(cfg.RedisURL)
+	if err != nil {
+		log.Printf("failed to get redis options: %s", err)
+		return nil, errs.Wrap(err)
+	}
+	client := redis.NewClient(opts)
 
 	retry.ForeverSleep(2*time.Second, func(_ int) error {
 		_, err := client.Ping().Result()
