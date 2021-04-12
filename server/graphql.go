@@ -54,7 +54,7 @@ type graphQLServer struct {
 type Conf struct {
 	RedisURL    string `envconfig:"REDIS_URL"`
 	PostgresURL string `envconfig:"DATABASE_URL"`
-	DefaultPort int    `envconfig:"PORT"`
+	DefaultPort int    `envconfig:"PORT" default:"8080"`
 }
 
 // NewGraphQLServer creates a new server to attach the database, game engine,
@@ -109,7 +109,7 @@ func (s *graphQLServer) Serve(route string, port int) error {
 	)
 	h := cors.AllowAll().Handler(s.auth(mux))
 	mux.Handle("/playground", handler.Playground("GraphQL", route))
-	log.Println("serving graphiql at localhost:8080/playground")
+	log.Printf("serving graphiql at localhost:%d/playground", port)
 	return http.ListenAndServe(fmt.Sprintf(":%d", port), h)
 }
 
