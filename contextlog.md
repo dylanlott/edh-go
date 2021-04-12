@@ -358,3 +358,12 @@ First up is getting auth working.
     * Completely blew away all of the component state management and instead force everything to go through vuex actions.
 * There's some bugs in the Game update logic
     - I should probably write some tests for this part rather than trying to hand-test it.
+
+
+12 Apr 2021
+===========
+
+* Need to fix a CORS issue that got introduced somewhere in our updates. Not sure how or why but it did. 
+* Boardstate subscriptions are up next. 
+    * Once we have boardstates updating we can start to build out the components of the app. 
+    * We can focus on just battlefield and hand for now.
