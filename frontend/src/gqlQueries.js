@@ -3,6 +3,10 @@ import gql from 'graphql-tag';
 export const boardstates = gql`
 query($gameID: String!) {
   boardstates(gameID: $gameID) {
+    User {
+      Username
+      ID
+    }
     Life
     Commander {
       Name 
@@ -620,6 +624,159 @@ subscription($game: InputGame!) {
     }
   }
 } 
+`
+
+export const boardstateSubscription = gql`
+subscription($gameID: String!, $userID: String!, $inputBoardState: InputBoardState!) {
+  boardstatePosted(gameID: $gameID, userID: $userID, boardstate: $inputBoardState) {
+    User {
+      ID
+      Username
+    }
+    Life
+    GameID
+    Commander { 
+      Name 
+      ID 
+      Colors 
+      ColorIdentity 
+      ManaCost 
+      Power 
+      Toughness 
+      CMC 
+      Text 
+      Types 
+      Subtypes 
+      Supertypes 
+      IsTextless 
+      TCGID 
+      ScryfallID 
+    }
+    Library { 
+      Name 
+      ID 
+      Colors 
+      ColorIdentity 
+      ManaCost 
+      Power 
+      Toughness 
+      CMC 
+      Text 
+      Types 
+      Subtypes 
+      Supertypes 
+      IsTextless 
+      TCGID 
+      ScryfallID 
+    }
+    Graveyard { 
+      Name 
+      ID 
+      Colors 
+      ColorIdentity 
+      ManaCost 
+      Power 
+      Toughness 
+      CMC 
+      Text 
+      Types 
+      Subtypes 
+      Supertypes 
+      IsTextless 
+      TCGID 
+      ScryfallID 
+    }
+    Exiled { 
+      Name 
+      ID 
+      Colors 
+      ColorIdentity 
+      ManaCost 
+      Power 
+      Toughness 
+      CMC 
+      Text 
+      Types 
+      Subtypes 
+      Supertypes 
+      IsTextless 
+      TCGID 
+      ScryfallID 
+    }
+    Field { 
+      Name 
+      ID 
+      Tapped
+      Flipped
+      Colors 
+      ColorIdentity 
+      ManaCost 
+      Power 
+      Toughness 
+      CMC 
+      Text 
+      Types 
+      Subtypes 
+      Supertypes 
+      IsTextless 
+      TCGID 
+      ScryfallID 
+    }
+    Hand { 
+      Name 
+      ID 
+      Colors 
+      ColorIdentity 
+      ManaCost 
+      Power 
+      Toughness 
+      CMC 
+      Text 
+      Types 
+      Subtypes 
+      Supertypes 
+      IsTextless 
+      TCGID 
+      ScryfallID 
+    }
+    Revealed { 
+      Name 
+      ID 
+      Tapped
+      Flipped
+      Colors 
+      ColorIdentity 
+      ManaCost 
+      Power 
+      Toughness 
+      CMC 
+      Text 
+      Types 
+      Subtypes 
+      Supertypes 
+      IsTextless 
+      TCGID 
+      ScryfallID 
+    }
+    Controlled { 
+      Name 
+      ID 
+      Colors 
+      ColorIdentity 
+      ManaCost 
+      Power 
+      Toughness 
+      CMC 
+      Text 
+      Types 
+      Subtypes 
+      Supertypes 
+      IsTextless 
+      TCGID 
+      ScryfallID 
+    } 
+  }
+}
 `
 
 export const gameQuery = gql`

@@ -3,6 +3,16 @@
     <pre>
       {{ game }}
     </pre>
+    <pre>
+      {{ boardstates }}
+    </pre>
+    <pre>
+      {{ user }}
+    </pre>
+    <pre :key="player.ID" v-for="player in game.PlayerIDs">
+      player: 
+      {{ player }}
+    </pre>
     <!-- <h1 class="title shell">{{ gameID }}</h1> -->
 
   <!-- LIFE TRACKER -->
@@ -151,8 +161,12 @@ export default {
   },
   created () {
     this.$store.dispatch('getGame', this.$route.params.id)
+    this.$store.dispatch('getBoardStates', this.$route.params.id)
     this.$store.dispatch('subscribeToGame', this.$route.params.id)
-    // this.$store.dispatch('boardstates', )
+    this.$store.dispatch('subscribeToBoardState', {
+      userID: this.$currentUser(),
+      gameID: this.gameID(),
+    })
   },
   methods: {
     gameID() {
@@ -177,7 +191,9 @@ export default {
     }
   },
   computed: mapState({
-    game: state => state
+    game: state => state.Game,
+    boardstates: state => state.BoardStates,
+    user: state => state.User,
   }),
   components: {
     draggable,

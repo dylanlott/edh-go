@@ -8,7 +8,7 @@ type Mutation {
   joinGame(input: InputJoinGame): Game!
   updateGame(input: InputGame!): Game!
   createDeck(input: InputDeck): BoardState 
-  updateBoardState(input: InputBoardState!): BoardState
+  updateBoardState(input: InputBoardState!): BoardState!
 }
 
 type Query {
@@ -25,7 +25,7 @@ type Subscription {
   messagePosted(user: String!): Message!
   gameUpdated(game: InputGame!): Game!
   userJoined(user: String!, gameID: String!): String!
-  boardUpdate(boardstate: InputBoardState!): Game!
+  boardstatePosted(gameID: String!, userID: String!, boardstate: InputBoardState!): BoardState!
 }
 
 type Message {

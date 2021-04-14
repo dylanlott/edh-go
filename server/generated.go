@@ -141,10 +141,10 @@ type ComplexityRoot struct {
 	}
 
 	Subscription struct {
-		BoardUpdate   func(childComplexity int, boardstate InputBoardState) int
-		GameUpdated   func(childComplexity int, game InputGame) int
-		MessagePosted func(childComplexity int, user string) int
-		UserJoined    func(childComplexity int, user string, gameID string) int
+		BoardstatePosted func(childComplexity int, gameID string, userID string, boardstate InputBoardState) int
+		GameUpdated      func(childComplexity int, game InputGame) int
+		MessagePosted    func(childComplexity int, user string) int
+		UserJoined       func(childComplexity int, user string, gameID string) int
 	}
 
 	Turn struct {
@@ -184,7 +184,7 @@ type SubscriptionResolver interface {
 	MessagePosted(ctx context.Context, user string) (<-chan *Message, error)
 	GameUpdated(ctx context.Context, game InputGame) (<-chan *Game, error)
 	UserJoined(ctx context.Context, user string, gameID string) (<-chan string, error)
-	BoardUpdate(ctx context.Context, boardstate InputBoardState) (<-chan *Game, error)
+	BoardstatePosted(ctx context.Context, gameID string, userID string, boardstate InputBoardState) (<-chan *BoardState, error)
 }
 
 type executableSchema struct {
@@ -727,17 +727,17 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Rule.Value(childComplexity), true
 
-	case "Subscription.boardUpdate":
-		if e.complexity.Subscription.BoardUpdate == nil {
+	case "Subscription.boardstatePosted":
+		if e.complexity.Subscription.BoardstatePosted == nil {
 			break
 		}
 
-		args, err := ec.field_Subscription_boardUpdate_args(context.TODO(), rawArgs)
+		args, err := ec.field_Subscription_boardstatePosted_args(context.TODO(), rawArgs)
 		if err != nil {
 			return 0, false
 		}
 
-		return e.complexity.Subscription.BoardUpdate(childComplexity, args["boardstate"].(InputBoardState)), true
+		return e.complexity.Subscription.BoardstatePosted(childComplexity, args["gameID"].(string), args["userID"].(string), args["boardstate"].(InputBoardState)), true
 
 	case "Subscription.gameUpdated":
 		if e.complexity.Subscription.GameUpdated == nil {
@@ -915,7 +915,7 @@ type Mutation {
   joinGame(input: InputJoinGame): Game!
   updateGame(input: InputGame!): Game!
   createDeck(input: InputDeck): BoardState 
-  updateBoardState(input: InputBoardState!): BoardState
+  updateBoardState(input: InputBoardState!): BoardState!
 }
 
 type Query {
@@ -932,7 +932,7 @@ type Subscription {
   messagePosted(user: String!): Message!
   gameUpdated(game: InputGame!): Game!
   userJoined(user: String!, gameID: String!): String!
-  boardUpdate(boardstate: InputBoardState!): Game!
+  boardstatePosted(gameID: String!, userID: String!, boardstate: InputBoardState!): BoardState!
 }
 
 type Message {
@@ -1472,18 +1472,36 @@ func (ec *executionContext) field_Query_users_args(ctx context.Context, rawArgs 
 	return args, nil
 }
 
-func (ec *executionContext) field_Subscription_boardUpdate_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+func (ec *executionContext) field_Subscription_boardstatePosted_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 InputBoardState
-	if tmp, ok := rawArgs["boardstate"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("boardstate"))
-		arg0, err = ec.unmarshalNInputBoardState2githubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐInputBoardState(ctx, tmp)
+	var arg0 string
+	if tmp, ok := rawArgs["gameID"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("gameID"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["boardstate"] = arg0
+	args["gameID"] = arg0
+	var arg1 string
+	if tmp, ok := rawArgs["userID"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("userID"))
+		arg1, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["userID"] = arg1
+	var arg2 InputBoardState
+	if tmp, ok := rawArgs["boardstate"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("boardstate"))
+		arg2, err = ec.unmarshalNInputBoardState2githubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐInputBoardState(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["boardstate"] = arg2
 	return args, nil
 }
 
@@ -3384,11 +3402,14 @@ func (ec *executionContext) _Mutation_updateBoardState(ctx context.Context, fiel
 	})
 
 	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
 	res := resTmp.(*BoardState)
 	fc.Result = res
-	return ec.marshalOBoardState2ᚖgithubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐBoardState(ctx, field.Selections, res)
+	return ec.marshalNBoardState2ᚖgithubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐBoardState(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_messages(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -3927,7 +3948,7 @@ func (ec *executionContext) _Subscription_userJoined(ctx context.Context, field 
 	}
 }
 
-func (ec *executionContext) _Subscription_boardUpdate(ctx context.Context, field graphql.CollectedField) (ret func() graphql.Marshaler) {
+func (ec *executionContext) _Subscription_boardstatePosted(ctx context.Context, field graphql.CollectedField) (ret func() graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -3944,7 +3965,7 @@ func (ec *executionContext) _Subscription_boardUpdate(ctx context.Context, field
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	rawArgs := field.ArgumentMap(ec.Variables)
-	args, err := ec.field_Subscription_boardUpdate_args(ctx, rawArgs)
+	args, err := ec.field_Subscription_boardstatePosted_args(ctx, rawArgs)
 	if err != nil {
 		ec.Error(ctx, err)
 		return nil
@@ -3952,7 +3973,7 @@ func (ec *executionContext) _Subscription_boardUpdate(ctx context.Context, field
 	fc.Args = args
 	resTmp := ec._fieldMiddleware(ctx, nil, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Subscription().BoardUpdate(rctx, args["boardstate"].(InputBoardState))
+		return ec.resolvers.Subscription().BoardstatePosted(rctx, args["gameID"].(string), args["userID"].(string), args["boardstate"].(InputBoardState))
 	})
 
 	if resTmp == nil {
@@ -3962,7 +3983,7 @@ func (ec *executionContext) _Subscription_boardUpdate(ctx context.Context, field
 		return nil
 	}
 	return func() graphql.Marshaler {
-		res, ok := <-resTmp.(<-chan *Game)
+		res, ok := <-resTmp.(<-chan *BoardState)
 		if !ok {
 			return nil
 		}
@@ -3970,7 +3991,7 @@ func (ec *executionContext) _Subscription_boardUpdate(ctx context.Context, field
 			w.Write([]byte{'{'})
 			graphql.MarshalString(field.Alias).MarshalGQL(w)
 			w.Write([]byte{':'})
-			ec.marshalNGame2ᚖgithubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐGame(ctx, field.Selections, res).MarshalGQL(w)
+			ec.marshalNBoardState2ᚖgithubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐBoardState(ctx, field.Selections, res).MarshalGQL(w)
 			w.Write([]byte{'}'})
 		})
 	}
@@ -6238,6 +6259,9 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			out.Values[i] = ec._Mutation_createDeck(ctx, field)
 		case "updateBoardState":
 			out.Values[i] = ec._Mutation_updateBoardState(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -6422,8 +6446,8 @@ func (ec *executionContext) _Subscription(ctx context.Context, sel ast.Selection
 		return ec._Subscription_gameUpdated(ctx, fields[0])
 	case "userJoined":
 		return ec._Subscription_userJoined(ctx, fields[0])
-	case "boardUpdate":
-		return ec._Subscription_boardUpdate(ctx, fields[0])
+	case "boardstatePosted":
+		return ec._Subscription_boardstatePosted(ctx, fields[0])
 	default:
 		panic("unknown field " + strconv.Quote(fields[0].Name))
 	}
@@ -6746,6 +6770,10 @@ func (ec *executionContext) ___Type(ctx context.Context, sel ast.SelectionSet, o
 // endregion **************************** object.gotpl ****************************
 
 // region    ***************************** type.gotpl *****************************
+
+func (ec *executionContext) marshalNBoardState2githubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐBoardState(ctx context.Context, sel ast.SelectionSet, v BoardState) graphql.Marshaler {
+	return ec._BoardState(ctx, sel, &v)
+}
 
 func (ec *executionContext) marshalNBoardState2ᚕᚖgithubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐBoardStateᚄ(ctx context.Context, sel ast.SelectionSet, v []*BoardState) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))

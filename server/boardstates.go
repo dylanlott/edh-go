@@ -2,6 +2,8 @@ package server
 
 import (
 	"context"
+	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 
@@ -13,15 +15,63 @@ func BoardStateKey(gameID, username string) string {
 	return fmt.Sprintf("%s:%s", gameID, username)
 }
 
+// TODO: Need to determine how we format boardstate keys
+// TODO: Need to switch Directory over to Redis storage
+
+func (s *graphQLServer) BoardstatePosted(ctx context.Context, gameID string, userID string, bs InputBoardState) (<-chan *BoardState, error) {
+	_, ok := s.Directory[gameID]
+	if !ok {
+		return nil, fmt.Errorf("failed to find game %s", gameID)
+	}
+
+	boardstates := make(chan *BoardState, 1)
+	s.mutex.Lock()
+
+	s.boardChannels[userID] = boardstates
+	s.mutex.Unlock()
+
+	go func() {
+		<-ctx.Done()
+		s.mutex.Lock()
+		delete(s.boardChannels, userID)
+		s.mutex.Unlock()
+	}()
+
+	return boardstates, nil
+}
+
+func (s *graphQLServer) UpdateBoardState(ctx context.Context, input InputBoardState) (*BoardState, error) {
+	log.Printf("UpdateBoardState#input: %+v", input)
+	_, ok := s.Directory[input.GameID]
+	if !ok {
+		return nil, fmt.Errorf("failed to updated boardstate: game does not exist: %s", input.GameID)
+	}
+
+	b, err := json.Marshal(input)
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal input boardstate: %s", err)
+	}
+	bs := &BoardState{}
+	err = json.Unmarshal(b, &bs)
+	if err != nil {
+		return nil, fmt.Errorf("failed to unmarshal boardstate: %s", err)
+	}
+
+	log.Printf("sending unmarshaled boardstate: %+v", bs)
+	s.boardChannels[bs.User.ID] <- bs
+
+	return bs, nil
+}
+
 // Boardstates queries Redis for different boardstates per player or game
 func (s *graphQLServer) Boardstates(ctx context.Context, gameID string, username *string) ([]*BoardState, error) {
 	game, ok := s.Directory[gameID]
 	if game == nil {
-		log.Printf("Game is nil: %s %+v", gameID, s.Directory)
+		log.Printf("game is nil: %s - %+v", gameID, s.Directory)
 		return nil, errs.New("game does not exist")
 	}
 	if !ok {
-		log.Printf("game is !ok: %+v", s.Directory)
+		log.Printf("game %s does not exist: %+v", gameID, s.Directory)
 		return nil, errs.New("game does not exist")
 	}
 
@@ -61,47 +111,6 @@ func (s *graphQLServer) Boardstates(ctx context.Context, gameID string, username
 	return boardstates, nil
 }
 
-// BoardUpdate returns a channel that emits all the Boardstate's over it and then
-// listens for ctx.Done and then cleans up after itself.
-func (s *graphQLServer) BoardUpdate(ctx context.Context, bs InputBoardState) (<-chan *Game, error) {
-	// Make a boardstates channel to emit all the events on, and assign it to
-	// the user who submitted to the update.
-	boardstates := make(chan *BoardState, 1)
-	s.mutex.Lock()
-	s.boardChannels[bs.User.Username] = boardstates
-	s.mutex.Unlock()
-
-	go func() {
-		<-ctx.Done()
-		s.mutex.Lock()
-		delete(s.boardChannels, bs.User.Username)
-		s.mutex.Unlock()
-	}()
-
-	game, ok := s.Directory[bs.GameID]
-	if !ok {
-		return nil, errs.New("game %s does not exist", bs.GameID)
-	}
-
-	games := make(chan *Game, 1)
-	games <- game
-	return games, nil
-}
-
-func (s *graphQLServer) UpdateBoardState(ctx context.Context, bs InputBoardState) (*BoardState, error) {
-	updated, err := boardStateFromInput(bs)
-	if err != nil {
-		log.Printf("UpdateBoardState failed to marshal input board state correctly: %s", err)
-		return nil, fmt.Errorf("failed to marshal input boardstate: %s", err)
-	}
-	boardKey := BoardStateKey(bs.GameID, bs.User.Username)
-	err = s.Set(boardKey, updated)
-	if err != nil {
-		log.Printf("error updating boardstate in redis: %s", err)
-	}
-
-	s.mutex.Lock()
-	s.boardChannels[bs.User.Username] <- updated
-	s.mutex.Unlock()
-	return updated, nil
+func (s *graphQLServer) BoardstateUpdated(ctx context.Context, gameID string, userID string, boardstate InputBoardState) (<-chan *BoardState, error) {
+	return nil, errors.New("Not impl")
 }

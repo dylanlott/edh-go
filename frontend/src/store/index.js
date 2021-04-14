@@ -2,42 +2,59 @@ import Vuex from 'vuex'
 import Vue from 'vue'
 import api from '@/gqlclient'
 import gql from 'graphql-tag';
-import router from '@/router'
+import router from '@/router';
+import Cookies from 'js-cookie';
+
 
 import {
     gameQuery,
-    gameUpdateQuery
+    gameUpdateQuery,
+    boardstateSubscription,
 } from '@/gqlQueries'
+import { boardstates, boardstatesSubscription } from '../gqlQueries';
 
 Vue.use(Vuex)
 
 const BoardStates = {
     state: {
-        // NB: Should self act as a cache to the server? 
-        self: {},
+        // boardstates is a map of user ID's to BoardStates.
+        self: {
+            User: {
+                Username: "",
+                ID: ""
+            },
+            GameID: "",
+            Life: 0,
+            Library: [],
+            Commander: [],
+            Field: [],
+            Hand: [],
+            Graveyard: [],
+            Exiled: [],
+            Revealed: [],
+            Controlled: [],
+            Counters: [],
+        },
         boardstates: {},
-        loading: false,
         error: undefined
     },
     mutations: {
-        request(state) {
-            state.loading = true
-            state.error = undefined
-        },
         error(state, payload) {
-            state.loading = false
             state.error = payload
         },
-        update(state, payload) {
-            state.loading = false
-            state.boardstates = payload
+        updateBoardStates(state, payload) {
+            // update each boardstate by player ID
+            payload.boardstates.forEach((bs) => {
+                if (bs.User.ID == payload.selfID) {
+                    state.self = bs
+                }
+                state.boardstates[bs.User.ID] = bs
+            })
         },
     },
     actions: {
-        mutateBoardStates({ commit, state }, payload) {
-            console.log('store#mutateBoardStates: ', payload)
-            commit('update', payload)
-            console.log("state: ", state.boardstates)
+        mutateBoardStates({ commit }, payload) {
+            // commit('update', payload)
             // Should we put this logic here or just update all boardstates
             // and make view logic handle which opponent sees what?
             // If we wanted to keep it separate, we could do 
@@ -45,6 +62,45 @@ const BoardStates = {
             // commit('updateSelf', payload)
             // commit('updateOpponents', payload)
         },
+        // gets all boardstates from server, but doesn't subscribe
+        getBoardStates({ commit }, gameID, selfID) {
+            api.query({
+                query: boardstates,
+                variables: {
+                    gameID: gameID
+                }
+            })
+            .then((resp) => {
+                commit('updateBoardStates', resp.data, selfID)
+                return Promise.resolve(resp.data)
+            })
+            .catch((err) => {
+                console.error("failed to get boardstates: ", err)
+                commit('error', err)
+                return Promise.reject(err)
+            })
+        },
+        // used for subscribing to single board updates
+        subscribeToBoardState({ state, commit }, payload) {
+            console.log("subscribeToBoardStates#payload: ", payload)
+            const sub = api.subscribe({
+                query: boardstateSubscription,// TODO: Add the right query  
+                variables: {
+                    gameID: payload.gameID,
+                    userID: payload.userID,
+                    inputBoardState: state.self,
+                },
+            })
+            sub.subscribe({
+                next(data) {
+                    console.log('BOARDSTATE SUBSCRIPTION DATA RECEIVED: ', data)
+                },
+                error(err) {
+                    commit('error', err)
+                    console.error('vuex action: boardstate subscription error: ', err)
+                }
+            })
+        }
     }
 }
 
@@ -62,12 +118,8 @@ const Game = {
             PlayerIDs: []
         },
         error: undefined,
-        loading: false,
     },
     mutations: {
-        loading(state, payload) {
-            state.loading = payload
-        },
         error(state, err) {
             state.error = err 
         },
@@ -83,8 +135,6 @@ const Game = {
         },
         gameFailure(state, error) {
             state.error = error
-        },
-        setStack(state, error) {
         },
     },
     actions: {
@@ -202,9 +252,9 @@ const Game = {
 const User = {
     state: {
         User: {
-            Username: "",
-            ID: "",
-            Token: ""
+            Username: Cookies.get("username") || window.localStorage.getItem("username"),
+            ID: Cookies.get("userID") || window.localStorage.getItem("userID"),
+            Token: Cookies.get("token") || window.localStorage.getItem("token")
         }
     },
     mutations:{
