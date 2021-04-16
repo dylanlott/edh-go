@@ -2,17 +2,13 @@
   <div class="board shell">
     <pre>
       {{ game }}
-    </pre>
-    <pre>
+      {{ user }}
       {{ boardstates }}
     </pre>
-    <pre>
-      {{ user }}
-    </pre>
-    <pre :key="player.ID" v-for="player in game.PlayerIDs">
-      player: 
+>
+    <!-- <pre :key="player.ID" v-for="player in game.PlayerIDs">
       {{ player }}
-    </pre>
+    </pre> -->
     <!-- <h1 class="title shell">{{ gameID }}</h1> -->
 
   <!-- LIFE TRACKER -->
@@ -164,7 +160,7 @@ export default {
     this.$store.dispatch('getBoardStates', this.$route.params.id)
     this.$store.dispatch('subscribeToGame', this.$route.params.id)
     this.$store.dispatch('subscribeToBoardState', {
-      userID: this.$currentUser(),
+      userID: this.user.User.ID,
       gameID: this.gameID(),
     })
   },

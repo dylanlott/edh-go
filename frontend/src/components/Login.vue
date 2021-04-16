@@ -36,13 +36,25 @@ export default {
   },
   computed: {
     isInputValid() {
-      return this.username.length > 0;
+      if (this.username.length === 0) {
+        console.error("username must be provided")
+        return false
+      }
+      if (this.password.length < 10) {
+        console.error("password too short")
+        return false
+      }
+      return true
     },
   },
   methods: {
     onLoginClick() {
       if (this.isInputValid) {
-        this.$setCurrentUser(this.username);
+        // this.$setCurrentUser(this.username);
+        this.$store.dispatch('login', { 
+          username: this.username,
+          password: this.password,
+        })
         this.$router.push({ path: '/games' });
       }
     },

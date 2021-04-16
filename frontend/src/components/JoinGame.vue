@@ -50,7 +50,7 @@
 <script>
 import gql from 'graphql-tag';
 import { mapState } from 'vuex';
-import router from '@/router'
+import router from '@/router';
 
 export default {
   name: 'join',
@@ -75,11 +75,11 @@ export default {
         .catch((err) => console.error(err));
     },
     ...mapState({
-      game: state => state.Game.game,
-    })
+      game: (state) => state.Game.game,
+    }),
   },
-  created () {
-    this.$store.dispatch('getGame', this.$route.params.id)
+  created() {
+    this.$store.dispatch('getGame', this.$route.params.id);
   },
   methods: {
     queryCommanders() {
@@ -119,38 +119,42 @@ export default {
         });
     },
     handleJoinGame() {
-      this.$store.dispatch('joinGame', {
-        inputGame: {
-          ID: this.$route.params.id,
-          Decklist: this.deck.library,
-          User: {
-            ID: this.uuid(),
-            Username: this.username || "",
-          },
-          BoardState: {
-            GameID: this.$route.params.id,
+      this.$store
+        .dispatch('joinGame', {
+          inputGame: {
+            ID: this.$route.params.id,
+            Decklist: this.deck.library,
             User: {
-              Username: this.username || "",
+              ID: this.uuid(),
+              Username: this.username || '',
             },
-            Life: 40,
-            Commander: [{
-              Name: this.deck.commander,
-            }]
-          }
-        }
-      })
-      .then((data) => {
-        console.log('joinGame#then#data: ', data)
-        router.push({ path: `/games/${this.$route.params.id}` })
-        return data
-      })
-    },
-    uuid () {
-      return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-          var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
-          return v.toString(16);
+            BoardState: {
+              GameID: this.$route.params.id,
+              User: {
+                Username: this.username || '',
+              },
+              Life: 40,
+              Commander: [
+                {
+                  Name: this.deck.commander,
+                },
+              ],
+            },
+          },
+        })
+        .then((data) => {
+          console.log('joinGame#then#data: ', data);
+          router.push({ path: `/games/${this.$route.params.id}` });
+          return data;
         });
-    }
+    },
+    uuid() {
+      return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+        var r = (Math.random() * 16) | 0,
+          v = c == 'x' ? r : (r & 0x3) | 0x8;
+        return v.toString(16);
+      });
+    },
   },
 };
 </script>

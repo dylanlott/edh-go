@@ -367,3 +367,34 @@ First up is getting auth working.
 * Boardstate subscriptions are up next. 
     * Once we have boardstates updating we can start to build out the components of the app. 
     * We can focus on just battlefield and hand for now.
+
+16 APr 2021
+===========
+
+GF is out of town, so I'm trying to get some serious time put into the app for a production beta push. 
+
+I've been doing some research as well: 
+https://www.npmjs.com/package/magic-card-parser
+
+General Google Query: https://www.google.com/search?client=firefox-b-1-d&q=parse+mtg+card+text+ 
+
+https://github.com/grilix/mtg-parser
+
+https://github.com/Zannick/demystify
+
+Here's a good Blog post https://hudecekpetr.cz/a-formal-grammar-for-magic-the-gathering/
+And an accompanying tool https://soothsilver.github.io/mtg-grammar/
+
+
+A reddit post with some discussion on the matter 
+https://www.reddit.com/r/magicTCG/comments/ho69ph/parser_for_magic_cards/
+
+Which led me here https://github.com/rmmilewi/mtgcompiler 
+
+Debugging notes: 
+* Something is happening with Games being saved where a player that was added after the fact disappears after about a second. 
+* Need to write tests for Boardstate and Game methods, so that we have some idea of what's happening.
+* Need to setup tests for how the game will look in real life - with several people subscribing to each other's boardstate. Write tests for that and how it handles it.
+* Need better test driven development all around 
+* Need to include the card files for the production server deployments, too. 
+    * Write a script that grabs the latest MTGJSON files and loads them down directly to our repo for easier deployments.

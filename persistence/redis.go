@@ -21,7 +21,7 @@ type Config map[string]string
 func NewRedis(url string, pass string, opts Config) (*redisDB, error) {
 	if url == "" {
 		// use default
-		url = "localhost:6379"
+		url = "redis://localhost:6379"
 	}
 
 	client := redis.NewClient(&redis.Options{
@@ -35,7 +35,7 @@ func NewRedis(url string, pass string, opts Config) (*redisDB, error) {
 	}, nil
 }
 
-// Put willj insert a value into the DB
+// Put will insert a value into the DB
 func (r *redisDB) Put(key Key, val Value) (Value, error) {
 	k, err := key.String()
 	if err != nil {

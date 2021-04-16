@@ -3,7 +3,6 @@ package server
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"log"
 
@@ -24,9 +23,10 @@ func (s *graphQLServer) BoardstatePosted(ctx context.Context, gameID string, use
 		return nil, fmt.Errorf("failed to find game %s", gameID)
 	}
 
+	log.Printf("BoardStatePosted: gameID %+v - userID %+v", gameID, userID)
+
 	boardstates := make(chan *BoardState, 1)
 	s.mutex.Lock()
-
 	s.boardChannels[userID] = boardstates
 	s.mutex.Unlock()
 
@@ -47,17 +47,13 @@ func (s *graphQLServer) UpdateBoardState(ctx context.Context, input InputBoardSt
 		return nil, fmt.Errorf("failed to updated boardstate: game does not exist: %s", input.GameID)
 	}
 
-	b, err := json.Marshal(input)
+	bs, err := boardStateFromInput(input)
 	if err != nil {
-		return nil, fmt.Errorf("failed to marshal input boardstate: %s", err)
-	}
-	bs := &BoardState{}
-	err = json.Unmarshal(b, &bs)
-	if err != nil {
-		return nil, fmt.Errorf("failed to unmarshal boardstate: %s", err)
+		return nil, errs.Wrap(err)
 	}
 
-	log.Printf("sending unmarshaled boardstate: %+v", bs)
+	log.Printf("updatedBoardState#bs: %+v", bs)
+
 	s.boardChannels[bs.User.ID] <- bs
 
 	return bs, nil
@@ -111,6 +107,16 @@ func (s *graphQLServer) Boardstates(ctx context.Context, gameID string, username
 	return boardstates, nil
 }
 
-func (s *graphQLServer) BoardstateUpdated(ctx context.Context, gameID string, userID string, boardstate InputBoardState) (<-chan *BoardState, error) {
-	return nil, errors.New("Not impl")
+func boardStateFromInput(bs InputBoardState) (*BoardState, error) {
+	data, err := json.Marshal(bs)
+	if err != nil {
+		return nil, errs.New("failed to marshal input game: %s", err)
+	}
+	new := &BoardState{}
+	err = json.Unmarshal(data, &new)
+	if err != nil {
+		return nil, errs.New("failed to unmarshal game: %s", err)
+	}
+
+	return new, nil
 }

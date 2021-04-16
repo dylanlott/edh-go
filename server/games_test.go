@@ -70,7 +70,7 @@ func TestCreateGame(t *testing.T) {
 
 	for _, tt := range cases {
 		t.Run(tt.name, func(t *testing.T) {
-			s := getNewServer(t)
+			s := testAPI(t)
 			result, err := s.CreateGame(context.Background(), *tt.input)
 			if result.ID == "" {
 				t.Errorf("games must have an ID")
@@ -122,7 +122,7 @@ func TestJoinGame(t *testing.T) {
 
 	for _, tt := range cases {
 		t.Run(tt.name, func(t *testing.T) {
-			s := getNewServer(t)
+			s := testAPI(t)
 			input := InputCreateGame{
 				Players: []*InputBoardState{
 					{
@@ -176,7 +176,7 @@ func TestJoinGame(t *testing.T) {
 }
 
 func TestGameUpdated(t *testing.T) {
-	s := getNewServer(t)
+	s := testAPI(t)
 
 	testGame, err := s.CreateGame(context.Background(), InputCreateGame{
 		Players: []*InputBoardState{
@@ -243,7 +243,7 @@ func TestGameUpdated(t *testing.T) {
 	}
 }
 
-func getNewServer(t *testing.T) *graphQLServer {
+func testAPI(t *testing.T) *graphQLServer {
 	cfg := Conf{}
 	path, err := os.Getwd()
 	if err != nil {
@@ -255,12 +255,19 @@ func getNewServer(t *testing.T) *graphQLServer {
 		t.Errorf("failed to open cardDB for games_test: %s", err)
 	}
 
+	kv, err := persistence.NewRedis("redis://localhost:6379", "", persistence.Config{
+		"RedisURL": "redis://localhost:6379",
+	})
+	if err != nil {
+		t.Errorf("failed to get kv from redis: %s", err)
+	}
+
 	appDB, err := persistence.NewSQLite("../persistence/db.sqlite")
 	if err != nil {
 		t.Errorf("failed to open appDB for games_test: %s", err)
 	}
 
-	s, err := NewGraphQLServer(nil, appDB, cardDB, cfg)
+	s, err := NewGraphQLServer(kv, appDB, cardDB, cfg)
 	if err != nil {
 		t.Errorf("failed to create new test server: %+v", err)
 	}

@@ -4,14 +4,17 @@ import api from '@/gqlclient'
 import gql from 'graphql-tag';
 import router from '@/router';
 import Cookies from 'js-cookie';
+import { uuid } from '@/uuid';
 
+const ls = window.localStorage
 
 import {
     gameQuery,
     gameUpdateQuery,
+    boardstates,
     boardstateSubscription,
 } from '@/gqlQueries'
-import { boardstates, boardstatesSubscription } from '../gqlQueries';
+import { UniqueDirectiveNames } from 'graphql/validation/rules/UniqueDirectiveNames';
 
 Vue.use(Vuex)
 
@@ -43,12 +46,14 @@ const BoardStates = {
             state.error = payload
         },
         updateBoardStates(state, payload) {
+            console.log('updateBoardStates payload: ', payload)
             // update each boardstate by player ID
             payload.boardstates.forEach((bs) => {
-                if (bs.User.ID == payload.selfID) {
+                state.boardstates[bs.User.ID] = bs
+                if (bs.User.Username == payload.self) {
+                    console.log("setting self: ", bs)
                     state.self = bs
                 }
-                state.boardstates[bs.User.ID] = bs
             })
         },
     },
@@ -63,7 +68,7 @@ const BoardStates = {
             // commit('updateOpponents', payload)
         },
         // gets all boardstates from server, but doesn't subscribe
-        getBoardStates({ commit }, gameID, selfID) {
+        getBoardStates({ commit, state, rootState }, gameID) {
             api.query({
                 query: boardstates,
                 variables: {
@@ -71,7 +76,11 @@ const BoardStates = {
                 }
             })
             .then((resp) => {
-                commit('updateBoardStates', resp.data, selfID)
+                console.log("getBoardStates#state", state)
+                commit('updateBoardStates', {
+                    boardstates: resp.data.boardstates, 
+                    self: rootState.User.User.Username,
+                })
                 return Promise.resolve(resp.data)
             })
             .catch((err) => {
@@ -97,7 +106,7 @@ const BoardStates = {
                 },
                 error(err) {
                     commit('error', err)
-                    console.error('vuex action: boardstate subscription error: ', err)
+                    console.error('subscribeToBoardstate: boardstate subscription error: ', err)
                 }
             })
         }
@@ -196,6 +205,7 @@ const Game = {
                     ID
                     PlayerIDs {
                       Username
+                      ID
                     }
                   }
                 }`,
@@ -215,8 +225,7 @@ const Game = {
                 return err
             })
         },
-        createGame({ state }, payload) {
-            console.log('createGame#state: ', state)
+        createGame({}, payload) {
             this.$apollo.mutate({
                 mutation: gql`mutation ($inputGame: InputCreateGame!) {
                   createGame(input: $inputGame){
@@ -229,6 +238,7 @@ const Game = {
                     }
                     PlayerIDs {
                       Username
+                      ID
                     }
                   }
                 }`,
@@ -237,7 +247,6 @@ const Game = {
                 }
             })
             .then((res) => {
-                console.log('pushing route to: ', res.data.createGame.ID)
                 router.push({ path: `/games/${res.data.createGame.ID}` })
             })
             .catch((err) => {
@@ -252,20 +261,27 @@ const Game = {
 const User = {
     state: {
         User: {
-            Username: Cookies.get("username") || window.localStorage.getItem("username"),
-            ID: Cookies.get("userID") || window.localStorage.getItem("userID"),
-            Token: Cookies.get("token") || window.localStorage.getItem("token")
+            Username: Cookies.get("username") || ls.getItem("username"),
+            ID: Cookies.get("userID") || ls.getItem("userID") || uuid(),
+            Token: Cookies.get("token") || ls.getItem("token")
         }
     },
     mutations:{
+        setUser(state, payload) {
+            state.User.Username = payload.Username
+            state.User.ID = payload.ID
+            Cookies.set("user_info", JSON.stringify(payload))
+        }
     },
     actions:{
-        login() {
+        login({ commit }, payload) {
+            commit('setUser', payload)
+            // TODO: This needs to reach out to server for login and token
         },
         logout() {
+            // TODO: Clear cookies and localStorage and delete token on server
+            console.log('logout action hit')
         },
-        getUser() {
-        }
     }
 }
 

@@ -31,7 +31,6 @@ function fetch(src, target, dst) {
             src2 = src.splice(1, idx)
             dst2 = dst.push(v)
             console.log(`target moved: src: ${src2} dst: ${dst2}`)
-            // TODO: this.mutateBoardState()
             return src2, dst2
         }
     })

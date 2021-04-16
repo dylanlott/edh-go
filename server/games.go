@@ -12,7 +12,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/dylanlott/edh-go/persistence"
 	"github.com/google/uuid"
 	"github.com/zeebo/errs"
 )
@@ -225,8 +224,12 @@ func (s *graphQLServer) JoinGame(ctx context.Context, input *InputJoinGame) (*Ga
 
 // createGame is untested currently
 func (s *graphQLServer) CreateGame(ctx context.Context, inputGame InputCreateGame) (*Game, error) {
+	if inputGame.ID == "" {
+		// accept a game ID but create one if it isn't assigned
+		inputGame.ID = uuid.New().String()
+	}
 	g := &Game{
-		ID:        uuid.New().String(),
+		ID:        inputGame.ID,
 		CreatedAt: time.Now(),
 		PlayerIDs: []*User{},
 		// NB: We're only supporting EDH at this time. We will add more flexible validation later.
@@ -321,23 +324,6 @@ func (s *graphQLServer) CreateGame(ctx context.Context, inputGame InputCreateGam
 	return g, nil
 }
 
-// Save saves a Game to the Persistence. TODO
-func (g *Game) Save(ctx context.Context, db persistence.Persistence) (*Game, error) {
-	return nil, errors.New("not impl")
-}
-
-// Save saves a BoardState to the Persistence interface. TODO
-func (bs *BoardState) Save(ctx context.Context, db persistence.Persistence) (*BoardState, error) {
-	return nil, errors.New("not impl")
-}
-
-func pushBoardStateUpdate(ctx context.Context, observers []Observer, input InputBoardState) {
-	for _, obs := range observers {
-		log.Printf("observers being notified: %+v\n", obs)
-		log.Printf("board state updated: %+v\n", input)
-	}
-}
-
 func getPlayerIDs(inputUsers []*InputUser) []*User {
 	var u []*User
 	for _, i := range inputUsers {
@@ -348,20 +334,6 @@ func getPlayerIDs(inputUsers []*InputUser) []*User {
 	}
 
 	return u
-}
-
-func boardStateFromInput(bs InputBoardState) (*BoardState, error) {
-	data, err := json.Marshal(bs)
-	if err != nil {
-		return nil, errs.New("failed to marshal input game: %s", err)
-	}
-	new := &BoardState{}
-	err = json.Unmarshal(data, &new)
-	if err != nil {
-		return nil, errs.New("failed to unmarshal game: %s", err)
-	}
-
-	return new, nil
 }
 
 func getCards(inputCards []*InputCard) []*Card {
