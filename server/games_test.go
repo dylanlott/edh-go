@@ -244,7 +244,10 @@ func TestGameUpdated(t *testing.T) {
 }
 
 func testAPI(t *testing.T) *graphQLServer {
-	cfg := Conf{}
+	cfg := Conf{
+		RedisURL:    "redis://localhost:6379",
+		DefaultPort: 8080,
+	}
 	path, err := os.Getwd()
 	if err != nil {
 		t.Errorf("failed to find homedir: %s", err)
@@ -254,24 +257,18 @@ func testAPI(t *testing.T) *graphQLServer {
 	if err != nil {
 		t.Errorf("failed to open cardDB for games_test: %s", err)
 	}
-
-	kv, err := persistence.NewRedis("redis://localhost:6379", "", persistence.Config{
-		"RedisURL": "redis://localhost:6379",
-	})
+	kv, err := persistence.NewRedis("redis://localhost:6379", "", persistence.Config{})
 	if err != nil {
 		t.Errorf("failed to get kv from redis: %s", err)
 	}
-
 	appDB, err := persistence.NewSQLite("../persistence/db.sqlite")
 	if err != nil {
 		t.Errorf("failed to open appDB for games_test: %s", err)
 	}
-
 	s, err := NewGraphQLServer(kv, appDB, cardDB, cfg)
 	if err != nil {
 		t.Errorf("failed to create new test server: %+v", err)
 	}
-
 	return s
 }
 

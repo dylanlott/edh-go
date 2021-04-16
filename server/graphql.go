@@ -52,7 +52,7 @@ type graphQLServer struct {
 
 // Conf takes configuration values and loads them from the environment into our struct.
 type Conf struct {
-	RedisURL    string `envconfig:"REDIS_URL"`
+	RedisURL    string `envconfig:"REDIS_URL" default:"redis://localhost:6379"`
 	PostgresURL string `envconfig:"DATABASE_URL"`
 	DefaultPort int    `envconfig:"PORT" default:"8080"`
 }
@@ -66,6 +66,7 @@ func NewGraphQLServer(
 	cfg Conf,
 ) (*graphQLServer, error) {
 	// TODO: Remove this redis client and wire chat up to KV interface instead
+	log.Printf("attempting to connecto to redis at %s", cfg.RedisURL)
 	opts, err := redis.ParseURL(cfg.RedisURL)
 	if err != nil {
 		log.Printf("failed to get redis options: %s", err)
