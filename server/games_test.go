@@ -250,37 +250,62 @@ func TestJoinGame(t *testing.T) {
 func TestGameUpdated(t *testing.T) {
 	s := testAPI(t)
 	userID := string("deadbeef")
-
+	gameID := string("beefdead")
 	now := time.Now()
 
 	var cases = []struct {
 		name  string
 		input InputGame
 		err   error
+		want  *Game
 	}{
 		{
 			name: "test happy path game updated",
 			input: InputGame{
-				ID:        "feedbeef",
+				ID:        gameID,
 				CreatedAt: &now,
 				PlayerIDs: []*InputUser{
 					{
 						ID:       &userID,
-						Username: "joingameid",
+						Username: "shakezula",
 					},
 				},
 				Turn: &InputTurn{
-					Number: 1,
-					Phase:  "start",
+					Number: 0,
+					Phase:  "pregame",
 					Player: "shakezula",
+				},
+				Rules: []*InputRule{
+					{Name: "format", Value: "EDH"},
+					{Name: "deck_size", Value: "99"},
 				},
 			},
 			err: nil,
+			want: &Game{
+				ID:        gameID,
+				CreatedAt: now,
+				PlayerIDs: []*User{
+					{
+						ID:       userID,
+						Username: "shakezula",
+					},
+				},
+				Turn: &Turn{
+					Number: 0,
+					Phase:  "pregame",
+					Player: "shakezula",
+				},
+				Rules: []*Rule{
+					{Name: "format", Value: "EDH"},
+					{Name: "deck_size", Value: "99"},
+				},
+			},
 		},
 	}
 
 	for _, tt := range cases {
 		testGame, err := s.CreateGame(context.Background(), InputCreateGame{
+			ID: gameID,
 			Players: []*InputBoardState{
 				{
 					User: &InputUser{
@@ -296,25 +321,27 @@ func TestGameUpdated(t *testing.T) {
 					},
 				},
 			},
+			Turn: &InputTurn{
+				Number: 0,
+				Phase:  "pregame",
+				Player: "shakezula",
+			},
 		})
 		if err != nil {
 			t.Errorf("failed to create test game for TestGameUpdated: %s", err)
 		}
-		tt.input.ID = testGame.ID
-		_, err = s.GameUpdated(context.Background(), tt.input)
+		log.Printf("created testGame: %+v", testGame)
+
+		resp, err := s.GameUpdated(context.Background(), tt.input)
 		if err != nil {
 			t.Errorf("failed to update game: %+v", err)
 		}
-
-		// get game from directory and then check it's values
-		g, ok := s.Directory[tt.input.ID]
-		if !ok {
-			t.Errorf("failed to set game ID correctly into Directory")
+		g := <-resp
+		diff := cmp.Diff(g, tt.want)
+		if diff != "" {
+			log.Printf("[DIFF]: %s", diff)
+			t.Errorf("GameUpdated() wanted: %+v - got: %+v", tt.want, g)
 		}
-
-		log.Printf("game after update: %+v", g)
-
-		// TODO: assert on `g`
 	}
 }
 

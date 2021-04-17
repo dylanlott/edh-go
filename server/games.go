@@ -49,36 +49,24 @@ func (s *graphQLServer) Games(ctx context.Context, gameID *string) ([]*Game, err
 	return []*Game{game}, nil
 }
 
-func (s *graphQLServer) GameUpdated(ctx context.Context, from InputGame) (<-chan *Game, error) {
-	_, ok := s.Directory[from.ID]
-	if !ok {
-		return nil, errs.New("game does not exist with ID of %s", from.ID)
-	}
-
-	// HACK: This gets around us having to do a lot of complicated
-	// checking and assignment and let's the json/encoder library
-	// handle the type conversion instead.
-
-	// TODO: Should we merge the old object and the new after getting the input
-	// game as a *Game?
-	b, err := json.Marshal(from)
+func (s *graphQLServer) GameUpdated(ctx context.Context, updated InputGame) (<-chan *Game, error) {
+	// Update game in the directory
+	b, err := json.Marshal(updated)
 	if err != nil {
-		return nil, errs.New("error marshaling from: %+v", err)
+		return nil, errs.New("failed to marshal input game: %s", err)
 	}
 	game := &Game{}
 	err = json.Unmarshal(b, &game)
 	if err != nil {
-		return nil, errs.New("failed to unmarshal into *Game: %+v", err)
+		return nil, errs.New("failed to unmarshal game: %s", err)
 	}
 
-	// Update game in the directory
 	s.mutex.Lock()
 	// assign the game to the directory for finding
-	s.Directory[game.ID] = game
 	// create a new gameChannel to announce Game updates over
 	games := make(chan *Game, 1)
 	// set the gameChannels to have the new receiving channel
-	s.gameChannels[game.ID] = games
+	s.gameChannels[updated.ID] = games
 	// announce the game over the GameChannels
 	games <- game
 	s.mutex.Unlock()
@@ -86,7 +74,7 @@ func (s *graphQLServer) GameUpdated(ctx context.Context, from InputGame) (<-chan
 	go func() {
 		<-ctx.Done()
 		s.mutex.Lock()
-		delete(s.gameChannels, game.ID)
+		delete(s.gameChannels, updated.ID)
 		s.mutex.Unlock()
 	}()
 
@@ -114,13 +102,12 @@ func (s *graphQLServer) UpdateGame(ctx context.Context, new InputGame) (*Game, e
 		return nil, errs.New("failed to unmarshal game: %s", err)
 	}
 
-	log.Printf("UpdateGame#setting game: %+v", game)
 	s.mutex.Lock()
 	s.Directory[new.ID] = game
-	log.Printf("pushing new game on channel: %+v", game)
 	s.gameChannels[new.ID] <- game
 	s.mutex.Unlock()
 
+	// Call the GameUpdated event with the input game
 	s.GameUpdated(ctx, new)
 
 	return game, nil

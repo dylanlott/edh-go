@@ -1104,6 +1104,12 @@ input InputGame {
   CreatedAt: Time
   Handle: String
   PlayerIDs: [InputUser!]
+  Rules: [InputRule]
+}
+
+input InputRule {
+  Name: String!
+  Value: String!
 }
 
 input InputTurn {
@@ -5708,6 +5714,14 @@ func (ec *executionContext) unmarshalInputInputGame(ctx context.Context, obj int
 			if err != nil {
 				return it, err
 			}
+		case "Rules":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("Rules"))
+			it.Rules, err = ec.unmarshalOInputRule2ᚕᚖgithubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐInputRule(ctx, v)
+			if err != nil {
+				return it, err
+			}
 		}
 	}
 
@@ -5793,6 +5807,34 @@ func (ec *executionContext) unmarshalInputInputLabel(ctx context.Context, obj in
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("AssignedBy"))
 			it.AssignedBy, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputInputRule(ctx context.Context, obj interface{}) (InputRule, error) {
+	var it InputRule
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "Name":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("Name"))
+			it.Name, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "Value":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("Value"))
+			it.Value, err = ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -7721,6 +7763,38 @@ func (ec *executionContext) unmarshalOInputLabel2ᚖgithubᚗcomᚋdylanlottᚋe
 		return nil, nil
 	}
 	res, err := ec.unmarshalInputInputLabel(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalOInputRule2ᚕᚖgithubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐInputRule(ctx context.Context, v interface{}) ([]*InputRule, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var vSlice []interface{}
+	if v != nil {
+		if tmp1, ok := v.([]interface{}); ok {
+			vSlice = tmp1
+		} else {
+			vSlice = []interface{}{v}
+		}
+	}
+	var err error
+	res := make([]*InputRule, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalOInputRule2ᚖgithubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐInputRule(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) unmarshalOInputRule2ᚖgithubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐInputRule(ctx context.Context, v interface{}) (*InputRule, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputInputRule(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 

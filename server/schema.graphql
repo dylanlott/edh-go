@@ -197,6 +197,12 @@ input InputGame {
   CreatedAt: Time
   Handle: String
   PlayerIDs: [InputUser!]
+  Rules: [InputRule]
+}
+
+input InputRule {
+  Name: String!
+  Value: String!
 }
 
 input InputTurn {

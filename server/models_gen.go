@@ -135,6 +135,7 @@ type InputGame struct {
 	CreatedAt *time.Time   `json:"CreatedAt"`
 	Handle    *string      `json:"Handle"`
 	PlayerIDs []*InputUser `json:"PlayerIDs"`
+	Rules     []*InputRule `json:"Rules"`
 }
 
 type InputJoinGame struct {
@@ -149,6 +150,11 @@ type InputLabel struct {
 	Name       string `json:"Name"`
 	Value      string `json:"Value"`
 	AssignedBy string `json:"AssignedBy"`
+}
+
+type InputRule struct {
+	Name  string `json:"Name"`
+	Value string `json:"Value"`
 }
 
 type InputSignup struct {
