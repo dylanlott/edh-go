@@ -88,6 +88,11 @@ func TestCreateGame(t *testing.T) {
 						},
 					},
 				},
+				Turn: &InputTurn{
+					Player: "shakezula",
+					Phase:  "pregame",
+					Number: 0,
+				},
 			},
 			want: &Game{
 				ID: "deadbeef",

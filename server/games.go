@@ -224,10 +224,11 @@ func (s *graphQLServer) JoinGame(ctx context.Context, input *InputJoinGame) (*Ga
 
 // createGame is untested currently
 func (s *graphQLServer) CreateGame(ctx context.Context, inputGame InputCreateGame) (*Game, error) {
+	// accept a game ID but create one if it isn't assigned
 	if inputGame.ID == "" {
-		// accept a game ID but create one if it isn't assigned
 		inputGame.ID = uuid.New().String()
 	}
+
 	g := &Game{
 		ID:        inputGame.ID,
 		CreatedAt: time.Now(),
