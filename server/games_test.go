@@ -9,10 +9,12 @@ import (
 
 	"github.com/dylanlott/edh-go/persistence"
 	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/google/uuid"
 )
 
 func TestCreateGame(t *testing.T) {
+	id := string("0xACAB")
 	var cases = []struct {
 		name  string
 		input *InputCreateGame
@@ -22,10 +24,11 @@ func TestCreateGame(t *testing.T) {
 		{
 			name: "happy path creation",
 			input: &InputCreateGame{
+				ID: "deadbeef",
 				Players: []*InputBoardState{
 					{
 						User: &InputUser{
-							ID:       randomUserID(),
+							ID:       &id,
 							Username: "shakezula",
 						},
 						Life:     40,
@@ -37,17 +40,40 @@ func TestCreateGame(t *testing.T) {
 						},
 					},
 				},
+				Turn: &InputTurn{
+					Player: "shakezula",
+					Phase:  "pregame",
+					Number: 0,
+				},
 			},
-			want: nil,
-			err:  nil,
+			want: &Game{
+				ID: "deadbeef",
+				PlayerIDs: []*User{
+					{
+						ID:       "0xACAB",
+						Username: "shakezula",
+					},
+				},
+				Turn: &Turn{
+					Player: "shakezula",
+					Phase:  "pregame",
+					Number: 0,
+				},
+				Rules: []*Rule{
+					{Name: "format", Value: "EDH"},
+					{Name: "deck_size", Value: "99"},
+				},
+			},
+			err: nil,
 		},
 		{
 			name: "should allow for two commanders",
 			input: &InputCreateGame{
+				ID: "deadbeef",
 				Players: []*InputBoardState{
 					{
 						User: &InputUser{
-							ID:       randomUserID(),
+							ID:       &id,
 							Username: "shakezula",
 						},
 						Life:     40,
@@ -63,8 +89,24 @@ func TestCreateGame(t *testing.T) {
 					},
 				},
 			},
-			want: nil, // TODO: make this test actually compare output results.
-			err:  nil,
+			want: &Game{
+				ID: "deadbeef",
+				PlayerIDs: []*User{
+					{
+						ID:       "0xACAB",
+						Username: "shakezula",
+					},
+				},
+				Turn: &Turn{
+					Player: "shakezula",
+					Phase:  "pregame",
+					Number: 0,
+				},
+				Rules: []*Rule{
+					{Name: "format", Value: "EDH"},
+					{Name: "deck_size", Value: "99"},
+				}, // TODO: make this test actually compare output results.
+			},
 		},
 	}
 
@@ -79,7 +121,10 @@ func TestCreateGame(t *testing.T) {
 				t.Errorf("failed to add correct amount of players to the game")
 			}
 
-			diff := cmp.Diff(tt.want, result)
+			diff := cmp.Diff(tt.want, result, cmpopts.IgnoreFields(
+				Game{},
+				"CreatedAt",
+			))
 			if diff != "" {
 				t.Errorf("failed to create game: %s", diff)
 			}

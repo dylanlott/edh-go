@@ -232,6 +232,11 @@ func (s *graphQLServer) CreateGame(ctx context.Context, inputGame InputCreateGam
 		ID:        inputGame.ID,
 		CreatedAt: time.Now(),
 		PlayerIDs: []*User{},
+		Turn: &Turn{
+			Player: inputGame.Turn.Player,
+			Phase:  inputGame.Turn.Phase,
+			Number: inputGame.Turn.Number,
+		},
 		// NB: We're only supporting EDH at this time. We will add more flexible validation later.
 		Rules: []*Rule{
 			{
@@ -248,7 +253,7 @@ func (s *graphQLServer) CreateGame(ctx context.Context, inputGame InputCreateGam
 	for _, player := range inputGame.Players {
 		// TODO: Deck validation should happen here.
 		user := &User{
-			ID:       uuid.New().String(),
+			ID:       *player.User.ID,
 			Username: player.User.Username,
 		}
 		g.PlayerIDs = append(g.PlayerIDs, user)
