@@ -398,3 +398,16 @@ Debugging notes:
 * Need better test driven development all around 
 * Need to include the card files for the production server deployments, too. 
     * Write a script that grabs the latest MTGJSON files and loads them down directly to our repo for easier deployments.
+
+
+*GameUpdated Function*
+Okay so we have better tests now. 
+I had a realization about using GQLGen. 
+
+You treat the mutation functions like the setters. They act on the persistence layer and actually cause the mutation. 
+You treat the subscription/notification/posted functions like emitters. They are only taking a value and pushing it to the rest of the listeners. They don't act on the database or persist anything.
+
+For example, UpdateGame should act on the database, and then it should
+_call_ GameUpdated. GameUpdated should then independently read from the database or emit the object that was passed to it.
+
+I think in most cases it makes sense to have it take an updated value, rather than making it access persistence a second time. Cuts down on concurrency bugs and doesn't require another lock on the persistence layer.

@@ -248,7 +248,6 @@ func TestJoinGame(t *testing.T) {
 }
 
 func TestGameUpdated(t *testing.T) {
-	s := testAPI(t)
 	userID := string("deadbeef")
 	gameID := string("beefdead")
 	now := time.Now()
@@ -304,6 +303,7 @@ func TestGameUpdated(t *testing.T) {
 	}
 
 	for _, tt := range cases {
+		s := testAPI(t)
 		testGame, err := s.CreateGame(context.Background(), InputCreateGame{
 			ID: gameID,
 			Players: []*InputBoardState{
@@ -342,6 +342,101 @@ func TestGameUpdated(t *testing.T) {
 			log.Printf("[DIFF]: %s", diff)
 			t.Errorf("GameUpdated() wanted: %+v - got: %+v", tt.want, g)
 		}
+	}
+}
+
+func TestUpdateGame(t *testing.T) {
+	userID := string("deadbeef")
+	userID2 := string("deadbeef2")
+
+	type args struct {
+		ctx context.Context
+		new InputGame
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    *Game
+		wantErr bool
+	}{
+		{
+			name: "should update game and alert gameChannels",
+			args: args{
+				ctx: context.Background(),
+				new: InputGame{
+					ID:        seedGameID,
+					CreatedAt: &time.Time{},
+					PlayerIDs: []*InputUser{
+						{
+							Username: "shakezula",
+							ID:       &userID,
+						},
+						{
+							Username: "meatwad",
+							ID:       &userID2,
+						},
+					},
+					Rules: []*InputRule{
+						{Name: "format", Value: "EDH"},
+						{Name: "deck_size", Value: "99"},
+					},
+					Turn: &InputTurn{
+						Number: 3,
+						Phase:  "the after party",
+						Player: "meatwad",
+					},
+				},
+			},
+			wantErr: false,
+			want: &Game{
+				ID: seedGameID,
+				PlayerIDs: []*User{
+					{
+						Username: "shakezula",
+						ID:       userID,
+					},
+					{
+						Username: "meatwad",
+						ID:       userID2,
+					},
+				},
+				Rules: []*Rule{
+					{Name: "format", Value: "EDH"},
+					{Name: "deck_size", Value: "99"},
+				},
+				Turn: &Turn{
+					Number: 3,
+					Phase:  "the after party",
+					Player: "meatwad",
+				},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := testAPI(t)
+			g, err := s.CreateGame(tt.args.ctx, *seedInputGame)
+
+			got, err := s.UpdateGame(tt.args.ctx, tt.args.new)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("graphQLServer.UpdateGame() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			diff := cmp.Diff(got, tt.want, cmpopts.IgnoreFields(Game{}, "CreatedAt"))
+			if diff != "" {
+				log.Printf("diff: %s", diff)
+				t.Errorf("UpdateGame wanted: %+v - got %+v", tt.want, got)
+			}
+
+			// test game that was emitted
+			game := <-s.gameChannels[g.ID]
+			log.Printf("GAME: %+v", game)
+			diff2 := cmp.Diff(game, tt.want, cmpopts.IgnoreFields(Game{}, "CreatedAt"))
+			if diff2 != "" {
+				t.Logf("[DIFF] %s", diff)
+				t.Errorf("failed to emit game on channels correctly")
+			}
+		})
 	}
 }
 
@@ -493,4 +588,36 @@ func decklist() *string {
 	1,Fierce Guardianship`)
 
 	return &deck
+}
+
+// Seed values for tests
+var (
+	seedUserID   string = "xfeedbeefx"
+	seedGameID   string = "xdeadbeefx"
+	seedUsername string = "shakezula"
+)
+
+// seedInputGame is a bare minimum game input that passes validation
+var seedInputGame = &InputCreateGame{
+	ID: seedGameID,
+	Players: []*InputBoardState{
+		{
+			User: &InputUser{
+				ID:       &seedUserID,
+				Username: seedUsername,
+			},
+			Life:     40,
+			Decklist: decklist(),
+			Commander: []*InputCard{
+				{
+					Name: "Gavi, Nest Warden",
+				},
+			},
+		},
+	},
+	Turn: &InputTurn{
+		Player: seedUsername,
+		Phase:  "pregame",
+		Number: 0,
+	},
 }
