@@ -2,7 +2,7 @@ package server
 
 import (
 	"context"
-	"fmt"
+	"log"
 	"os"
 	"testing"
 	"time"
@@ -143,6 +143,10 @@ func TestCreateGame(t *testing.T) {
 }
 
 func TestJoinGame(t *testing.T) {
+	gameID := "0xbeefbeef"
+	userID := "shakezulathemicrulah"
+	userID2 := "abc123"
+
 	var cases = []struct {
 		name  string
 		input InputJoinGame
@@ -152,7 +156,7 @@ func TestJoinGame(t *testing.T) {
 		{
 			name: "join game happy path",
 			input: InputJoinGame{
-				ID:       "", // has to be set later on, so leave it blank
+				ID:       "0xbeefbeef", // has to be set later on, so leave it blank
 				Decklist: decklist(),
 				BoardState: &InputBoardState{
 					Commander: []*InputCard{
@@ -162,22 +166,46 @@ func TestJoinGame(t *testing.T) {
 					},
 				},
 				User: &InputUser{
-					ID:       randomUserID(),
-					Username: "joingameid",
+					ID:       &userID2,
+					Username: "meatwad",
 				},
 			},
 			err: nil,
+			want: &Game{
+				ID: gameID,
+				Rules: []*Rule{
+					{Name: "format", Value: "EDH"},
+					{Name: "deck_size", Value: "99"},
+				},
+				Turn: &Turn{
+					Phase:  "pregame",
+					Number: 0,
+					Player: "shakezula",
+				},
+				PlayerIDs: []*User{
+					{
+						ID:       userID,
+						Username: "shakezula",
+					},
+					{
+						ID:       userID2,
+						Username: "meatwad",
+					},
+				},
+			},
 		},
 	}
 
 	for _, tt := range cases {
 		t.Run(tt.name, func(t *testing.T) {
 			s := testAPI(t)
-			input := InputCreateGame{
+
+			_, err := s.CreateGame(context.Background(), InputCreateGame{
+				ID: gameID,
 				Players: []*InputBoardState{
 					{
 						User: &InputUser{
-							ID:       randomUserID(),
+							ID:       &userID,
 							Username: "shakezula",
 						},
 						Life:     40,
@@ -189,33 +217,27 @@ func TestJoinGame(t *testing.T) {
 						},
 					},
 				},
-			}
-
-			host, err := s.CreateGame(context.Background(), input)
+				Turn: &InputTurn{
+					Player: "shakezula",
+					Number: 0,
+					Phase:  "pregame",
+				},
+			})
 			if err != nil {
 				t.Errorf("failed to get host game: %+v\n", err)
 			}
 
-			t.Logf("joining host game: %+v\n", host)
-
-			// hack to emulated client knowledge by setting input Game ID to host ID
-			tt.input.ID = host.ID
-
 			joined, err := s.JoinGame(context.Background(), &tt.input)
-			if err != nil {
-				fmt.Printf("JOIN GAME ERROR: %+v\n", err)
-				if tt.err != nil {
-					if diff := cmp.Diff(tt.err, err); diff != "" {
-						t.Errorf("wanted: %+v - got: %+v\n", tt.want, err)
-					}
-				}
-			}
+			// if err != nil {
+			// 	if tt.err != nil {
+			// 		if diff := cmp.Diff(tt.err, err); diff != "" {
+			// 			t.Errorf("wanted: %+v - got: %+v\n", tt.want, err)
+			// 		}
+			// 	}
+			// }
 
 			if tt.want != nil {
-				// set result.CreatedAt to now for testing comparison, since
-				// we only use it reference.
-				joined.CreatedAt = time.Time{}
-				if diff := cmp.Diff(tt.want, joined); diff != "" {
+				if diff := cmp.Diff(tt.want, joined, cmpopts.IgnoreFields(Game{}, "CreatedAt")); diff != "" {
 					t.Errorf("wanted: %+v - got: %+v\n", tt.want, diff)
 				}
 			}
@@ -227,44 +249,23 @@ func TestJoinGame(t *testing.T) {
 
 func TestGameUpdated(t *testing.T) {
 	s := testAPI(t)
-
-	testGame, err := s.CreateGame(context.Background(), InputCreateGame{
-		Players: []*InputBoardState{
-			{
-				User: &InputUser{
-					ID:       randomUserID(),
-					Username: "shakezula",
-				},
-				Life:     40,
-				Decklist: decklist(),
-				Commander: []*InputCard{
-					{
-						Name: "Gavi, Nest Warden",
-					},
-				},
-			},
-		},
-	})
-	if err != nil {
-		t.Errorf("failed to create test game for TestGameUpdated: %s", err)
-	}
+	userID := string("deadbeef")
 
 	now := time.Now()
 
 	var cases = []struct {
 		name  string
 		input InputGame
-		want  interface{}
 		err   error
 	}{
 		{
 			name: "test happy path game updated",
 			input: InputGame{
-				ID:        testGame.ID,
+				ID:        "feedbeef",
 				CreatedAt: &now,
 				PlayerIDs: []*InputUser{
 					{
-						ID:       randomUserID(),
+						ID:       &userID,
 						Username: "joingameid",
 					},
 				},
@@ -274,11 +275,33 @@ func TestGameUpdated(t *testing.T) {
 					Player: "shakezula",
 				},
 			},
+			err: nil,
 		},
 	}
 
 	for _, tt := range cases {
-		_, err := s.GameUpdated(context.Background(), tt.input)
+		testGame, err := s.CreateGame(context.Background(), InputCreateGame{
+			Players: []*InputBoardState{
+				{
+					User: &InputUser{
+						ID:       &userID,
+						Username: "shakezula",
+					},
+					Life:     40,
+					Decklist: decklist(),
+					Commander: []*InputCard{
+						{
+							Name: "Gavi, Nest Warden",
+						},
+					},
+				},
+			},
+		})
+		if err != nil {
+			t.Errorf("failed to create test game for TestGameUpdated: %s", err)
+		}
+		tt.input.ID = testGame.ID
+		_, err = s.GameUpdated(context.Background(), tt.input)
 		if err != nil {
 			t.Errorf("failed to update game: %+v", err)
 		}
@@ -289,7 +312,9 @@ func TestGameUpdated(t *testing.T) {
 			t.Errorf("failed to set game ID correctly into Directory")
 		}
 
-		t.Logf("game after update: %+v\n", g)
+		log.Printf("game after update: %+v", g)
+
+		// TODO: assert on `g`
 	}
 }
 

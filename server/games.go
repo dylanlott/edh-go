@@ -58,6 +58,9 @@ func (s *graphQLServer) GameUpdated(ctx context.Context, from InputGame) (<-chan
 	// HACK: This gets around us having to do a lot of complicated
 	// checking and assignment and let's the json/encoder library
 	// handle the type conversion instead.
+
+	// TODO: Should we merge the old object and the new after getting the input
+	// game as a *Game?
 	b, err := json.Marshal(from)
 	if err != nil {
 		return nil, errs.New("error marshaling from: %+v", err)
