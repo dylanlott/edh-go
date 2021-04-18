@@ -50,6 +50,24 @@ func TestUpdateBoardState(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "should return an error if game does not exist",
+			args: args{
+				ctx: context.Background(),
+				input: InputBoardState{
+					GameID: "doesnotexist",
+					User: &InputUser{
+						Username: "shakezula",
+						ID:       &userID,
+					},
+					Life: 38, // test life edits
+					Commander: []*InputCard{
+						{Name: "Gavi, Nest Warden"},
+					},
+				},
+			},
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -66,13 +84,17 @@ func TestUpdateBoardState(t *testing.T) {
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("graphQLServer.UpdateBoardState() = %v, want %v", got, tt.want)
 			}
-			boardstate := <-s.boardChannels[got.User.ID]
-			if !reflect.DeepEqual(boardstate, tt.want) {
-				diff := cmp.Diff(boardstate, tt.want)
-				t.Logf("DIFF: %+v", diff)
-				t.Errorf("UpdateBoardState failed to notify listeners")
-			} else {
-				t.Logf("successfully received boardstate from update: %+v", boardstate)
+
+			// assert on boardstate notifications if no error is expected
+			if tt.wantErr == false {
+				boardstate := <-s.boardChannels[got.User.ID]
+				if !reflect.DeepEqual(boardstate, tt.want) {
+					diff := cmp.Diff(boardstate, tt.want)
+					t.Logf("DIFF: %+v", diff)
+					t.Errorf("UpdateBoardState failed to notify listeners")
+				} else {
+					t.Logf("successfully received boardstate from update: %+v", boardstate)
+				}
 			}
 		})
 	}
