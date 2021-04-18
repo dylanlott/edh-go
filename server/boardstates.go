@@ -17,23 +17,27 @@ func BoardStateKey(gameID, username string) string {
 // TODO: Need to determine how we format boardstate keys
 // TODO: Need to switch Directory over to Redis storage
 
-func (s *graphQLServer) BoardstatePosted(ctx context.Context, gameID string, userID string, bs InputBoardState) (<-chan *BoardState, error) {
-	_, ok := s.Directory[gameID]
+func (s *graphQLServer) BoardstatePosted(ctx context.Context, bs InputBoardState) (<-chan *BoardState, error) {
+	_, ok := s.Directory[bs.GameID]
 	if !ok {
-		return nil, fmt.Errorf("failed to find game %s", gameID)
+		return nil, fmt.Errorf("failed to find game %s", bs.GameID)
 	}
 
-	log.Printf("BoardStatePosted: gameID %+v - userID %+v", gameID, userID)
+	board, err := boardStateFromInput(bs)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get boardstate from input: %s", err)
+	}
+	log.Printf("boardstate from input: %+v", board)
 
 	boardstates := make(chan *BoardState, 1)
 	s.mutex.Lock()
-	s.boardChannels[userID] = boardstates
+	s.boardChannels[board.User.ID] = boardstates
 	s.mutex.Unlock()
-
+	boardstates <- board
 	go func() {
 		<-ctx.Done()
 		s.mutex.Lock()
-		delete(s.boardChannels, userID)
+		delete(s.boardChannels, board.User.ID)
 		s.mutex.Unlock()
 	}()
 
@@ -52,9 +56,11 @@ func (s *graphQLServer) UpdateBoardState(ctx context.Context, input InputBoardSt
 		return nil, errs.Wrap(err)
 	}
 
-	log.Printf("updatedBoardState#bs: %+v", bs)
+	if err := s.Set(BoardStateKey(input.GameID, input.User.Username), bs); err != nil {
+		return nil, fmt.Errorf("failed to persist boardstate: %s", err)
+	}
 
-	s.boardChannels[bs.User.ID] <- bs
+	s.BoardstatePosted(ctx, input)
 
 	return bs, nil
 }

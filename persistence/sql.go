@@ -34,7 +34,7 @@ func NewAppDatabase(migdir, dbURL string) (*DB, error) {
 
 // NewSQLite returns a DB object to persist data for the application.
 func NewSQLite(path string) (*DB, error) {
-	log.Printf("opening database connection at %s\n", path)
+	log.Printf("opening SQLite3 database connection at %s\n", path)
 	db, err := sql.Open("sqlite3", path)
 	if err != nil {
 		log.Printf("error opening sqlite3 database: %+v\n", err)
@@ -47,8 +47,6 @@ func NewSQLite(path string) (*DB, error) {
 		return nil, errs.Wrap(err)
 	}
 
-	log.Printf("[DB] database connection established: %+v\n", db)
-	// return db
 	return &DB{
 		db: db,
 	}, nil
@@ -57,7 +55,7 @@ func NewSQLite(path string) (*DB, error) {
 // NewPostgres returns a migrated sql.DB with a Postgres database connection
 // migdir is the relative path to the migrations directory.
 func NewPostgres(migdir string, dbURL string) (*sql.DB, error) {
-	// These need to directly match the Heroku environment
+	log.Printf("opening PostgreSQL database connection")
 	db, err := sql.Open("postgres", dbURL)
 	if err != nil {
 		log.Printf("failed to get new postgres: %s", err)

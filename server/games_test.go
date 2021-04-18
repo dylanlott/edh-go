@@ -3,11 +3,9 @@ package server
 import (
 	"context"
 	"log"
-	"os"
 	"testing"
 	"time"
 
-	"github.com/dylanlott/edh-go/persistence"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/google/uuid"
@@ -438,35 +436,6 @@ func TestUpdateGame(t *testing.T) {
 			}
 		})
 	}
-}
-
-func testAPI(t *testing.T) *graphQLServer {
-	cfg := Conf{
-		RedisURL:    "redis://localhost:6379",
-		DefaultPort: 8080,
-	}
-	path, err := os.Getwd()
-	if err != nil {
-		t.Errorf("failed to find homedir: %s", err)
-	}
-	t.Logf("test server path: %+v", path)
-	cardDB, err := persistence.NewSQLite("../persistence/AllPrintings.sqlite")
-	if err != nil {
-		t.Errorf("failed to open cardDB for games_test: %s", err)
-	}
-	kv, err := persistence.NewRedis("redis://localhost:6379", "", persistence.Config{})
-	if err != nil {
-		t.Errorf("failed to get kv from redis: %s", err)
-	}
-	appDB, err := persistence.NewSQLite("../persistence/db.sqlite")
-	if err != nil {
-		t.Errorf("failed to open appDB for games_test: %s", err)
-	}
-	s, err := NewGraphQLServer(kv, appDB, cardDB, cfg)
-	if err != nil {
-		t.Errorf("failed to create new test server: %+v", err)
-	}
-	return s
 }
 
 // NB: necessary to get a reference to a string because of this problem

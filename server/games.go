@@ -68,9 +68,8 @@ func (s *graphQLServer) GameUpdated(ctx context.Context, updated InputGame) (<-c
 	// set the gameChannels to have the new receiving channel
 	s.gameChannels[updated.ID] = games
 	// announce the game over the GameChannels
-	games <- game
 	s.mutex.Unlock()
-
+	games <- game
 	go func() {
 		<-ctx.Done()
 		s.mutex.Lock()

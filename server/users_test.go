@@ -2,11 +2,8 @@ package server
 
 import (
 	"context"
-	"fmt"
-	"log"
 	"testing"
 
-	"github.com/dylanlott/edh-go/persistence"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 )
@@ -36,7 +33,7 @@ func Test_graphQLServer_Signup(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := newServer(t)
+			s := testAPI(t)
 			got, err := s.Signup(context.Background(), tt.args.username, tt.args.password)
 			if diff := cmp.Diff(got, tt.want, cmpopts.IgnoreFields(User{}, "ID")); diff != "" {
 				t.Errorf("graphQLServer.Signup: wanted: %+v - got: %+v", tt.want, got)
@@ -75,9 +72,7 @@ func Test_graphQLServer_Login(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := newServer(t)
-			log.Printf("SERVER: %+v", s)
-			log.Printf("SERVER db: %+v", s.db)
+			s := testAPI(t)
 			got, err := s.Login(tt.args.ctx, tt.args.username, tt.args.password)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("graphQLServer.Login() error = %v, wantErr %v", err, tt.wantErr)
@@ -91,38 +86,4 @@ func Test_graphQLServer_Login(t *testing.T) {
 			}
 		})
 	}
-}
-func newServer(t *testing.T) *graphQLServer {
-	host := "localhost"
-	port := 5432
-	user := "edhgo"
-	password := "edhgodev"
-	dbname := "edhgo"
-	localPG := fmt.Sprintf("host=%s port=%d user=%s "+
-		"password=%s dbname=%s sslmode=disable",
-		host, port, user, password, dbname)
-
-	cfg := Conf{
-		PostgresURL: localPG,
-	}
-	db, err := persistence.NewAppDatabase("../persistence/migrations/", cfg.PostgresURL)
-	if err != nil {
-		t.Errorf("failed to create persistence: %s", err)
-	}
-
-	kv, err := persistence.NewRedis("localhost:6379", "", persistence.Config{})
-	if err != nil {
-		t.Errorf("failed to create a KV instance: %s", err)
-	}
-
-	cardDB, err := persistence.NewSQLite("../persistence/AllPrintings.sqlite")
-	if err != nil {
-		t.Errorf("failed to create cardDB: %s", err)
-	}
-
-	s, err := NewGraphQLServer(kv, db, cardDB, cfg)
-	if err != nil {
-		t.Errorf("failed to start server: %s", err)
-	}
-	return s
 }
