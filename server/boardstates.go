@@ -27,7 +27,6 @@ func (s *graphQLServer) BoardstatePosted(ctx context.Context, bs InputBoardState
 	if err != nil {
 		return nil, fmt.Errorf("failed to get boardstate from input: %s", err)
 	}
-	log.Printf("boardstate from input: %+v", board)
 
 	boardstates := make(chan *BoardState, 1)
 	s.mutex.Lock()
@@ -45,7 +44,6 @@ func (s *graphQLServer) BoardstatePosted(ctx context.Context, bs InputBoardState
 }
 
 func (s *graphQLServer) UpdateBoardState(ctx context.Context, input InputBoardState) (*BoardState, error) {
-	log.Printf("UpdateBoardState#input: %+v", input)
 	_, ok := s.Directory[input.GameID]
 	if !ok {
 		return nil, fmt.Errorf("failed to updated boardstate: game does not exist: %s", input.GameID)
