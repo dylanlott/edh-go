@@ -411,3 +411,12 @@ For example, UpdateGame should act on the database, and then it should
 _call_ GameUpdated. GameUpdated should then independently read from the database or emit the object that was passed to it.
 
 I think in most cases it makes sense to have it take an updated value, rather than making it access persistence a second time. Cuts down on concurrency bugs and doesn't require another lock on the persistence layer.
+
+## Apr 19, 2021
+
+Flaky tests are caused by migrations m.Up() and m.Down() behaving unexpectedly. 
+I think we need to error handle better on the migration run. 
+But I still can't figure out why half the time it correctly applies migrations and other times it doesn't.
+
+
+
