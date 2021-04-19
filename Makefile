@@ -12,8 +12,8 @@ build:
 		$(GOBUILD) -o $(BINARY_NAME) -v
 short:
 		$(GOTEST) -v -short ./...
-test:
-		$(GOTEST) -v ./...
+test-api:
+		$(GOTEST) -v ./server/...
 clean:
 		$(GOCLEAN)
 		rm -f $(BINARY_NAME)
@@ -22,8 +22,9 @@ run:
 		$(GOCMD) run ./
 generate:
 		$(GOCMD) generate ./...
+# Migrate will run migrations at your env's DATABASE_URL value
 migrate:
-	# TODO 
+	migrate -path ./persistence/migrations -database $(DATABASE_URL) up
 dev:
 		# dev target requires watchexec to be installed
 		watchexec $(GOCMD) run ./
