@@ -27,6 +27,7 @@ func NewAppDatabase(migdir, dbURL string) (*DB, error) {
 		log.Printf("failed to get postgres: %s", err)
 		return nil, errs.Wrap(err)
 	}
+	log.Printf("NewAppDatabase#pg connection: %+v", pg)
 	return &DB{
 		db: pg,
 	}, nil
@@ -74,9 +75,13 @@ func NewPostgres(migdir string, dbURL string) (*sql.DB, error) {
 	}
 	err = m.Up()
 	if err != nil {
+		if err.Error() == "no change" {
+			return db, nil
+		}
+		// should we fail here? regardless, we should not be silent
 		log.Printf("failed to run migrations: %s", err)
-		// attempt to rollback if migration fails
-		return nil, errs.Wrap(m.Down())
+		log.Printf("attempting migration rollback")
+		return nil, m.Down()
 	}
 
 	log.Printf("returning NewPostgres db: %+v", db)
@@ -103,7 +108,6 @@ func applySqliteMigrations(db *sql.DB, migrationsDir string) (*sql.DB, error) {
 		}
 	}
 
-	log.Printf("returning applyMigrations db: %+v", db)
 	return db, nil
 }
 
