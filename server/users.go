@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"os"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
@@ -13,7 +14,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-var jwtSecret []byte = []byte("TODO:SET THIS TO FROM AN ENV VAR")
+var jwtSecret []byte = []byte(os.Getenv("JWT_SECRET"))
 
 // CreateTokenEndpoint ...
 func (s *graphQLServer) Signup(ctx context.Context, username string, password string) (*User, error) {
