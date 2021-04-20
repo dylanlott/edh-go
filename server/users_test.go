@@ -31,6 +31,14 @@ func Test_graphQLServer_Signup(t *testing.T) {
 			},
 			wantErr: false,
 		},
+		{
+			name: "should return an error if no password is provided",
+			args: args{
+				username: "shakezula",
+				password: "",
+			},
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -43,11 +51,13 @@ func Test_graphQLServer_Signup(t *testing.T) {
 				t.Errorf("graphQLServer.Signup() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if diff := cmp.Diff(got, tt.want, cmpopts.IgnoreFields(User{}, "ID")); diff != "" {
-				t.Errorf("failed to get correct user back")
-			}
-			if got.ID == "" {
-				t.Errorf("failed to set UUID on user")
+			if err == nil {
+				if diff := cmp.Diff(got, tt.want, cmpopts.IgnoreFields(User{}, "ID")); diff != "" {
+					t.Errorf("failed to get correct user back")
+				}
+				if got.ID == "" {
+					t.Errorf("failed to set UUID on user")
+				}
 			}
 		})
 	}
@@ -86,6 +96,15 @@ func Test_graphQLServer_Login(t *testing.T) {
 			},
 			wantErr: true,
 		},
+		{
+			name: "should return an error if password invalid",
+			args: args{
+				ctx:      context.Background(),
+				username: "shakezula",
+				password: "invalidpass",
+			},
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -106,6 +125,9 @@ func Test_graphQLServer_Login(t *testing.T) {
 				}
 				if got.ID == "" {
 					t.Errorf("failed to set ID")
+				}
+				if got.Password != nil {
+					t.Errorf("should not receive password back from login")
 				}
 				if got.Token == nil {
 					t.Errorf("failed to set token")

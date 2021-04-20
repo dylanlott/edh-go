@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/google/uuid"
@@ -16,6 +17,9 @@ var jwtSecret []byte = []byte("TODO:SET THIS TO FROM AN ENV VAR")
 
 // CreateTokenEndpoint ...
 func (s *graphQLServer) Signup(ctx context.Context, username string, password string) (*User, error) {
+	if password == "" {
+		return nil, errs.New("must provide a password")
+	}
 	hashed, err := hashPassword(password)
 	if err != nil {
 		return nil, errs.Wrap(err)
@@ -82,15 +86,18 @@ func (s *graphQLServer) Login(ctx context.Context, username string, password str
 		"username": user.Username,
 		"password": password,
 	})
-	t, error := token.SignedString(jwtSecret)
-	if error != nil {
-		fmt.Println(error)
+
+	// and attempt to sign that token with our server's jwtSecret
+	t, err := token.SignedString(jwtSecret)
+	if err != nil {
+		return nil, errs.Wrap(err)
 	}
 
 	// set password to blank so we don't return the sensitive material
 	user.Password = nil
 
-	// TODO: set token in redis for session comparison
+	// set token in redis for session comparison - expires every 2 weeks
+	s.redisClient.Set(user.Username, t, time.Duration(time.Hour*24*14))
 
 	user.Token = &t
 	return user, nil
