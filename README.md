@@ -12,15 +12,16 @@
 2. Set Environment variables 
 Here's a template for setting the appropriate env vars in `~/.bashrc`
 ```
-exprot DEFAULT_PORT=
-exprot REDIS_URL=
-exprot DATABASE_URL=
-exprot LOG_LEVEL=
+export DEFAULT_PORT=
+export REDIS_URL=
+export DATABASE_URL=
+export LOG_LEVEL=
+export JWT_SECRET=
 ```
 
 Then run the server with our Makefile.
 The server will attempt to run all migrations and then start up. 
-If it can't run migrations, it will rollback the database and fail. 
+If it can't run migrations, it will rollback the database and noisily fail. 
 
 ```
 $ make run 
@@ -57,6 +58,11 @@ Using an SQL based storage solution for the BoardStates would have been clunky.
 
 
 ## Documentation & Resources:
+How to connect to a postgres instance inside of docker
 https://stackoverflow.com/questions/37694987/connecting-to-postgresql-in-a-docker-container-from-outside
 
+How to import an SQL dump into Postgres
 https://stackoverflow.com/questions/6842393/import-sql-dump-into-postgresql-database
+
+Make sure when you rows.Scan() you don't point it at a nil value
+https://stackoverflow.com/questions/44670212/scan-sql-null-values-in-golang/46753197
