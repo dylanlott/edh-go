@@ -21,20 +21,20 @@ var (
 )
 
 // NewAppDatabase returns a migrated app database or an error
-func NewAppDatabase(migdir, dbURL string) (*DB, error) {
+func NewAppDatabase(migdir, dbURL string) (*sql.DB, error) {
 	pg, err := NewPostgres(migdir, dbURL)
 	if err != nil {
 		log.Printf("failed to get postgres: %s", err)
 		return nil, errs.Wrap(err)
 	}
-	log.Printf("NewAppDatabase#pg connection: %+v", pg)
-	return &DB{
-		db: pg,
-	}, nil
+	if err := pg.Ping(); err != nil {
+		return nil, errs.Wrap(err)
+	}
+	return pg, nil
 }
 
 // NewSQLite returns a DB object to persist data for the application.
-func NewSQLite(path string) (*DB, error) {
+func NewSQLite(path string) (*sql.DB, error) {
 	log.Printf("opening SQLite3 database connection at %s\n", path)
 	db, err := sql.Open("sqlite3", path)
 	if err != nil {
@@ -48,9 +48,7 @@ func NewSQLite(path string) (*DB, error) {
 		return nil, errs.Wrap(err)
 	}
 
-	return &DB{
-		db: db,
-	}, nil
+	return db, nil
 }
 
 // NewPostgres returns a migrated sql.DB with a Postgres database connection

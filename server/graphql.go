@@ -4,6 +4,7 @@ package server
 
 import (
 	"context"
+	"database/sql"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -40,7 +41,7 @@ type graphQLServer struct {
 
 	// Persistence layers
 	kv     persistence.Persistence
-	db     persistence.Database
+	db     *sql.DB
 	cardDB persistence.Database
 
 	// Channels per resource to achieve realtime
@@ -61,8 +62,8 @@ type Conf struct {
 // and graphql connections together
 func NewGraphQLServer(
 	kv persistence.KV,
-	appDB persistence.Database,
-	cardDB persistence.Database,
+	appDB *sql.DB,
+	cardDB *sql.DB,
 	cfg Conf,
 ) (*graphQLServer, error) {
 	// TODO: Remove this redis client and wire chat up to KV interface instead

@@ -27,6 +27,7 @@ func Test_graphQLServer_Signup(t *testing.T) {
 			},
 			want: &User{
 				Username: "shakezula",
+				Token:    nil,
 			},
 			wantErr: false,
 		},
@@ -41,6 +42,12 @@ func Test_graphQLServer_Signup(t *testing.T) {
 			if (err != nil) != tt.wantErr {
 				t.Errorf("graphQLServer.Signup() error = %v, wantErr %v", err, tt.wantErr)
 				return
+			}
+			if diff := cmp.Diff(got, tt.want, cmpopts.IgnoreFields(User{}, "ID")); diff != "" {
+				t.Errorf("failed to get correct user back")
+			}
+			if got.ID == "" {
+				t.Errorf("failed to set UUID on user")
 			}
 		})
 	}
@@ -61,28 +68,51 @@ func Test_graphQLServer_Login(t *testing.T) {
 		{
 			name: "should log in a user and give them a token",
 			args: args{
+				ctx:      context.Background(),
 				username: "shakezula",
-				password: "password",
+				password: "testpassword",
 			},
 			want: &User{
 				Username: "shakezula",
 			},
 			wantErr: false,
 		},
+		{
+			name: "should return an error when user not found",
+			args: args{
+				ctx:      context.Background(),
+				username: "notfound",
+				password: "testpassword",
+			},
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			s := testAPI(t)
+			created, err := s.Signup(tt.args.ctx, "shakezula", "testpassword")
+			if err != nil {
+				t.Errorf("failed to create user for login tests: %s", err)
+			}
 			got, err := s.Login(tt.args.ctx, tt.args.username, tt.args.password)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("graphQLServer.Login() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if diff := cmp.Diff(tt.want, got,
-				cmpopts.IgnoreFields(User{}, "ID", "Token"),
-				cmpopts.IgnoreUnexported(User{}),
-			); diff != "" {
-				t.Errorf("Login: wanted: %+v - got: %+v", tt.want, got)
+			if err == nil {
+				if got == nil {
+					t.Errorf("failed to return user")
+					return
+				}
+				if got.ID == "" {
+					t.Errorf("failed to set ID")
+				}
+				if got.Token == nil {
+					t.Errorf("failed to set token")
+				}
+				if got.Username != created.Username {
+					t.Errorf("failed to set correct username")
+				}
 			}
 		})
 	}

@@ -22,19 +22,23 @@ func (s *graphQLServer) Signup(ctx context.Context, username string, password st
 	}
 	id := uuid.New().String()
 	stmt := `
-	INSERT INTO users (uuid, username, password)
-	VALUES ($1, $2, $3);
+	INSERT INTO "users" (uuid, username, password)
+	VALUES ($1, $2, $3)
+	RETURNING uuid, username;
 	`
-	_, err = s.db.Exec(stmt, id, username, hashed)
+	result, err := s.db.Query(stmt, id, username, hashed)
 	if err != nil {
-		log.Printf("Signup failed: %s", err)
 		return nil, errs.Wrap(err)
 	}
+	defer result.Close()
+	user := &User{}
+	for result.Next() {
+		if err := result.Scan(&user.ID, &user.Username); err != nil {
+			return nil, errs.Wrap(err)
+		}
+	}
 
-	return &User{
-		ID:       id,
-		Username: username,
-	}, nil
+	return user, nil
 }
 
 func (s *graphQLServer) Login(ctx context.Context, username string, password string) (*User, error) {
@@ -45,47 +49,49 @@ func (s *graphQLServer) Login(ctx context.Context, username string, password str
 		return nil, errs.New("must provide a username for authentication")
 	}
 
-	// check passwor
-	log.Printf("attempting: %s - %s", username, password)
-	log.Printf("attempting with db: %+v", s.db)
-	rows, err := s.db.Query(`SELECT uuid, username, password FROM users WHERE username = $1`, username)
+	// TODO: We need to enforce uniqueness as a constraint on username in the DB
+	q := `SELECT "uuid", "username", "password" FROM "users" WHERE username=$1`
+	rows, err := s.db.Query(q, username)
 	if err != nil {
-		log.Printf("failed to get row: %s", err)
-		if errs.Is(err, sql.ErrNoRows) {
-			return nil, nil
+		if err == sql.ErrNoRows {
+			fmt.Println("Zero rows found")
+			return nil, errs.New("user not found")
+		} else {
+			return nil, errs.Wrap(err)
 		}
-		log.Printf("error Is: %s", err)
 	}
+
 	defer rows.Close()
-	var user *User
-	cols, _ := rows.Columns()
-	log.Printf("cols: %s", cols)
-	if rows == nil {
-		log.Printf("ROWS IS NIL")
+	user := &User{}
+	var hash string
+	for rows.Next() {
+		if err := rows.Scan(&user.ID, &user.Username, &hash); err != nil {
+			log.Printf("failed to scan in user at login: %s", err)
+			return nil, errs.Wrap(err)
+		}
 	}
-	if err := rows.Scan(user.ID, user.Username, user.Password); err != nil {
-		log.Printf("failed to scan rows into user: %s", err)
-		return nil, errs.Wrap(err)
-	}
-	log.Printf("#USER: %+v", user)
-	valid := checkPasswordHash(password, *user.Password)
+
+	// check password validity, return if invalid
+	valid := checkPasswordHash(password, hash)
 	if !valid {
 		return nil, errs.New("failed to authenticate")
 	}
-	log.Printf("valid: %+v", valid)
 
 	// we're valid, so generate a new token and assign it to the user
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"username": user.Username,
-		"password": user.Password,
+		"password": password,
 	})
 	t, error := token.SignedString(jwtSecret)
 	if error != nil {
 		fmt.Println(error)
 	}
 
-	// set token in redis for session comparison
-	log.Printf("token generated: %s", t)
+	// set password to blank so we don't return the sensitive material
+	user.Password = nil
+
+	// TODO: set token in redis for session comparison
+
 	user.Token = &t
 	return user, nil
 }
