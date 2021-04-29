@@ -18,6 +18,7 @@ func BoardStateKey(gameID, username string) string {
 // TODO: Need to switch Directory over to Redis storage
 
 func (s *graphQLServer) BoardstatePosted(ctx context.Context, bs InputBoardState) (<-chan *BoardState, error) {
+	log.Printf("attempting to find game: %s", bs.GameID)
 	_, ok := s.Directory[bs.GameID]
 	if !ok {
 		return nil, fmt.Errorf("failed to find game %s", bs.GameID)

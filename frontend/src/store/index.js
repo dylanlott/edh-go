@@ -1,10 +1,10 @@
 import Vuex from 'vuex'
 import Vue from 'vue'
-import api from '@/gqlclient'
 import gql from 'graphql-tag';
-import router from '@/router';
 import Cookies from 'js-cookie';
 import { uuid } from '@/uuid';
+import api from '@/gqlclient'
+import router from '@/router';
 
 const ls = window.localStorage
 
@@ -14,7 +14,6 @@ import {
     boardstates,
     boardstateSubscription,
 } from '@/gqlQueries'
-import { UniqueDirectiveNames } from 'graphql/validation/rules/UniqueDirectiveNames';
 
 Vue.use(Vuex)
 
@@ -50,12 +49,21 @@ const BoardStates = {
             // update each boardstate by player ID
             payload.boardstates.forEach((bs) => {
                 state.boardstates[bs.User.ID] = bs
+                // assign our own boardstate to `self` for easier control
                 if (bs.User.Username == payload.self) {
-                    console.log("setting self: ", bs)
                     state.self = bs
                 }
             })
         },
+        updateBoardstate(state, payload) {
+            if (payload.ID == "" || payload.ID == undefined) {
+                state.error = "boardstate did not have ID"
+                return
+            }
+            
+            // assign boardstates to keys by their ID
+            state.boardstates[payload.ID] = payload
+        }
     },
     actions: {
         mutateBoardStates({ commit }, payload) {
@@ -76,33 +84,38 @@ const BoardStates = {
                 }
             })
             .then((resp) => {
-                console.log("getBoardStates#state", state)
+                console.log('getBoardStates committing: ', resp.data)
                 commit('updateBoardStates', {
                     boardstates: resp.data.boardstates, 
                     self: rootState.User.User.Username,
                 })
-                return Promise.resolve(resp.data)
+                return resp.data
             })
             .catch((err) => {
                 console.error("failed to get boardstates: ", err)
                 commit('error', err)
-                return Promise.reject(err)
+                return err
             })
         },
         // used for subscribing to single board updates
-        subscribeToBoardState({ state, commit }, payload) {
-            console.log("subscribeToBoardStates#payload: ", payload)
+        subscribeToBoardState({ state, commit, rootState }, payload) {
+            // self.GameID == "" since it's not assigned before that query fires
+            // we need to assign that first 
+            state.self.GameID = payload.gameID
             const sub = api.subscribe({
                 query: boardstateSubscription,// TODO: Add the right query  
                 variables: {
-                    gameID: payload.gameID,
-                    userID: payload.userID,
                     inputBoardState: state.self,
                 },
             })
             sub.subscribe({
                 next(data) {
                     console.log('BOARDSTATE SUBSCRIPTION DATA RECEIVED: ', data)
+                    // commit('updateBoardStates', {
+                    //     boardstates: data.data.boardstatePosted,
+                    //     self: rootState.User.User.Username,
+                    // })
+                    commit('updateBoardstate', data.data.boardstatePosted)
                 },
                 error(err) {
                     commit('error', err)
@@ -127,6 +140,7 @@ const Game = {
             PlayerIDs: []
         },
         error: undefined,
+        loading: false,
     },
     mutations: {
         error(state, err) {
@@ -188,6 +202,7 @@ const Game = {
                 sub.subscribe({
                     next(data) {
                         console.log('GAME SUBSCRIPTION DATA RECEIVED: ', data)
+                        console.log('subscribeToGame is updating game with ', data.data.gameUpdated)
                         commit('updateGame', data.data.gameUpdated)
                     },
                     error(err) {
@@ -198,7 +213,6 @@ const Game = {
             })
         },
         joinGame({ commit }, payload) {
-            console.log('joinGame#payload: ', payload)
             api.mutate({
                 mutation: gql`mutation ($InputJoinGame: InputJoinGame) {
                   joinGame(input: $InputJoinGame) {
@@ -206,6 +220,11 @@ const Game = {
                     PlayerIDs {
                       Username
                       ID
+                    }
+                    Turn {
+                        Phase
+                        Player
+                        Number
                     }
                   }
                 }`,
@@ -225,34 +244,39 @@ const Game = {
                 return err
             })
         },
-        createGame({}, payload) {
-            this.$apollo.mutate({
-                mutation: gql`mutation ($inputGame: InputCreateGame!) {
-                  createGame(input: $inputGame){
-                    ID	
-                    CreatedAt 
-                    Turn {
-                      Number
-                      Player
-                      Phase
+        createGame({ commit }, payload) {
+            commit('loading', true)
+            return new Promise((resolve, reject) => {
+                api.mutate({
+                    mutation: gql`mutation ($inputGame: InputCreateGame!) {
+                    createGame(input: $inputGame){
+                        ID	
+                        CreatedAt 
+                        Turn {
+                            Number
+                            Player
+                            Phase
+                        }
+                        PlayerIDs {
+                            Username
+                            ID
+                        }
                     }
-                    PlayerIDs {
-                      Username
-                      ID
+                    }`,
+                    variables: {
+                        inputGame: payload
                     }
-                  }
-                }`,
-                variables: {
-                    inputGame: payload.inputGame
-                }
-            })
-            .then((res) => {
-                router.push({ path: `/games/${res.data.createGame.ID}` })
-            })
-            .catch((err) => {
-                commit('error', err)
-                console.error('got error back: ', err)
-                return err
+                })
+                .then((res) => {
+                    commit('updateGame', res.data.createGame)
+                    router.push({ path: `/games/${res.data.createGame.ID}` })
+                    return resolve(res)
+                })
+                .catch((err) => {
+                    commit('error', 'error creating game')
+                    console.error('error createGame: ', err)
+                    return reject(err)
+                })
             })
         },
     }
@@ -264,19 +288,53 @@ const User = {
             Username: Cookies.get("username") || ls.getItem("username"),
             ID: Cookies.get("userID") || ls.getItem("userID") || uuid(),
             Token: Cookies.get("token") || ls.getItem("token")
-        }
+        },
+        loading: false,
+        error: undefined,
     },
     mutations:{
         setUser(state, payload) {
             state.User.Username = payload.Username
+            Cookies.set("username", payload.Username)
             state.User.ID = payload.ID
+            Cookies.set("userID", payload.ID)
+            state.User.Token = payload.Token
+            Cookies.set("token", payload.Token)
             Cookies.set("user_info", JSON.stringify(payload))
+        },
+        loading(state, bool) {
+            state.loading = bool
+        },
+        error(state, message) {
+            state.error = message
         }
     },
     actions:{
         login({ commit }, payload) {
-            commit('setUser', payload)
-            // TODO: This needs to reach out to server for login and token
+            commit('loading', true)
+            api.mutate({
+                mutation: gql`mutation($username: String!, $password: String!) {
+                    login(username: $username, password: $password) {
+                        Username
+                        ID
+                        Token 
+                    }
+                }`,
+                variables: {
+                    username: payload.username,
+                    password: payload.password,
+                }
+            }) 
+            .then((data) => {
+                commit('setUser', data.data.login)
+                router.push({ path: '/games' });
+                return Promise.resolve(data) 
+            })
+            .catch((err) => {
+                console.error('login error: ', err)
+                commit('error', 'failed to login')
+                Promise.reject(err)
+            })
         },
         logout() {
             // TODO: Clear cookies and localStorage and delete token on server

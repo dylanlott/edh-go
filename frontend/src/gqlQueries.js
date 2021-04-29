@@ -627,8 +627,8 @@ subscription($game: InputGame!) {
 `
 
 export const boardstateSubscription = gql`
-subscription($gameID: String!, $userID: String!, $inputBoardState: InputBoardState!) {
-  boardstatePosted(gameID: $gameID, userID: $userID, boardstate: $inputBoardState) {
+subscription($inputBoardState: InputBoardState!) {
+  boardstatePosted(boardstate: $inputBoardState) {
     User {
       ID
       Username

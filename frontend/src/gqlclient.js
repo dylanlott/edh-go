@@ -5,7 +5,9 @@ import { split } from 'apollo-link';
 import { getMainDefinition } from 'apollo-utilities';
 import { InMemoryCache } from 'apollo-cache-inmemory';
 
-const cache = new InMemoryCache()
+const cache = new InMemoryCache({
+    addTypename: false
+})
 const httpLink = new HttpLink({
     uri: 'http://localhost:8080/graphql',
 });

@@ -5,7 +5,6 @@
       {{ user }}
       {{ boardstates }}
     </pre>
->
     <!-- <pre :key="player.ID" v-for="player in game.PlayerIDs">
       {{ player }}
     </pre> -->
@@ -161,7 +160,7 @@ export default {
     this.$store.dispatch('subscribeToGame', this.$route.params.id)
     this.$store.dispatch('subscribeToBoardState', {
       userID: this.user.User.ID,
-      gameID: this.gameID(),
+      gameID: this.$route.params.id,
     })
   },
   methods: {

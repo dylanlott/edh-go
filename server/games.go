@@ -45,7 +45,6 @@ func (s *graphQLServer) Games(ctx context.Context, gameID *string) ([]*Game, err
 		return nil, errs.New("game [%+v] does not exist", gameID)
 	}
 
-	log.Printf("Games#returning game: %+v", game)
 	return []*Game{game}, nil
 }
 
