@@ -32,20 +32,15 @@ var _ IPersistence = (&graphQLServer{})
 // Games returns a list of Games.
 func (s *graphQLServer) Games(ctx context.Context, gameID *string) ([]*Game, error) {
 	if gameID == nil {
-		games := []*Game{}
-		for _, game := range s.Directory {
-			games = append(games, game)
-		}
-
-		return games, nil
+		return nil, errors.New("not implemented")
 	}
-
-	game, ok := s.Directory[*gameID]
-	if !ok {
-		return nil, errs.New("game [%+v] does not exist", gameID)
+	g := &Game{}
+	err := s.Get(GameKey(*gameID), g)
+	if err != nil {
+		log.Printf("games failed to get game %s: %s", *gameID, err)
+		return nil, fmt.Errorf("failed to get game %s: %s", *gameID, err)
 	}
-
-	return []*Game{game}, nil
+	return []*Game{g}, nil
 }
 
 func (s *graphQLServer) GameUpdated(ctx context.Context, updated InputGame) (<-chan *Game, error) {
@@ -83,13 +78,8 @@ func (s *graphQLServer) GameUpdated(ctx context.Context, updated InputGame) (<-c
 // or remove players, or change other meta informatin about a game.
 // NB: Game _can_ touch boardstate right now, and it probably shouldn't.
 func (s *graphQLServer) UpdateGame(ctx context.Context, new InputGame) (*Game, error) {
-	// check existence of game, fail if not found
-	log.Printf("UpdateGame#input: %+v", new)
-	_, ok := s.Directory[new.ID]
-	if !ok {
-		return nil, errs.New("Game with ID %s does not exist", new.ID)
-	}
 
+	// check existence of game, fail if not found
 	b, err := json.Marshal(new)
 	if err != nil {
 		return nil, errs.New("failed to marshal input game: %s", err)
@@ -100,23 +90,24 @@ func (s *graphQLServer) UpdateGame(ctx context.Context, new InputGame) (*Game, e
 		return nil, errs.New("failed to unmarshal game: %s", err)
 	}
 
+	err = s.Set(GameKey(new.ID), game)
+	if err != nil {
+		return nil, fmt.Errorf("failed to save updated game state: %s", err)
+	}
+
 	s.mutex.Lock()
-	s.Directory[new.ID] = game
 	s.gameChannels[new.ID] <- game
 	s.mutex.Unlock()
 
-	// Call the GameUpdated event with the input game
-	s.GameUpdated(ctx, new)
+	go s.GameUpdated(ctx, new)
 
 	return game, nil
 }
 
 // JoinGame ...
 func (s *graphQLServer) JoinGame(ctx context.Context, input *InputJoinGame) (*Game, error) {
-	log.Printf("InputJoinGame: %+v", input)
 	// TODO: Check context for User auth and append user info that way
 	// TODO: We check for game existence a lot, we should probably make this a function
-	s.mutex.RLock()
 	if input.User.ID == nil {
 		return nil, errors.New("must provide a user ID to join a game")
 	}
@@ -124,12 +115,11 @@ func (s *graphQLServer) JoinGame(ctx context.Context, input *InputJoinGame) (*Ga
 		return nil, errors.New("must provide a username to join a game")
 	}
 
-	game, ok := s.Directory[input.ID]
-	if !ok {
-		log.Printf("game lookup for id %s failed", input.ID)
-		return nil, errs.New("Game with ID %s does not exist", input.ID)
+	game := &Game{}
+	err := s.Get(GameKey(input.ID), &game)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get game to join: %s", err)
 	}
-	s.mutex.RUnlock()
 
 	user := &User{
 		Username: input.User.Username,
@@ -185,8 +175,7 @@ func (s *graphQLServer) JoinGame(ctx context.Context, input *InputJoinGame) (*Ga
 	game.PlayerIDs = append(game.PlayerIDs, user)
 
 	// set board state in Redis
-	boardKey := BoardStateKey(game.ID, user.Username)
-	err = s.Set(boardKey, bs)
+	err = s.Set(BoardStateKey(game.ID, user.Username), bs)
 	if err != nil {
 		log.Printf("error persisting boardstate into redis: %s", err)
 		return nil, err
@@ -204,9 +193,9 @@ func (s *graphQLServer) JoinGame(ctx context.Context, input *InputJoinGame) (*Ga
 		return nil, err
 	}
 
-	log.Printf("JoinGame#UpdateGame: %+v", ig)
-	s.UpdateGame(ctx, ig)
-
+	log.Printf("unmarshaled input game: %+v", ig)
+	go s.UpdateGame(ctx, ig)
+	log.Printf("returning game: %+v", game)
 	return game, nil
 }
 
@@ -302,33 +291,31 @@ func (s *graphQLServer) CreateGame(ctx context.Context, inputGame InputCreateGam
 		s.mutex.Unlock()
 	}
 
-	log.Printf("createGame#game being set: %+v", g)
 	// Set game in directory for access
 	s.mutex.Lock()
 	s.gameChannels[g.ID] = make(chan *Game, 1)
-	s.Directory[g.ID] = g
 	s.mutex.Unlock()
 
-	// persist it to Redis
-	err := s.Set(g.ID, g)
+	// set *Game to Redis
+	err := s.Set(GameKey(g.ID), g)
 	if err != nil {
-		log.Printf("error setting Game to redis: %+v\n", err)
+		return nil, fmt.Errorf("failed to save created game to redis: %s", err)
 	}
 
 	return g, nil
 }
 
-func getPlayerIDs(inputUsers []*InputUser) []*User {
-	var u []*User
-	for _, i := range inputUsers {
-		u = append(u, &User{
-			ID:       *i.ID,
-			Username: i.Username,
-		})
-	}
+// func getPlayerIDs(inputUsers []*InputUser) []*User {
+// 	var u []*User
+// 	for _, i := range inputUsers {
+// 		u = append(u, &User{
+// 			ID:       *i.ID,
+// 			Username: i.Username,
+// 		})
+// 	}
 
-	return u
-}
+// 	return u
+// }
 
 func getCards(inputCards []*InputCard) []*Card {
 	cardList := []*Card{}

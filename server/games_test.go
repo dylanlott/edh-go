@@ -198,7 +198,7 @@ func TestJoinGame(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			s := testAPI(t)
 
-			_, err := s.CreateGame(context.Background(), InputCreateGame{
+			game, err := s.CreateGame(context.Background(), InputCreateGame{
 				ID: gameID,
 				Players: []*InputBoardState{
 					{
@@ -224,23 +224,14 @@ func TestJoinGame(t *testing.T) {
 			if err != nil {
 				t.Errorf("failed to get host game: %+v\n", err)
 			}
-
+			t.Logf("created game to join: %+v", game)
 			joined, err := s.JoinGame(context.Background(), &tt.input)
-			// if err != nil {
-			// 	if tt.err != nil {
-			// 		if diff := cmp.Diff(tt.err, err); diff != "" {
-			// 			t.Errorf("wanted: %+v - got: %+v\n", tt.want, err)
-			// 		}
-			// 	}
-			// }
-
 			if tt.want != nil {
 				if diff := cmp.Diff(tt.want, joined, cmpopts.IgnoreFields(Game{}, "CreatedAt")); diff != "" {
 					t.Errorf("wanted: %+v - got: %+v\n", tt.want, diff)
 				}
 			}
-
-			t.Logf("joined successfully: %+v\n", joined)
+			log.Printf("Test - JoinGame#joined: %+v", joined)
 		})
 	}
 }
@@ -414,7 +405,9 @@ func TestUpdateGame(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			s := testAPI(t)
 			g, err := s.CreateGame(tt.args.ctx, *seedInputGame)
-
+			if err != nil {
+				t.Errorf("failed to create test host")
+			}
 			got, err := s.UpdateGame(tt.args.ctx, tt.args.new)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("graphQLServer.UpdateGame() error = %v, wantErr %v", err, tt.wantErr)
@@ -431,8 +424,7 @@ func TestUpdateGame(t *testing.T) {
 			log.Printf("GAME: %+v", game)
 			diff2 := cmp.Diff(game, tt.want, cmpopts.IgnoreFields(Game{}, "CreatedAt"))
 			if diff2 != "" {
-				t.Logf("[DIFF] %s", diff)
-				t.Errorf("failed to emit game on channels correctly")
+				t.Errorf("failed to emit game on channels correctly: diff %+v", diff2)
 			}
 		})
 	}

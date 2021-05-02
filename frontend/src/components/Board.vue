@@ -1,9 +1,9 @@
 <template>
   <div class="board shell">
     <pre>
-      {{ game }}
-      {{ user }}
-      {{ boardstates }}
+      {{ game.Turn }}
+      <!-- {{ user }}
+      {{ boardstates }} -->
     </pre>
     <!-- <pre :key="player.ID" v-for="player in game.PlayerIDs">
       {{ player }}
@@ -12,9 +12,9 @@
 
   <!-- LIFE TRACKER -->
   <div class="columns">
-    <!-- <div class="shell column is-9">
-      <TurnTracker gameID="GameID" />
-    </div> -->
+    <div class="shell column is-9">
+      <TurnTracker :game="game" />
+    </div>
     <!-- <div class="shell column is-3">
       <div class="title is-4">{{ self.boardstate.Life }}</div>
       <button class="button is-small" @click="increaseLife()">Increase</button>
@@ -138,14 +138,12 @@
 </template>
 <script>
 import _ from 'lodash';
-// import gql from 'graphql-tag';
 import draggable from 'vuedraggable';
 import Card from '@/components/Card';
 import PlayerState from '@/components/PlayerState.vue';
 import SelfState from '@/components/SelfState.vue';
 import Opponents from '@/components/Opponents.vue'
-// import TurnTracker from '@/components/TurnTracker.vue';
-// import router from '@/router'
+import TurnTracker from '@/components/TurnTracker.vue';
 import { mapState } from 'vuex'
 
 export default {
@@ -155,8 +153,8 @@ export default {
     };
   },
   created () {
-    this.$store.dispatch('getGame', this.$route.params.id)
-    this.$store.dispatch('getBoardStates', this.$route.params.id)
+    // this.$store.dispatch('getGame', this.$route.params.id)
+    // this.$store.dispatch('getBoardStates', this.$route.params.id)
     this.$store.dispatch('subscribeToGame', this.$route.params.id)
     this.$store.dispatch('subscribeToBoardState', {
       userID: this.user.User.ID,
@@ -168,8 +166,8 @@ export default {
       return this.$route.params.id
     },
     handleActivity(val) {
-      return
       // console.log('logging activity: ', val)
+      return
     },
   },
   watch: {
@@ -196,6 +194,7 @@ export default {
     PlayerState,
     SelfState,
     Opponents,
+    TurnTracker,
   },
 };
 </script>

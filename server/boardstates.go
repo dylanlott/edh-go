@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 
+	redis "github.com/go-redis/redis/v7"
 	"github.com/zeebo/errs"
 )
 
@@ -18,10 +19,10 @@ func BoardStateKey(gameID, username string) string {
 // TODO: Need to switch Directory over to Redis storage
 
 func (s *graphQLServer) BoardstatePosted(ctx context.Context, bs InputBoardState) (<-chan *BoardState, error) {
-	log.Printf("attempting to find game: %s", bs.GameID)
-	_, ok := s.Directory[bs.GameID]
-	if !ok {
-		return nil, fmt.Errorf("failed to find game %s", bs.GameID)
+	g := &Game{}
+	err := s.Get(GameKey(bs.GameID), g)
+	if err != nil {
+
 	}
 
 	board, err := boardStateFromInput(bs)
@@ -45,37 +46,41 @@ func (s *graphQLServer) BoardstatePosted(ctx context.Context, bs InputBoardState
 }
 
 func (s *graphQLServer) UpdateBoardState(ctx context.Context, input InputBoardState) (*BoardState, error) {
-	_, ok := s.Directory[input.GameID]
-	if !ok {
-		return nil, fmt.Errorf("failed to updated boardstate: game does not exist: %s", input.GameID)
-	}
+	// immediately broadcast updated boardstate
+	go s.BoardstatePosted(ctx, input)
 
 	bs, err := boardStateFromInput(input)
 	if err != nil {
 		return nil, errs.Wrap(err)
 	}
 
+	// fetch game or fail if we can't find it
+	game := &Game{}
+	if err := s.Get(GameKey(input.GameID), &game); err != nil {
+		if err == redis.Nil {
+			return nil, fmt.Errorf("game %s does not exist", input.GameID)
+		}
+		return nil, fmt.Errorf("failed to get game %s: %s", input.GameID, err)
+	}
+
+	// set boardstate into redis
 	if err := s.Set(BoardStateKey(input.GameID, input.User.Username), bs); err != nil {
 		return nil, fmt.Errorf("failed to persist boardstate: %s", err)
 	}
-
-	s.BoardstatePosted(ctx, input)
 
 	return bs, nil
 }
 
 // Boardstates queries Redis for different boardstates per player or game
 func (s *graphQLServer) Boardstates(ctx context.Context, gameID string, username *string) ([]*BoardState, error) {
-	game, ok := s.Directory[gameID]
-	if game == nil {
-		log.Printf("game is nil: %s - %+v", gameID, s.Directory)
-		return nil, errs.New("game does not exist")
+	game := &Game{}
+	err := s.Get(GameKey(gameID), &game)
+	if err != nil {
+		if err == redis.Nil {
+			return nil, fmt.Errorf("game %s does not exist", gameID)
+		}
+		return nil, fmt.Errorf("failed to find game %s to update boardstates: %s", gameID, err)
 	}
-	if !ok {
-		log.Printf("game %s does not exist: %+v", gameID, s.Directory)
-		return nil, errs.New("game does not exist")
-	}
-
 	// if username is not provided, send all
 	if username == nil {
 		boardstates := []*BoardState{}

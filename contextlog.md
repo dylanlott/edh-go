@@ -420,3 +420,21 @@ But I still can't figure out why half the time it correctly applies migrations a
 
 
 
+## 30 APR 2021
+
+Game subscription is being updated correctly, however the Game is either
+not being stored correctly or not being retrieved correctly. 
+
+We need to make sure that we only store and retrieve game data and board
+state data from redis. 
+
+This has the benefit of giving us hard restart persistence through Redis.
+This has the drawback of requiring transaction handling for redis updates.
+
+## 1 May 2021
+
+Okay so basically decided I need to completely remove any concept of the Directory from the app to clear up any confusion around where or when games and boardstates are being stored and retrieved
+
+I'll be working on that refactor today, addressing the points from yesterday's log entry while removing the Directory from graphQL server.
+
+References: https://en.wikipedia.org/wiki/Hexspeak

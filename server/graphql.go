@@ -36,15 +36,16 @@ type graphQLServer struct {
 	// TODO: Remove redisClient and switch over to our Persistence interface
 	redisClient *redis.Client
 
-	// Directory maps game ID's to a Game pointer
-	Directory map[string]*Game
-
 	// Persistence layers
 	kv     persistence.Persistence
 	db     *sql.DB
 	cardDB persistence.Database
 
-	// Channels per resource to achieve realtime
+	// Channels per resource to achieve realtime.
+	// Game, Board, and Message channels are required for a Game to be running.
+	// TODO: Channels are only stored in memory.
+	// If the server crashes, we'll need to setup all the channels for
+	// existing games again.
 	gameChannels    map[string]chan *Game
 	boardChannels   map[string]chan *BoardState
 	messageChannels map[string]chan *Message
@@ -93,7 +94,6 @@ func NewGraphQLServer(
 		userChannels:    map[string]chan string{},
 		gameChannels:    map[string]chan *Game{},
 		boardChannels:   map[string]chan *BoardState{},
-		Directory:       make(map[string]*Game),
 	}, nil
 }
 

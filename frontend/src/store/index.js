@@ -11,15 +11,18 @@ const ls = window.localStorage
 import {
     gameQuery,
     gameUpdateQuery,
+    updateGame,
     boardstates,
     boardstateSubscription,
 } from '@/gqlQueries'
+import { updateBoardStateQuery } from '../gqlQueries';
 
 Vue.use(Vuex)
 
 const BoardStates = {
     state: {
-        // boardstates is a map of user ID's to BoardStates.
+        // self holds the player's boardstates and acts like a soft cache
+        // to the player's upstream boardstate
         self: {
             User: {
                 Username: "",
@@ -37,6 +40,7 @@ const BoardStates = {
             Controlled: [],
             Counters: [],
         },
+        // boardstates holds all the player boardstates
         boardstates: {},
         error: undefined
     },
@@ -44,8 +48,8 @@ const BoardStates = {
         error(state, payload) {
             state.error = payload
         },
+        // updates all boardstates from a general game query
         updateBoardStates(state, payload) {
-            console.log('updateBoardStates payload: ', payload)
             // update each boardstate by player ID
             payload.boardstates.forEach((bs) => {
                 state.boardstates[bs.User.ID] = bs
@@ -55,23 +59,29 @@ const BoardStates = {
                 }
             })
         },
+        // updates a single boardstate
         updateBoardstate(state, payload) {
             if (payload.ID == "" || payload.ID == undefined) {
                 state.error = "boardstate did not have ID"
                 return
             }
-            
+
             // assign boardstates to keys by their ID
             state.boardstates[payload.ID] = payload
         }
     },
     actions: {
         mutateBoardStates({ commit }, payload) {
-            // commit('update', payload)
-            // Should we put this logic here or just update all boardstates
-            // and make view logic handle which opponent sees what?
-            // If we wanted to keep it separate, we could do 
-            // different commit 
+            api.mutate({
+                mutation: updateBoardStateQuery,
+                variables: payload,
+            })
+                .then((resp) => {
+                    console.log('mutateBoardState: resp: ', resp)
+                })
+                .catch((err) => {
+                    console.error('mutateBoardState: error updating boardstate: ', err)
+                })
             // commit('updateSelf', payload)
             // commit('updateOpponents', payload)
         },
@@ -83,19 +93,18 @@ const BoardStates = {
                     gameID: gameID
                 }
             })
-            .then((resp) => {
-                console.log('getBoardStates committing: ', resp.data)
-                commit('updateBoardStates', {
-                    boardstates: resp.data.boardstates, 
-                    self: rootState.User.User.Username,
+                .then((resp) => {
+                    commit('updateBoardStates', {
+                        boardstates: resp.data.boardstates,
+                        self: rootState.User.User.Username,
+                    })
+                    return resp.data
                 })
-                return resp.data
-            })
-            .catch((err) => {
-                console.error("failed to get boardstates: ", err)
-                commit('error', err)
-                return err
-            })
+                .catch((err) => {
+                    console.error("failed to get boardstates: ", err)
+                    commit('error', err)
+                    return err
+                })
         },
         // used for subscribing to single board updates
         subscribeToBoardState({ state, commit, rootState }, payload) {
@@ -110,11 +119,6 @@ const BoardStates = {
             })
             sub.subscribe({
                 next(data) {
-                    console.log('BOARDSTATE SUBSCRIPTION DATA RECEIVED: ', data)
-                    // commit('updateBoardStates', {
-                    //     boardstates: data.data.boardstatePosted,
-                    //     self: rootState.User.User.Username,
-                    // })
                     commit('updateBoardstate', data.data.boardstatePosted)
                 },
                 error(err) {
@@ -144,14 +148,17 @@ const Game = {
     },
     mutations: {
         error(state, err) {
-            state.error = err 
+            state.error = err
         },
         updateGame(state, game) {
             state.game.ID = game.ID
-            state.game.PlayerIDs = game.PlayerIDs.map((v) => {
-                return { Username: v.Username, ID: v.ID }
-            }),
+            // TODO: Figure out if this players map is still necessary 
+            // state.game.PlayerIDs = game.PlayerIDs.map((v) => {
+            //     return { Username: v.Username, ID: v.ID }
+            // }),
+            state.game.PlayerIDs = game.PlayerIDs
             state.game.Turn = game.Turn
+            console.log('updateGame mutation committed: ', state.game)
         },
         updateTurn(state, turn) {
             state.game.Turn = turn
@@ -186,23 +193,31 @@ const Game = {
                     console.log('no game received from subscription')
                     return
                 }
+
+                // PROBLEM:
+                // Okay, so this isn't the problem. The server is not correctly 
+                // retrieving the game. Which means it's not being properly
+                // set during update. 
+
+                // SOLUTION: 
+                // Make sure that Games are only ever updated,
+                // set, and queried from redis and remove the Directory
+                // concept entirely.
+
+                // NB: This will help in preparation with making the server
+                // able to handle hard restarts with Redis persistence.
+                console.log('setting turn ? ', data.data.games[0].Turn)
                 commit('updateGame', data.data.games[0])
+                console.log('subscribing to games with state: ', state.game)
                 const sub = api.subscribe({
                     query: gameUpdateQuery,// nb: this is where we use the subscription { } query
                     variables: {
-                        game: {
-                            ID: ID,
-                            PlayerIDs: state.game.PlayerIDs.map((v) => {
-                                return { Username: v.Username, ID: v.ID }
-                            }),
-                            Turn: state.Turn,
-                        }
+                        game: state.game
                     }
                 })
                 sub.subscribe({
                     next(data) {
-                        console.log('GAME SUBSCRIPTION DATA RECEIVED: ', data)
-                        console.log('subscribeToGame is updating game with ', data.data.gameUpdated)
+                        console.log('game subscription data received: ', data.data.gameUpdated)
                         commit('updateGame', data.data.gameUpdated)
                     },
                     error(err) {
@@ -233,7 +248,6 @@ const Game = {
                 }
             })
             .then((res) => {
-                console.log('joinGame#res: ', res)
                 commit('updateGame', res.data.joinGame)
                 router.push({ path: `/games/${res.data.joinGame.ID}` })
                 return Promise.resolve(res)
@@ -279,8 +293,27 @@ const Game = {
                 })
             })
         },
-    }
+        updateGame({ commit }, payload) {
+            console.log('updateGame action hit: ', payload)
+            return api.mutate({
+                mutation: updateGame,
+                variables: {
+                    input: payload,
+                }
+            })
+            .then((data) => {
+                console.log('hit updateGame')
+                commit('updateGame', data.data.updateGame)
+                return data
+            })
+            .catch((err) => {
+                console.error('updateGame failed: ', err)
+                return err
+            })
+        }
+    },
 }
+
 
 const User = {
     state: {
@@ -292,7 +325,7 @@ const User = {
         loading: false,
         error: undefined,
     },
-    mutations:{
+    mutations: {
         setUser(state, payload) {
             state.User.Username = payload.Username
             Cookies.set("username", payload.Username)
@@ -309,7 +342,7 @@ const User = {
             state.error = message
         }
     },
-    actions:{
+    actions: {
         login({ commit }, payload) {
             commit('loading', true)
             api.mutate({
@@ -324,11 +357,11 @@ const User = {
                     username: payload.username,
                     password: payload.password,
                 }
-            }) 
+            })
             .then((data) => {
                 commit('setUser', data.data.login)
                 router.push({ path: '/games' });
-                return Promise.resolve(data) 
+                return Promise.resolve(data)
             })
             .catch((err) => {
                 console.error('login error: ', err)

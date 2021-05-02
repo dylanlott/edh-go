@@ -157,6 +157,7 @@ export const updateBoardStateQuery = gql`
     updateBoardState(input: $boardstate) {
       User {
         Username
+        ID
       }
       GameID
       Life
@@ -790,6 +791,23 @@ query ($gameID: String) {
     Turn {
       Player
       Phase
+      Number
+    }
+  }
+}
+`
+
+export const updateGame = gql`
+mutation ($input: InputGame!) {
+  updateGame(input: $input) {
+    ID
+    PlayerIDs {
+      ID
+      Username
+    }
+    Turn {
+      Phase
+      Player
       Number
     }
   }

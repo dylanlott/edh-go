@@ -21,7 +21,6 @@ func testAPI(t *testing.T) *graphQLServer {
 	if err != nil {
 		t.Errorf("failed to get kv from redis: %s", err)
 	}
-
 	appDB, err := persistence.NewAppDatabase("../persistence/migrations/", cfg.PostgresURL)
 	if err != nil {
 		t.Errorf("failed to get migrated app instance: %s", err)
@@ -30,5 +29,14 @@ func testAPI(t *testing.T) *graphQLServer {
 	if err != nil {
 		t.Errorf("failed to create new test server: %+v", err)
 	}
+
+	// prepare server after everything is connected
+	// - clear redis before each test for clear environment
+	// - TODO: clear postgresql before returning TestAPI
+	_, err = s.redisClient.Do("FLUSHALL").Result()
+	if err != nil {
+		t.Fatalf("failed to flush redis for tests: %s", err)
+	}
+
 	return s
 }
