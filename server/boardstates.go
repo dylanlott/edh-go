@@ -47,11 +47,20 @@ func (s *graphQLServer) BoardstatePosted(ctx context.Context, bs InputBoardState
 
 func (s *graphQLServer) UpdateBoardState(ctx context.Context, input InputBoardState) (*BoardState, error) {
 	// immediately broadcast updated boardstate
-	_, err := s.BoardstatePosted(ctx, input)
+	s.BoardstatePosted(ctx, input)
 
 	bs, err := boardStateFromInput(input)
 	if err != nil {
 		return nil, errs.Wrap(err)
+	}
+
+	// fetch game or fail if we can't find it
+	game := &Game{}
+	if err := s.Get(GameKey(input.GameID), &game); err != nil {
+		if err == redis.Nil {
+			return nil, fmt.Errorf("game %s does not exist", input.GameID)
+		}
+		return nil, fmt.Errorf("failed to get game %s: %s", input.GameID, err)
 	}
 
 	// set boardstate into redis
