@@ -6,4 +6,4 @@ go:
 service:
   - redis-server
 
-script: make short
+script: make test-api && make build
