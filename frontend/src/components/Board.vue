@@ -100,7 +100,7 @@
               </div>
             </draggable>
           </div>
-          <div class="column library is-one-quarter" @click="$store.dispatch('draw', boardstates.self)">
+          <div class="column library is-one-quarter" @click="draw()">
             <p class="title is-5">Library</p>
             <draggable
               class="column card-wrapper"
@@ -157,12 +157,12 @@ export default {
   name: 'board',
   created () {
     this.$store.dispatch('getBoardStates', this.$route.params.id)
-    .then((resp) => this.$store.dispatch('subscribeToBoardState', {
+    .then(() => this.$store.dispatch('subscribeToBoardState', {
       userID: this.user.User.ID,
       gameID: this.$route.params.id,
     }))
     this.$store.dispatch('getGame', this.$route.params.id)
-    .then((resp) => this.$store.dispatch('subscribeToGame', this.$route.params.id))
+    .then(() => this.$store.dispatch('subscribeToGame', this.$route.params.id))
   },
   methods: {
     handleActivity(val) {
@@ -171,20 +171,35 @@ export default {
     },
     mutateBoardState() {
       console.log('mutate board state hit')
+      this.$store.dispatch('mutateBoardState', this.boardstates.self)
     },
+    draw() {
+      // NB: Not sure if I should handle this here or as an action. 
+      // Both ways have their pros and cons, and I've implemented it 
+      // as both.
+      const bs = Object.assign({}, this.boardstates.self)
+      if (bs.Library.length < 1) {
+        console.error('you lose the game - cannot draw from an empty library')
+      }
+      const card = bs.Library.shift()
+      bs.Hand.push(card)
+      this.$store.dispatch("mutateBoardState", bs)
+    }
   },
   watch: {
-    // self: {
-    //   handler (newVal, oldVal) {
-    //     // we don't want to mutate state with this, 
-    //     // or else we'll get infinite loops.
-    //     // This is only where we should emit ActivityLog events.
-    //     // this.handleActivity(newVal)
+    // TODO: Need to update `self` to whatever the new variable is with state
+    boardstates: {
+      handler (newVal, oldVal) {
+        console.table(newVal, oldVal)
+        // we don't want to mutate state with this, 
+        // or else we'll get infinite loops.
+        // This is only where we should emit ActivityLog events.
+        // this.handleActivity(newVal)
 
-    //     // TODO: Call mutate board state action here.
-    //   },
-    //   deep: true
-    // }
+        // TODO: Call mutate board state action here.
+      },
+      deep: true
+    }
   },
   computed: mapState({
     game: state => state.Game,

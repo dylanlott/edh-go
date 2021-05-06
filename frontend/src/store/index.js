@@ -65,13 +65,16 @@ const BoardStates = {
                 state.error = "boardstate did not have ID"
                 return
             }
-
-            // assign boardstates to keys by their ID
             state.boardstates[payload.ID] = payload
+        },
+        updateSelf(state, payload) {
+            const bs = Object.assign(state.self, payload)
+            console.log('updateSelf#bs updated after merge: ', bs)
+            state.self = bs
         }
     },
     actions: {
-        draw({ commit }, boardstate) {
+        draw({ commit, dispatch }, boardstate) {
             const bs = Object.assign({}, boardstate)
             if (bs.Library.length < 1) {
                 // handle issue
@@ -81,14 +84,18 @@ const BoardStates = {
             const card = bs.Library.shift()
             bs.Hand.push(card)
             console.log("boardstate after draw: ", bs)
+            dispatch('mutateBoardState', bs)
         },
-        mutateBoardStates({ commit }, payload) {
+        mutateBoardState({ commit }, payload) {
             api.mutate({
                 mutation: updateBoardStateQuery,
-                variables: payload,
+                variables: {
+                    boardstate: payload,
+                },
             })
                 .then((resp) => {
-                    console.log('mutateBoardState: resp: ', resp)
+                    console.log('### MUTATE BOARD STATE: resp: ', resp)
+                    commit('updateSelf', resp.data.updateBoardState)
                 })
                 .catch((err) => {
                     console.error('mutateBoardState: error updating boardstate: ', err)
