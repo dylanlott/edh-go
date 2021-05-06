@@ -1,7 +1,7 @@
 <template>
   <div class="board shell">
     <pre>
-      {{ game.Turn }}
+      <!-- {{ game.Turn }} -->
       <!-- {{ user }}
       {{ boardstates }} -->
     </pre>
@@ -11,12 +11,15 @@
     <!-- <h1 class="title shell">{{ gameID }}</h1> -->
 
   <!-- LIFE TRACKER -->
+  <!-- TODO -->
+
+  <!-- TURN TRACKER -->
   <div class="columns">
     <div class="shell column is-9">
       <TurnTracker :game="game" />
     </div>
     <!-- <div class="shell column is-3">
-      <div class="title is-4">{{ self.boardstate.Life }}</div>
+      <div class="title is-4">{{ boardstates.self.Life }}</div>
       <button class="button is-small" @click="increaseLife()">Increase</button>
       <button class="button is-small" @click="decreaseLife()">Decrease</button>
     </div> -->
@@ -46,13 +49,15 @@
 
     <!-- <hr /> -->
 
-    <!-- <div class="self shell">
+    <div class="self shell">
       <h1 class="title">
-        {{ self.boardstate.User.username }}
-        <p class="subtitle">{{ 
-          self.boardstate.Commander ? self.boardstate.Commander[0].Name : ""
-        }}</p>
+        {{ boardstates.self.User.username }}
+        <!-- <p class="subtitle">{{ 
+          boardstates.self.Commander ? boardstates.self.Commander[0].Name : ""
+        }}</p> -->
       </h1>
+
+      {{ boardstates.self }}
 
       <div>
         <div class="columns">
@@ -61,14 +66,14 @@
             <draggable
               class="card-wrapper bordered battlefield"
               group="board" 
-              v-model="self.boardstate.Field"
+              v-model="boardstates.self.Field"
               @start="drag = true"
               @end="drag = false"
               @change="mutateBoardState()"
             >
               <div 
               @click="tap(card)"
-              v-for="(card, i) in self.boardstate.Field" 
+              v-for="(card, i) in boardstates.self.Field" 
               :key="i" 
               >
                 <Card v-bind="card" />
@@ -78,18 +83,19 @@
         </div>
         <div class="columns">
         </div>
+
         <div class="columns">
           <div class="column hand is-three-quarters">
             <p class="title is-4">Hand</p>
             <draggable
               class="columns card-wrapper"
-              v-model="self.boardstate.Hand"
+              v-model="boardstates.self.Hand"
               group="board" 
               @start="drag = true"
               @end="drag = false"
               @change="mutateBoardState()"
             >
-              <div class="column mtg-card" v-for="(card, i) in self.boardstate.Hand" :key="i">
+              <div class="column mtg-card" v-for="(card, i) in boardstates.self.Hand" :key="i">
                 <Card v-bind="card"></Card>
               </div>
             </draggable>
@@ -98,13 +104,13 @@
             <p class="title is-5">Library</p>
             <draggable
               class="column card-wrapper"
-              v-model="self.boardstate.Library"
+              v-model="boardstates.self.Library"
               group="board" 
               @start="drag = true"
               @end="drag = false"
               @change="mutateBoardState()"
             >
-              <div v-for="card in self.boardstate.Library" :key="card.id">
+              <div v-for="card in boardstates.self.Library" :key="card.id">
                 <Card v-bind="card" hidden="true"/>
               </div>
             </draggable>
@@ -112,7 +118,7 @@
         </div>
         <hr />
       </div>
-    </div> -->
+    </div>
 
     <!-- CONTROL PANEL -->
     <!-- <div class="shell controlpanel columns">
@@ -148,10 +154,6 @@ import { mapState } from 'vuex'
 
 export default {
   name: 'board',
-  data() {
-    return {
-    };
-  },
   created () {
     // this.$store.dispatch('getGame', this.$route.params.id)
     // this.$store.dispatch('getBoardStates', this.$route.params.id)
@@ -166,22 +168,25 @@ export default {
       return this.$route.params.id
     },
     handleActivity(val) {
-      // console.log('logging activity: ', val)
+      console.log('logging activity: ', val)
       return
     },
+    mutateBoardState() {
+      console.log('mutate board state hit')
+    }
   },
   watch: {
-    self: {
-      handler (newVal, oldVal) {
-        // we don't want to mutate state with this, 
-        // or else we'll get infinite loops.
-        // This is only where we should emit ActivityLog events.
-        // this.handleActivity(newVal)
+    // self: {
+    //   handler (newVal, oldVal) {
+    //     // we don't want to mutate state with this, 
+    //     // or else we'll get infinite loops.
+    //     // This is only where we should emit ActivityLog events.
+    //     // this.handleActivity(newVal)
 
-        // TODO: Call mutate board state action here.
-      },
-      deep: true
-    }
+    //     // TODO: Call mutate board state action here.
+    //   },
+    //   deep: true
+    // }
   },
   computed: mapState({
     game: state => state.Game,

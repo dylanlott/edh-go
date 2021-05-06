@@ -15,6 +15,7 @@ require (
 	github.com/jmoiron/sqlx v1.3.3
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/mattn/go-sqlite3 v1.14.6
+	github.com/opennota/check v0.0.0-20180911053232-0c771f5545ff // indirect
 	github.com/rs/cors v1.7.0
 	github.com/segmentio/ksuid v1.0.3
 	github.com/stretchr/testify v1.7.0

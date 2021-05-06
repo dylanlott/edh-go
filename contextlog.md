@@ -437,4 +437,23 @@ Okay so basically decided I need to completely remove any concept of the Directo
 
 I'll be working on that refactor today, addressing the points from yesterday's log entry while removing the Directory from graphQL server.
 
-References: https://en.wikipedia.org/wiki/Hexspeak
+NB: https://en.wikipedia.org/wiki/Hexspeak
+
+* Fixed issues in Game update lifecycle
+* Removed the entire concept of the Game Directory from the app 
+* Made all Game checks go through redis instead of the Directory 
+   * The disconnect between Directory and Redis was already causing issues
+
+Future Ideas: 
+* Might be worth treating the Game Log events as a PubSub through Redis
+* Would handle performance pressure easier that way 
+* But would couple us more tightly to Redis
+* Might not even be necessary for a while if we just interact directly with Postgres
+* Another option could be a simple JSON serverless AWS function
+
+### Daily Notes
+Ran a deploy today after I got all the tests passing. This is a pretty sturdy 
+dev environment for a hobby project, and I have a pretty high confidence in doing deploys right now. 
+
+Next up: Need to update BoardStates UI and add back the gameplay interface.
+
