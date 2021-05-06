@@ -55,10 +55,10 @@ func (s *graphQLServer) GameUpdated(ctx context.Context, updated InputGame) (<-c
 		return nil, errs.New("failed to unmarshal game: %s", err)
 	}
 
-	s.mutex.Lock()
 	// assign the game to the directory for finding
 	// create a new gameChannel to announce Game updates over
 	games := make(chan *Game, 1)
+	s.mutex.Lock()
 	// set the gameChannels to have the new receiving channel
 	s.gameChannels[updated.ID] = games
 	// announce the game over the GameChannels
@@ -78,6 +78,7 @@ func (s *graphQLServer) GameUpdated(ctx context.Context, updated InputGame) (<-c
 // or remove players, or change other meta informatin about a game.
 // NB: Game _can_ touch boardstate right now, and it probably shouldn't.
 func (s *graphQLServer) UpdateGame(ctx context.Context, new InputGame) (*Game, error) {
+	s.GameUpdated(ctx, new)
 
 	// check existence of game, fail if not found
 	b, err := json.Marshal(new)
@@ -94,12 +95,6 @@ func (s *graphQLServer) UpdateGame(ctx context.Context, new InputGame) (*Game, e
 	if err != nil {
 		return nil, fmt.Errorf("failed to save updated game state: %s", err)
 	}
-
-	s.mutex.Lock()
-	s.gameChannels[new.ID] <- game
-	s.mutex.Unlock()
-
-	go s.GameUpdated(ctx, new)
 
 	return game, nil
 }
@@ -304,18 +299,6 @@ func (s *graphQLServer) CreateGame(ctx context.Context, inputGame InputCreateGam
 
 	return g, nil
 }
-
-// func getPlayerIDs(inputUsers []*InputUser) []*User {
-// 	var u []*User
-// 	for _, i := range inputUsers {
-// 		u = append(u, &User{
-// 			ID:       *i.ID,
-// 			Username: i.Username,
-// 		})
-// 	}
-
-// 	return u
-// }
 
 func getCards(inputCards []*InputCard) []*Card {
 	cardList := []*Card{}
