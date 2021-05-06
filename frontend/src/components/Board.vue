@@ -57,7 +57,7 @@
         }}</p> -->
       </h1>
 
-      {{ boardstates.self }}
+      <!-- {{ boardstates.self }} -->
 
       <div>
         <div class="columns">
@@ -100,7 +100,7 @@
               </div>
             </draggable>
           </div>
-          <div class="column library is-one-quarter" @click="draw()">
+          <div class="column library is-one-quarter" @click="$store.dispatch('draw', boardstates.self)">
             <p class="title is-5">Library</p>
             <draggable
               class="column card-wrapper"
@@ -150,30 +150,28 @@ import PlayerState from '@/components/PlayerState.vue';
 import SelfState from '@/components/SelfState.vue';
 import Opponents from '@/components/Opponents.vue'
 import TurnTracker from '@/components/TurnTracker.vue';
+import { fetch } from '@/cards.js'
 import { mapState } from 'vuex'
 
 export default {
   name: 'board',
   created () {
-    // this.$store.dispatch('getGame', this.$route.params.id)
-    // this.$store.dispatch('getBoardStates', this.$route.params.id)
-    this.$store.dispatch('subscribeToGame', this.$route.params.id)
-    this.$store.dispatch('subscribeToBoardState', {
+    this.$store.dispatch('getBoardStates', this.$route.params.id)
+    .then((resp) => this.$store.dispatch('subscribeToBoardState', {
       userID: this.user.User.ID,
       gameID: this.$route.params.id,
-    })
+    }))
+    this.$store.dispatch('getGame', this.$route.params.id)
+    .then((resp) => this.$store.dispatch('subscribeToGame', this.$route.params.id))
   },
   methods: {
-    gameID() {
-      return this.$route.params.id
-    },
     handleActivity(val) {
       console.log('logging activity: ', val)
       return
     },
     mutateBoardState() {
       console.log('mutate board state hit')
-    }
+    },
   },
   watch: {
     // self: {

@@ -188,9 +188,7 @@ func (s *graphQLServer) JoinGame(ctx context.Context, input *InputJoinGame) (*Ga
 		return nil, err
 	}
 
-	log.Printf("unmarshaled input game: %+v", ig)
 	go s.UpdateGame(ctx, ig)
-	log.Printf("returning game: %+v", game)
 	return game, nil
 }
 

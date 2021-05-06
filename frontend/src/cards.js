@@ -24,7 +24,7 @@ of fetch's functionality, but we compose others for ease of use.
 // NB: We always want to pass cards around by ID, since we're 
 // planning on these being unique.
 // @returns: `src`, `dst`
-function fetch(src, target, dst) {
+export function fetch(src, target, dst) {
     let obj = src.find((v, idx) => {
         if (v.ID === target.ID) {
             console.log(`target found, moving ${target} from ${src} -> ${dst}`)

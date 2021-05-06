@@ -71,6 +71,17 @@ const BoardStates = {
         }
     },
     actions: {
+        draw({ commit }, boardstate) {
+            const bs = Object.assign({}, boardstate)
+            if (bs.Library.length < 1) {
+                // handle issue
+                commit('error', 'you cannot draw from an empty library. you lose the game.')
+                console.error('cannot draw from an empty library.')
+            }
+            const card = bs.Library.shift()
+            bs.Hand.push(card)
+            console.log("boardstate after draw: ", bs)
+        },
         mutateBoardStates({ commit }, payload) {
             api.mutate({
                 mutation: updateBoardStateQuery,
@@ -87,24 +98,26 @@ const BoardStates = {
         },
         // gets all boardstates from server, but doesn't subscribe
         getBoardStates({ commit, state, rootState }, gameID) {
-            api.query({
-                query: boardstates,
-                variables: {
-                    gameID: gameID
-                }
-            })
+            return new Promise((resolve, reject) => {
+                api.query({
+                    query: boardstates,
+                    variables: {
+                        gameID: gameID
+                    }
+                })
                 .then((resp) => {
                     commit('updateBoardStates', {
                         boardstates: resp.data.boardstates,
                         self: rootState.User.User.Username,
                     })
-                    return resp.data
+                    return resolve(resp.data)
                 })
                 .catch((err) => {
                     console.error("failed to get boardstates: ", err)
                     commit('error', err)
-                    return err
+                    return reject(err)
                 })
+            })
         },
         // used for subscribing to single board updates
         subscribeToBoardState({ state, commit, rootState }, payload) {
@@ -119,6 +132,7 @@ const BoardStates = {
             })
             sub.subscribe({
                 next(data) {
+                    console.log('updateBoardState hit', data.data)
                     commit('updateBoardstate', data.data.boardstatePosted)
                 },
                 error(err) {
@@ -169,16 +183,20 @@ const Game = {
     },
     actions: {
         getGame({ commit }, ID) {
-            api.query({
-                query: gameQuery,// TODO: Add the right query  
-                variables: {
-                    gameID: ID,
-                }
-            }).then((data) => {
-                commit('updateGame', data.data.games[0])
-            }).catch((err) => {
-                console.log('vuex failed to get game: ', err)
-                commit('gameFailure', err)
+            return new Promise((resolve, reject) => {
+                api.query({
+                    query: gameQuery,// TODO: Add the right query  
+                    variables: {
+                        gameID: ID,
+                    }
+                }).then((data) => {
+                    commit('updateGame', data.data.games[0])
+                    return resolve(data.data.games[0])
+                }).catch((err) => {
+                    console.log('vuex failed to get game: ', err)
+                    commit('gameFailure', err)
+                    return reject(err)
+                })
             })
         },
         subscribeToGame({ commit, state }, ID) {
@@ -228,34 +246,36 @@ const Game = {
             })
         },
         joinGame({ commit }, payload) {
-            api.mutate({
-                mutation: gql`mutation ($InputJoinGame: InputJoinGame) {
-                  joinGame(input: $InputJoinGame) {
-                    ID
-                    PlayerIDs {
-                      Username
-                      ID
+            return new Promise((resolve, reject) => {
+                api.mutate({
+                    mutation: gql`mutation ($InputJoinGame: InputJoinGame) {
+                    joinGame(input: $InputJoinGame) {
+                        ID
+                        PlayerIDs {
+                        Username
+                        ID
+                        }
+                        Turn {
+                            Phase
+                            Player
+                            Number
+                        }
                     }
-                    Turn {
-                        Phase
-                        Player
-                        Number
+                    }`,
+                    variables: {
+                        InputJoinGame: payload.inputGame,
                     }
-                  }
-                }`,
-                variables: {
-                    InputJoinGame: payload.inputGame,
-                }
-            })
-            .then((res) => {
-                commit('updateGame', res.data.joinGame)
-                router.push({ path: `/games/${res.data.joinGame.ID}` })
-                return Promise.resolve(res)
-            })
-            .catch((err) => {
-                commit('error', 'error joining game')
-                console.log('error joining game: ', err)
-                return err
+                })
+                .then((res) => {
+                    commit('updateGame', res.data.joinGame)
+                    router.push({ path: `/games/${res.data.joinGame.ID}` })
+                    return resolve(res)
+                })
+                .catch((err) => {
+                    commit('error', 'error joining game')
+                    console.log('error joining game: ', err)
+                    return reject(err)
+                })
             })
         },
         createGame({ commit }, payload) {
