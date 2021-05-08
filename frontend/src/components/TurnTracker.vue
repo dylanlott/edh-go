@@ -2,9 +2,10 @@
   <div class="turn-tracker">
     <div class="columns">
       <section class="column is-11 is-mobile">
-        <!-- TODO: Make player and turn display correct data -->
-        {{ game.game.Turn }}
-        <p class="has-text-primary">Player: Shakezula - Turn: </p>
+        <p class="has-text-primary">
+          {{ game.game.Turn.Player }} |
+          {{ game.game.Turn.Phase }} |
+          {{ game.game.Turn.Number }}</p>
         <b-progress :value="progress" size="is-small" show-value></b-progress>
       </section>
       <section class="column is-1">
@@ -12,7 +13,7 @@
           type="button"
           @click="handleTick(game.game)"
           class="is-success">
-          Next 
+          Next
         </b-button>
       </section>
     </div>
@@ -82,6 +83,10 @@ export default {
           Player: g.PlayerIDs ? g.PlayerIDs[0].Username : ""
         }
         return g
+      }
+      
+      if (!g.Turn.Number) {
+        g.Turn.Number = 0
       }
       
       // setup is the default phase before the game starts, where chat,

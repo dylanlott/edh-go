@@ -1,63 +1,34 @@
 <template>
   <div class="board shell">
-    <pre>
-      <!-- {{ game.Turn }} -->
-      <!-- {{ user }}
-      {{ boardstates }} -->
-    </pre>
-    <!-- <pre :key="player.ID" v-for="player in game.PlayerIDs">
-      {{ player }}
-    </pre> -->
-    <!-- <h1 class="title shell">{{ gameID }}</h1> -->
-
-  <!-- LIFE TRACKER -->
-  <!-- TODO -->
+  <!-- <pre :key="player.ID" v-for="player in game.PlayerIDs"> -->
+  <h1 class="title is-6">{{ game.game.ID }}</h1>
 
   <!-- TURN TRACKER -->
   <div class="columns">
     <div class="shell column is-9">
       <TurnTracker :game="game" />
     </div>
-    <!-- <div class="shell column is-3">
+    <div class="shell column is-3">
       <div class="title is-4">{{ boardstates.self.Life }}</div>
       <button class="button is-small" @click="increaseLife()">Increase</button>
       <button class="button is-small" @click="decreaseLife()">Decrease</button>
-    </div> -->
+    </div>
   </div>
 
     <!-- OPPONENTS -->
-    <!-- <div class="opponents">
-      <div :key="opponent.ID" v-for="opponent in boardstates">
-        <div v-if="opponent.Username != self.User.Username"></div>
-      </div>
-      <div :key="player.ID" v-for="player in game.PlayerIDs">
-        <div v-if="player.Username !== self.User.Username">
-          <h1 class="title">{{ player.Username }}</h1>
-        </div>
-
-        <div :key="p.ID" v-for="p in game.PlayerIDs">
-          username: {{ p.Username }} {{ self.User.Username}}
-          <div v-if="p.Username !== self.User.Username">
-            {{ p }}
-          </div>
-          <div v-else>
-            You are {{ p }}
-          </div>
+    <div class="opponents">
+      <div :key="opponent.ID" v-for="opponent in boardstates.boardstates">
+        <div v-if="opponent.Username != user.Username">
+          <pre>{{ opponent }}</pre> 
         </div>
       </div>
-    </div> -->
-
-    <!-- <hr /> -->
+    </div>
 
     <div class="self shell">
       <h1 class="title">
-        {{ boardstates.self.User.username }}
-        <!-- <p class="subtitle">{{ 
-          boardstates.self.Commander ? boardstates.self.Commander[0].Name : ""
-        }}</p> -->
+        {{ user.User.Username }}
+        <p class="subtitle">{{ boardstates.self.Commander[0] ? boardstates.self.Commander[0].Name : "" }}</p>
       </h1>
-
-      <!-- {{ boardstates.self }} -->
 
       <div>
         <div class="columns">
@@ -121,25 +92,25 @@
     </div>
 
     <!-- CONTROL PANEL -->
-    <!-- <div class="shell controlpanel columns">
+    <div class="shell controlpanel columns">
       <div class="columns">
-        <div class="column">
+        <!-- <div class="column">
           <button class="button is-small is-primary">Collapse All</button>
         </div>
         <div class="column">
           <button class="button is-small is-primary">Untap</button>
-        </div>
+        </div> -->
         <div class="column">
           <button @click="draw()" class="button is-small is-primary">Draw</button>
         </div>
-        <div class="column">
+        <!-- <div class="column">
           <button class="button is-small is-primary">Shuffle</button>
-        </div>
+        </div> -->
         <div class="column">
           <button @click="mill()" class="button is-small is-primary">Mill</button>
         </div>
       </div>
-    </div> -->
+    </div>
   </div>
 </template>
 <script>
@@ -165,15 +136,19 @@ export default {
     .then(() => this.$store.dispatch('subscribeToGame', this.$route.params.id))
   },
   methods: {
-    handleActivity(val) {
-      console.log('logging activity: ', val)
-      return
-    },
     mutateBoardState() {
-      console.log('mutate board state hit')
-      this.$store.dispatch('mutateBoardState', this.boardstates.self)
+      return this.$store.dispatch('mutateBoardState', this.boardstates.self)
     },
-    draw() {
+    mill() {
+      const bs = Object.assign({}, this.boardstates.self)
+      const card = bs.Library.shift()
+      bs.Graveyard.push(card)
+      this.$store.dispatch('mutateBoardState', bs)
+    },
+    draw(num) {
+      if (num || num > 1) {
+        console.log('you can only draw one card at a time')
+      }
       // NB: Not sure if I should handle this here or as an action. 
       // Both ways have their pros and cons, and I've implemented it 
       // as both.
@@ -184,21 +159,20 @@ export default {
       const card = bs.Library.shift()
       bs.Hand.push(card)
       this.$store.dispatch("mutateBoardState", bs)
-    }
-  },
-  watch: {
-    // TODO: Need to update `self` to whatever the new variable is with state
-    boardstates: {
-      handler (newVal, oldVal) {
-        console.table(newVal, oldVal)
-        // we don't want to mutate state with this, 
-        // or else we'll get infinite loops.
-        // This is only where we should emit ActivityLog events.
-        // this.handleActivity(newVal)
-
-        // TODO: Call mutate board state action here.
-      },
-      deep: true
+    },
+    tap(card) {
+      card.Tapped = !card.Tapped
+      this.mutateBoardState()
+    },
+    increaseLife() {
+      const bs = Object.assign({}, this.boardstates.self)
+      bs.Life = bs.Life + 1
+      this.$store.dispatch("mutateBoardState", bs)
+    },
+    decreaseLife() {
+      const bs = Object.assign({}, this.boardstates.self)
+      bs.Life = bs.Life - 1
+      this.$store.dispatch("mutateBoardState", bs)
     }
   },
   computed: mapState({

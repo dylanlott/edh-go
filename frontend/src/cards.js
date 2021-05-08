@@ -6,18 +6,6 @@ and technically any other function could be expressed in terms
 of fetch's functionality, but we compose others for ease of use.
 */
 
-// function draw() {
-//   const card = this.self.boardstate.Library.shift();
-//   this.self.boardstate.Hand.push(card);
-//   this.mutateBoardState()
-// },
-
-// function mill() {
-//   const card = this.self.boardstate.Library.shift();
-//   this.self.boardstate.Graveyard.push(card);
-//   this.mutateBoardState()
-// },
-
 // @param `src` is the source field of cards the target card is in. 
 // @param `target` is the card that's being fetched
 // @param `dst` is the destination field of the fetched card
@@ -43,15 +31,3 @@ export function fetch(src, target, dst) {
     console.log('weird, we shouldnt be here', src, dst)
     return src, dst
 }
-// function increaseLife () {
-//   this.self.boardstate.Life++
-//   this.mutateBoardState()
-// },
-// function decreaseLife() {
-//   this.self.boardstate.Life--
-//   this.mutateBoardState()
-// },
-// function tap(card) {
-//   card.Tapped = !card.Tapped
-//   this.mutateBoardState()
-// },

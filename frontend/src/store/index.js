@@ -69,7 +69,6 @@ const BoardStates = {
         },
         updateSelf(state, payload) {
             const bs = Object.assign(state.self, payload)
-            console.log('updateSelf#bs updated after merge: ', bs)
             state.self = bs
         }
     },
@@ -83,7 +82,6 @@ const BoardStates = {
             }
             const card = bs.Library.shift()
             bs.Hand.push(card)
-            console.log("boardstate after draw: ", bs)
             dispatch('mutateBoardState', bs)
         },
         mutateBoardState({ commit }, payload) {
@@ -94,7 +92,6 @@ const BoardStates = {
                 },
             })
                 .then((resp) => {
-                    console.log('### MUTATE BOARD STATE: resp: ', resp)
                     commit('updateSelf', resp.data.updateBoardState)
                 })
                 .catch((err) => {
@@ -120,7 +117,6 @@ const BoardStates = {
                     return resolve(resp.data)
                 })
                 .catch((err) => {
-                    console.error("failed to get boardstates: ", err)
                     commit('error', err)
                     return reject(err)
                 })
@@ -139,7 +135,6 @@ const BoardStates = {
             })
             sub.subscribe({
                 next(data) {
-                    console.log('updateBoardState hit', data.data)
                     commit('updateBoardstate', data.data.boardstatePosted)
                 },
                 error(err) {
@@ -179,7 +174,6 @@ const Game = {
             // }),
             state.game.PlayerIDs = game.PlayerIDs
             state.game.Turn = game.Turn
-            console.log('updateGame mutation committed: ', state.game)
         },
         updateTurn(state, turn) {
             state.game.Turn = turn
@@ -196,11 +190,11 @@ const Game = {
                     variables: {
                         gameID: ID,
                     }
-                }).then((data) => {
-                    commit('updateGame', data.data.games[0])
-                    return resolve(data.data.games[0])
+                }).then((resp) => {
+                    commit('updateGame', resp.data.games[0])
+                    return resolve(resp.data.games[0])
                 }).catch((err) => {
-                    console.log('vuex failed to get game: ', err)
+                    console.error('vuex failed to get game: ', err)
                     commit('gameFailure', err)
                     return reject(err)
                 })
@@ -215,25 +209,10 @@ const Game = {
             })
             .then(data => {
                 if (data.data.games.length === 0) {
-                    console.log('no game received from subscription')
+                    commit('error', 'no game received from subscription')
+                    console.error('no game received from subscription')
                     return
                 }
-
-                // PROBLEM:
-                // Okay, so this isn't the problem. The server is not correctly 
-                // retrieving the game. Which means it's not being properly
-                // set during update. 
-
-                // SOLUTION: 
-                // Make sure that Games are only ever updated,
-                // set, and queried from redis and remove the Directory
-                // concept entirely.
-
-                // NB: This will help in preparation with making the server
-                // able to handle hard restarts with Redis persistence.
-                console.log('setting turn ? ', data.data.games[0].Turn)
-                commit('updateGame', data.data.games[0])
-                console.log('subscribing to games with state: ', state.game)
                 const sub = api.subscribe({
                     query: gameUpdateQuery,// nb: this is where we use the subscription { } query
                     variables: {
@@ -242,12 +221,11 @@ const Game = {
                 })
                 sub.subscribe({
                     next(data) {
-                        console.log('game subscription data received: ', data.data.gameUpdated)
                         commit('updateGame', data.data.gameUpdated)
                     },
                     error(err) {
+                        console.error('vuex error: subscribeToGame: game subscription error: ', err)
                         commit('error', err)
-                        console.log('vuex error: subscribeToGame: game subscription error: ', err)
                     }
                 })
             })
@@ -280,7 +258,7 @@ const Game = {
                 })
                 .catch((err) => {
                     commit('error', 'error joining game')
-                    console.log('error joining game: ', err)
+                    console.error('error joining game: ', err)
                     return reject(err)
                 })
             })
@@ -321,7 +299,6 @@ const Game = {
             })
         },
         updateGame({ commit }, payload) {
-            console.log('updateGame action hit: ', payload)
             return api.mutate({
                 mutation: updateGame,
                 variables: {
@@ -329,7 +306,6 @@ const Game = {
                 }
             })
             .then((data) => {
-                console.log('hit updateGame')
                 commit('updateGame', data.data.updateGame)
                 return data
             })
@@ -398,7 +374,6 @@ const User = {
         },
         logout() {
             // TODO: Clear cookies and localStorage and delete token on server
-            console.log('logout action hit')
         },
     }
 }

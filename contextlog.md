@@ -457,3 +457,27 @@ dev environment for a hobby project, and I have a pretty high confidence in doin
 
 Next up: Need to update BoardStates UI and add back the gameplay interface.
 
+
+6 May 2021
+==========
+
+Yesterday, I got realtime updates working for the Self boardstate! Now boardstates are able to be updated 
+on the server, and broadcast back down to all clients.
+
+The key to our architecture for this is that we:
+1. Always push to the server to update state.
+2. Always pull from the server for our local state.
+
+Additionally, I hooked up the Card elements and all the board elements like Battlefield, Hand, and Library
+up to the new state components. 
+
+In the server, I fixed two race conditions with goroutines that were causing flakey state updates in 
+both Game and BoardState persistence. The key takewaway from this was that 
+
+**Next Steps**
+- Need to fix the bug in the Turn Tracker where Turn Number does not increase.
+- Clean up Card layouts and looks
+- Add an error toast pop up
+- Make Join functions work correctly
+    - This is probably an issue with Cookies and Authentication
+- 
