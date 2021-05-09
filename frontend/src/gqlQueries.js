@@ -813,3 +813,21 @@ mutation ($input: InputGame!) {
   }
 }
 `
+
+export const signup = gql`
+mutation ($username: String!, $password: String!) {
+  signup(username: $username, password: $password) {
+    ID
+    Username
+    Token
+  }
+}
+`
+
+export const login = gql`mutation($username: String!, $password: String!) {
+  login(username: $username, password: $password) {
+    Username
+    ID
+    Token 
+  }
+}`

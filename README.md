@@ -66,3 +66,11 @@ https://stackoverflow.com/questions/6842393/import-sql-dump-into-postgresql-data
 
 Make sure when you rows.Scan() you don't point it at a nil value
 https://stackoverflow.com/questions/44670212/scan-sql-null-values-in-golang/46753197
+
+# Deployment 
+
+`heroku static:deploy` will deploy the vue app to heroku. 
+You can also run `npm run deploy` and this will run the same thing.
+
+## Server
+Heroku will build and deploy any push to GitHub.

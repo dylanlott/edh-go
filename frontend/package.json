@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "start": "vue-cli-service serve --open",
-    "build": "vue-cli-service build"
+    "build": "vue-cli-service build",
+    "deploy": "vue-cli-service build && heroku static:deploy"
   },
   "dependencies": {
     "apollo-cache-inmemory": "^1.6.6",

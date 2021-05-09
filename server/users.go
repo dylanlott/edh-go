@@ -102,6 +102,8 @@ func (s *graphQLServer) Login(ctx context.Context, username string, password str
 	s.redisClient.Set(user.Username, t, time.Duration(time.Hour*24*14))
 
 	user.Token = &t
+
+	log.Printf("returning logged in user: %+v", user)
 	return user, nil
 }
 

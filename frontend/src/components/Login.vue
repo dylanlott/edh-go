@@ -47,7 +47,15 @@ export default {
         this.$store.dispatch('login', {
           username: this.username,
           password: this.password,
-        });
+        })
+        .then(() => {
+          this.username = ""
+          this.password = ""
+        })
+        .catch((err) => {
+          this.username = ""
+          this.password = ""
+        })
       }
     },
   },

@@ -5,14 +5,16 @@ import { split } from 'apollo-link';
 import { getMainDefinition } from 'apollo-utilities';
 import { InMemoryCache } from 'apollo-cache-inmemory';
 
+console.log('initializing graphql api ', process.env.GRAPHQL_API)
+
 const cache = new InMemoryCache({
     addTypename: false
 })
 const httpLink = new HttpLink({
-    uri: 'http://localhost:8080/graphql',
+    uri: process.env.GRAPHQL_API,
 });
 const wsLink = new WebSocketLink({
-    uri: 'ws://localhost:8080/graphql',
+    uri: process.env.GRAPHQL_API,
     options: {
         reconnect: true,
     },

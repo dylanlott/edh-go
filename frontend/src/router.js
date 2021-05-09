@@ -3,6 +3,7 @@ import Router from 'vue-router';
 
 import Landing from '@/components/Landing.vue';
 import Login from '@/components/Login.vue';
+import Signup from '@/components/Signup.vue';
 import Games from '@/components/Games.vue';
 import GameDoesNotExist from '@/components/GameDoesNotExist.vue';
 import Board from '@/components/Board.vue';
@@ -24,6 +25,11 @@ export default new Router({
       path: '/login',
       name: 'login',
       component: Login,
+    },
+    {
+      path: '/signup',
+      name: 'signup',
+      component: Signup
     },
     {
       path: '/games',

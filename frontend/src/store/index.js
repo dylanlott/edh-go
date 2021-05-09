@@ -1,14 +1,17 @@
 import Vuex from 'vuex'
 import Vue from 'vue'
-import gql from 'graphql-tag';
-import Cookies from 'js-cookie';
-import { uuid } from '@/uuid';
+import gql from 'graphql-tag'
+import Cookies from 'js-cookie'
+import { uuid } from '@/uuid'
+import { ToastProgrammatic as Toast } from 'buefy'
 import api from '@/gqlclient'
-import router from '@/router';
+import router from '@/router'
 
 const ls = window.localStorage
 
 import {
+    login,
+    signup,
     gameQuery,
     gameUpdateQuery,
     updateGame,
@@ -47,6 +50,12 @@ const BoardStates = {
     mutations: {
         error(state, payload) {
             state.error = payload
+            Toast.open({
+                message: `Boardstate error: ${state.error}`,
+                duration: 3000,
+                position: "is-bottom",
+                type: "is-danger",
+            })
         },
         // updates all boardstates from a general game query
         updateBoardStates(state, payload) {
@@ -96,9 +105,8 @@ const BoardStates = {
                 })
                 .catch((err) => {
                     console.error('mutateBoardState: error updating boardstate: ', err)
+                    commit('error', 'something wen wrong.')
                 })
-            // commit('updateSelf', payload)
-            // commit('updateOpponents', payload)
         },
         // gets all boardstates from server, but doesn't subscribe
         getBoardStates({ commit, state, rootState }, gameID) {
@@ -165,6 +173,12 @@ const Game = {
     mutations: {
         error(state, err) {
             state.error = err
+            Toast.open({
+                message: `Game error: ${state.error}`,
+                duration: 3000,
+                position: "is-bottom",
+                type: "is-danger",
+            })
         },
         updateGame(state, game) {
             state.game.ID = game.ID
@@ -343,19 +357,19 @@ const User = {
         },
         error(state, message) {
             state.error = message
+            Toast.open({
+                message: `User error: ${state.error}`,
+                duration: 3000,
+                position: "is-bottom",
+                type: "is-danger",
+            })
         }
     },
     actions: {
         login({ commit }, payload) {
             commit('loading', true)
             api.mutate({
-                mutation: gql`mutation($username: String!, $password: String!) {
-                    login(username: $username, password: $password) {
-                        Username
-                        ID
-                        Token 
-                    }
-                }`,
+                mutation: login,
                 variables: {
                     username: payload.username,
                     password: payload.password,
@@ -364,17 +378,35 @@ const User = {
             .then((data) => {
                 commit('setUser', data.data.login)
                 router.push({ path: '/games' });
-                return Promise.resolve(data)
+                return data
             })
             .catch((err) => {
                 console.error('login error: ', err)
                 commit('error', 'failed to login')
-                Promise.reject(err)
+                return err
             })
         },
-        logout() {
-            // TODO: Clear cookies and localStorage and delete token on server
+        logout({ commit }) {
+            commit('setUser', undefined)
+            router.push({ path: '/' })
         },
+        signup({ commit, dispatch }, payload) {
+            commit('loading', true)
+            api.mutate({
+                mutation: signup,
+                variables: {
+                    username: payload.username,
+                    password: payload.password,
+                }
+            })
+            .then((resp) => {
+                dispatch('login', payload) 
+                .catch((err) => commit('error', 'failed to login'))
+            })
+            .catch((err) => {
+                commit('error', 'failed to signup')
+            })
+        }
     }
 }
 

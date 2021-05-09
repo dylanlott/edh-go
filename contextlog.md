@@ -480,4 +480,15 @@ both Game and BoardState persistence. The key takewaway from this was that
 - Add an error toast pop up
 - Make Join functions work correctly
     - This is probably an issue with Cookies and Authentication
-- 
+
+8 May 2021
+==========
+
+- Deployed the vue app as a Heroku static build 
+- Got automatic deploys working 
+
+9 May 2021
+==========
+
+Auth needs to be added now to the front end, since we have working boardstates, and I think that the 
+issues I'm seeing with Join functionality are related to the authentication issues I'm having.
