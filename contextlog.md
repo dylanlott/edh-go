@@ -492,3 +492,9 @@ both Game and BoardState persistence. The key takewaway from this was that
 
 Auth needs to be added now to the front end, since we have working boardstates, and I think that the 
 issues I'm seeing with Join functionality are related to the authentication issues I'm having.
+
+* Added the signup logic to the app
+* Had an issue with websocket urls and firefox throwing a fit about them.
+    * https://github.com/apollographql/subscriptions-transport-ws/issues/332 
+    * https://stackoverflow.com/questions/11768221/firefox-websocket-security-issue/12042843#12042843 
+* Updated the build process to account for environment variables. 

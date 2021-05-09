@@ -76,7 +76,6 @@ func (s *graphQLServer) Login(ctx context.Context, username string, password str
 		}
 	}
 
-	log.Printf("Logging in user: %+v", user)
 	// check password validity, return if invalid
 	valid := checkPasswordHash(password, hash)
 	if !valid {
@@ -103,7 +102,6 @@ func (s *graphQLServer) Login(ctx context.Context, username string, password str
 
 	user.Token = &t
 
-	log.Printf("returning logged in user: %+v", user)
 	return user, nil
 }
 

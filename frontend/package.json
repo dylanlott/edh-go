@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "start": "vue-cli-service serve --open",
-    "build": "vue-cli-service build",
+    "build": "vue-cli-service build --mode production",
     "deploy": "vue-cli-service build --mode production && heroku static:deploy"
   },
   "dependencies": {

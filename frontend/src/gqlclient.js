@@ -5,16 +5,14 @@ import { split } from 'apollo-link';
 import { getMainDefinition } from 'apollo-utilities';
 import { InMemoryCache } from 'apollo-cache-inmemory';
 
-console.log('initializing graphql api at ', process.env.BASE_URL)
-
 const cache = new InMemoryCache({
     addTypename: false
 })
 const httpLink = new HttpLink({
-    uri: process.env.BASE_URL,
+    uri: process.env.VUE_APP_BASE_URL,
 });
 const wsLink = new WebSocketLink({
-    uri: process.env.BASE_URL,
+    uri: process.env.VUE_APP_WEBSOCKET_URL,
     options: {
         reconnect: true,
     },
