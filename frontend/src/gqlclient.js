@@ -9,10 +9,10 @@ const cache = new InMemoryCache({
     addTypename: false
 })
 const httpLink = new HttpLink({
-    uri: process.env.VUE_APP_BASE_URL,
+    uri: process.env.VUE_APP_BASE_URL || "http://localhost:8080/graphql",
 });
 const wsLink = new WebSocketLink({
-    uri: process.env.VUE_APP_WEBSOCKET_URL,
+    uri: process.env.VUE_APP_WEBSOCKET_URL || "ws://localhost:8080/graphql",
     options: {
         reconnect: true,
     },

@@ -6,9 +6,6 @@ import { uuid } from '@/uuid'
 import { ToastProgrammatic as Toast } from 'buefy'
 import api from '@/gqlclient'
 import router from '@/router'
-
-const ls = window.localStorage
-
 import {
     login,
     signup,
@@ -21,6 +18,8 @@ import {
 import { updateBoardStateQuery } from '../gqlQueries';
 
 Vue.use(Vuex)
+
+const ls = window.localStorage
 
 const BoardStates = {
     state: {
