@@ -14,7 +14,6 @@ Vue.use(Buefy)
 Vue.use(VueCookies)
 Vue.$cookies.config('7d')
 Vue.config.productionTip = false
-
 const apolloProvider = new VueApollo({
   defaultClient: api,
 });

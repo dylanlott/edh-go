@@ -498,3 +498,10 @@ issues I'm seeing with Join functionality are related to the authentication issu
     * https://github.com/apollographql/subscriptions-transport-ws/issues/332 
     * https://stackoverflow.com/questions/11768221/firefox-websocket-security-issue/12042843#12042843 
 * Updated the build process to account for environment variables. 
+
+14 Jun 2021
+===========
+
+* Need to simplify and condense the boardstate update and fetching logic. 
+* It needs to be bi directional, with the boardstate components only getting display information from pulls, and the back end only receiving mutations from pushes.
+* I stashed the work I had but I suspect it was mostly nonsense. There's a lot of changes in that stash though. Need to look through them and figure it out.

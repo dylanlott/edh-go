@@ -35,7 +35,7 @@ func (s *graphQLServer) Games(ctx context.Context, gameID *string) ([]*Game, err
 		return nil, errors.New("not implemented")
 	}
 	g := &Game{}
-	err := s.Get(GameKey(*gameID), g)
+	err := s.Get(GameKey(*gameID), &g)
 	if err != nil {
 		log.Printf("games failed to get game %s: %s", *gameID, err)
 		return nil, fmt.Errorf("failed to get game %s: %s", *gameID, err)
@@ -44,7 +44,7 @@ func (s *graphQLServer) Games(ctx context.Context, gameID *string) ([]*Game, err
 }
 
 func (s *graphQLServer) GameUpdated(ctx context.Context, updated InputGame) (<-chan *Game, error) {
-	// Update game in the directory
+	//
 	b, err := json.Marshal(updated)
 	if err != nil {
 		return nil, errs.New("failed to marshal input game: %s", err)
@@ -55,7 +55,6 @@ func (s *graphQLServer) GameUpdated(ctx context.Context, updated InputGame) (<-c
 		return nil, errs.New("failed to unmarshal game: %s", err)
 	}
 
-	// assign the game to the directory for finding
 	// create a new gameChannel to announce Game updates over
 	games := make(chan *Game, 1)
 	s.mutex.Lock()
@@ -188,8 +187,11 @@ func (s *graphQLServer) JoinGame(ctx context.Context, input *InputJoinGame) (*Ga
 		return nil, err
 	}
 
-	go s.UpdateGame(ctx, ig)
-	return game, nil
+	g, err := s.UpdateGame(ctx, ig)
+	if err != nil {
+		return nil, errs.Wrap(err)
+	}
+	return g, nil
 }
 
 // createGame is untested currently
@@ -284,7 +286,7 @@ func (s *graphQLServer) CreateGame(ctx context.Context, inputGame InputCreateGam
 		s.mutex.Unlock()
 	}
 
-	// Set game in directory for access
+	// Set game ID to channel for subscription updates
 	s.mutex.Lock()
 	s.gameChannels[g.ID] = make(chan *Game, 1)
 	s.mutex.Unlock()

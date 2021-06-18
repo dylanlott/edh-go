@@ -23,27 +23,11 @@ const ls = window.localStorage
 
 const BoardStates = {
     state: {
-        // self holds the player's boardstates and acts like a soft cache
-        // to the player's upstream boardstate
-        self: {
-            User: {
-                Username: "",
-                ID: ""
-            },
-            GameID: "",
-            Life: 0,
-            Library: [],
-            Commander: [],
-            Field: [],
-            Hand: [],
-            Graveyard: [],
-            Exiled: [],
-            Revealed: [],
-            Controlled: [],
-            Counters: [],
-        },
-        // boardstates holds all the player boardstates
+        // boardstates holds an object with all player boardstates
+        // keyed by the player's UUID (ID)
         boardstates: {},
+        // error is an error message from the API. 
+        // TODO: Make these decay 
         error: undefined
     },
     mutations: {
@@ -56,29 +40,19 @@ const BoardStates = {
                 type: "is-danger",
             })
         },
-        // updates all boardstates from a general game query
+        // takes an array of boardstates and updates each of them
+        // payload is iterated over and checked for it's user's ID
+        // and then assigned to the boardstates object keyed by that ID
         updateBoardStates(state, payload) {
             // update each boardstate by player ID
-            payload.boardstates.forEach((bs) => {
-                state.boardstates[bs.User.ID] = bs
-                // assign our own boardstate to `self` for easier control
-                if (bs.User.Username == payload.self) {
-                    state.self = bs
+            payload.forEach((bs) => {
+                if (bs.User.ID == "" || bs.User.ID == undefined) {
+                    state.error = "boardstate did not have ID"
+                    return
                 }
+                state.boardstates[bs.User.ID] = bs
             })
         },
-        // updates a single boardstate
-        updateBoardstate(state, payload) {
-            if (payload.ID == "" || payload.ID == undefined) {
-                state.error = "boardstate did not have ID"
-                return
-            }
-            state.boardstates[payload.ID] = payload
-        },
-        updateSelf(state, payload) {
-            const bs = Object.assign(state.self, payload)
-            state.self = bs
-        }
     },
     actions: {
         draw({ commit, dispatch }, boardstate) {
@@ -92,6 +66,7 @@ const BoardStates = {
             bs.Hand.push(card)
             dispatch('mutateBoardState', bs)
         },
+        // mutate boardstate will mutate a boardstate and then commit the result.
         mutateBoardState({ commit }, payload) {
             api.mutate({
                 mutation: updateBoardStateQuery,
@@ -100,15 +75,15 @@ const BoardStates = {
                 },
             })
                 .then((resp) => {
-                    commit('updateSelf', resp.data.updateBoardState)
+                    commit('updateBoardStates', [resp.data.updateBoardState])
                 })
                 .catch((err) => {
                     console.error('mutateBoardState: error updating boardstate: ', err)
-                    commit('error', 'something wen wrong.')
+                    commit('error', 'something went wrong.')
                 })
         },
         // gets all boardstates from server, but doesn't subscribe
-        getBoardStates({ commit, state, rootState }, gameID) {
+        getBoardStates({ commit }, gameID) {
             return new Promise((resolve, reject) => {
                 api.query({
                     query: boardstates,
@@ -117,10 +92,7 @@ const BoardStates = {
                     }
                 })
                 .then((resp) => {
-                    commit('updateBoardStates', {
-                        boardstates: resp.data.boardstates,
-                        self: rootState.User.User.Username,
-                    })
+                    commit('updateBoardStates', resp.data.boardstates)
                     return resolve(resp.data)
                 })
                 .catch((err) => {
@@ -133,24 +105,41 @@ const BoardStates = {
         subscribeToBoardState({ state, commit, rootState }, payload) {
             // self.GameID == "" since it's not assigned before that query fires
             // we need to assign that first 
-            state.self.GameID = payload.gameID
+            const self = rootState.User.User
             const sub = api.subscribe({
                 query: boardstateSubscription,// TODO: Add the right query  
                 variables: {
-                    inputBoardState: state.self,
+                    inputBoardState: state.boardstates[self.ID],
                 },
             })
             sub.subscribe({
                 next(data) {
-                    commit('updateBoardstate', data.data.boardstatePosted)
+                    commit('updateBoardStates', [data.data.boardstatePosted])
                 },
                 error(err) {
                     commit('error', err)
                     console.error('subscribeToBoardstate: boardstate subscription error: ', err)
                 }
             })
+        },
+        // subAll subscribes to all boardstate updates including our own.
+        subAll({ commit }, gameID) {
+            const sub = api.subscribe({
+                query: boardstates,
+                variables: {
+                    gameID: gameID
+                }
+            })
+            sub.subscribe({
+                next (data) {
+                    commit('updateBoardStates', data.data.boardstates)
+                },
+                error(err) {
+                    commit('subAll: subscription error', err)
+                }
+            })
         }
-    }
+    },
 }
 
 const Game = {
@@ -234,6 +223,7 @@ const Game = {
                 })
                 sub.subscribe({
                     next(data) {
+                        console.log('updating game: ', data.data)
                         commit('updateGame', data.data.gameUpdated)
                     },
                     error(err) {
@@ -265,6 +255,7 @@ const Game = {
                     }
                 })
                 .then((res) => {
+                    console.log("updating game after joing: ", res.data.joinGame)
                     commit('updateGame', res.data.joinGame)
                     router.push({ path: `/games/${res.data.joinGame.ID}` })
                     return resolve(res)

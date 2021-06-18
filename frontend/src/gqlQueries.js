@@ -8,6 +8,7 @@ query($gameID: String!) {
       ID
     }
     Life
+    GameID
     Commander {
       Name 
       ID 

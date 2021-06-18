@@ -1,95 +1,49 @@
 <template>
   <div class="board shell">
-  <!-- <pre :key="player.ID" v-for="player in game.PlayerIDs"> -->
-  <h1 class="title is-6">{{ game.game.ID }}</h1>
-
-  <!-- TURN TRACKER -->
-  <div class="columns">
-    <div class="shell column is-9">
-      <TurnTracker :game="game" />
-    </div>
-    <div class="shell column is-3">
-      <div class="title is-4">{{ boardstates.self.Life }}</div>
-      <button class="button is-small" @click="increaseLife()">Increase</button>
-      <button class="button is-small" @click="decreaseLife()">Decrease</button>
-    </div>
-  </div>
-
-    <!-- OPPONENTS -->
-    <div class="opponents">
-      <div :key="opponent.ID" v-for="opponent in boardstates.boardstates">
-        <div v-if="opponent.Username != user.Username">
-          <pre>{{ opponent }}</pre> 
+    <!-- <pre>{{ user }}</pre> -->
+    <!-- v-if="boardstate.User.ID != user.User.ID" -->
+    <div class="columns">
+      <pre>
+      </pre>
+      <!-- <b-collapse
+        class="card"
+        animation="slide"
+        v-for="(boardstate, index) of opponents"
+        :key="index"
+        :open="opponentStateOpen == index"
+        @open="opponentStateOpen = index"
+      >
+        <template #trigger="props">
+          <div class="card-header" role="button">
+            <p class="card-header-title">
+              {{ boardstate.Username }}
+            </p>
+            <a class="card-header-icon">
+              <b-icon :icon="props.open ? 'menu-down' : 'menu-up'"> </b-icon>
+            </a>
+          </div>
+        </template>
+        <div class="card-content">
+          <div class="content">
+            <Opponent :boardstate="boardstate" />
+          </div>
         </div>
+      </b-collapse> -->
+    </div>
+
+    <!-- TURN TRACKER -->
+    <div class="columns">
+      <div class="shell column is-9">
+        <TurnTracker :game="game" />
+      </div>
+      <div class="shell column is-3">
+        <!-- <div class="title is-4">{{ boardstates[user.ID].Life }}</div> -->
+        <button class="button is-small" @click="increaseLife()">Increase</button>
+        <button class="button is-small" @click="decreaseLife()">Decrease</button>
       </div>
     </div>
 
-    <div class="self shell">
-      <h1 class="title">
-        {{ user.User.Username }}
-        <p class="subtitle">{{ boardstates.self.Commander[0] ? boardstates.self.Commander[0].Name : "" }}</p>
-      </h1>
-
-      <div>
-        <div class="columns">
-          <div class="column">
-            <p class="title is-5">Battlefield</p>
-            <draggable
-              class="card-wrapper bordered battlefield"
-              group="board" 
-              v-model="boardstates.self.Field"
-              @start="drag = true"
-              @end="drag = false"
-              @change="mutateBoardState()"
-            >
-              <div 
-              @click="tap(card)"
-              v-for="(card, i) in boardstates.self.Field" 
-              :key="i" 
-              >
-                <Card v-bind="card" />
-              </div>
-            </draggable>
-          </div>
-        </div>
-        <div class="columns">
-        </div>
-
-        <div class="columns">
-          <div class="column hand is-three-quarters">
-            <p class="title is-4">Hand</p>
-            <draggable
-              class="columns card-wrapper"
-              v-model="boardstates.self.Hand"
-              group="board" 
-              @start="drag = true"
-              @end="drag = false"
-              @change="mutateBoardState()"
-            >
-              <div class="column mtg-card" v-for="(card, i) in boardstates.self.Hand" :key="i">
-                <Card v-bind="card"></Card>
-              </div>
-            </draggable>
-          </div>
-          <div class="column library is-one-quarter" @click="draw()">
-            <p class="title is-5">Library</p>
-            <draggable
-              class="column card-wrapper"
-              v-model="boardstates.self.Library"
-              group="board" 
-              @start="drag = true"
-              @end="drag = false"
-              @change="mutateBoardState()"
-            >
-              <div v-for="card in boardstates.self.Library" :key="card.id">
-                <Card v-bind="card" hidden="true"/>
-              </div>
-            </draggable>
-          </div>
-        </div>
-        <hr />
-      </div>
-    </div>
+    <SelfState :boardstate="self"></SelfState>
 
     <!-- CONTROL PANEL -->
     <div class="shell controlpanel columns">
@@ -119,73 +73,53 @@ import draggable from 'vuedraggable';
 import Card from '@/components/Card';
 import PlayerState from '@/components/PlayerState.vue';
 import SelfState from '@/components/SelfState.vue';
-import Opponents from '@/components/Opponents.vue'
+import Opponent from '@/components/Opponent.vue';
 import TurnTracker from '@/components/TurnTracker.vue';
-import { fetch } from '@/cards.js'
-import { mapState } from 'vuex'
+import { mapState } from 'vuex';
 
 export default {
   name: 'board',
-  created () {
-    this.$store.dispatch('getBoardStates', this.$route.params.id)
-    .then(() => this.$store.dispatch('subscribeToBoardState', {
-      userID: this.user.User.ID,
-      gameID: this.$route.params.id,
-    }))
-    this.$store.dispatch('getGame', this.$route.params.id)
-    .then(() => this.$store.dispatch('subscribeToGame', this.$route.params.id))
+  data() {
+    return {
+      opponentStateOpen: false,
+    };
   },
-  methods: {
-    mutateBoardState() {
-      return this.$store.dispatch('mutateBoardState', this.boardstates.self)
-    },
-    mill() {
-      const bs = Object.assign({}, this.boardstates.self)
-      const card = bs.Library.shift()
-      bs.Graveyard.push(card)
-      this.$store.dispatch('mutateBoardState', bs)
-    },
-    draw(num) {
-      if (num || num > 1) {
-        console.log('you can only draw one card at a time')
-      }
-      // NB: Not sure if I should handle this here or as an action. 
-      // Both ways have their pros and cons, and I've implemented it 
-      // as both.
-      const bs = Object.assign({}, this.boardstates.self)
-      if (bs.Library.length < 1) {
-        console.error('you lose the game - cannot draw from an empty library')
-      }
-      const card = bs.Library.shift()
-      bs.Hand.push(card)
-      this.$store.dispatch("mutateBoardState", bs)
-    },
-    tap(card) {
-      card.Tapped = !card.Tapped
-      this.mutateBoardState()
-    },
-    increaseLife() {
-      const bs = Object.assign({}, this.boardstates.self)
-      bs.Life = bs.Life + 1
-      this.$store.dispatch("mutateBoardState", bs)
-    },
-    decreaseLife() {
-      const bs = Object.assign({}, this.boardstates.self)
-      bs.Life = bs.Life - 1
-      this.$store.dispatch("mutateBoardState", bs)
-    }
+  created() {
+    this.$store.dispatch('getBoardStates', this.$route.params.id).then(() =>
+      this.$store.dispatch('subscribeToBoardState', {
+        userID: this.user.ID,
+        gameID: this.$route.params.id,
+      })
+    )
+   
+    // get the game info 
+    this.$store
+      .dispatch('getGame', this.$route.params.id)
+      .then(() => this.$store.dispatch('subscribeToGame', this.$route.params.id));
+     
+    // sub to all boardstate updates, self included
+    this.$store.dispatch('subAll', this.$route.params.id);
   },
   computed: mapState({
-    game: state => state.Game,
-    boardstates: state => state.BoardStates,
-    user: state => state.User,
+    game: (state) => state.Game,
+    boardstates: (state) => state.BoardStates,
+    user: (state) => state.User.User,
+    self: (state) => state.BoardStates[state.User.User.ID]
   }),
+  methods: {
+    mutateBoardState() {
+      return this.$store.dispatch('mutateBoardState', this.boardstates[this.user.ID]);
+    }, 
+    print (...args) {
+      console.log(...args)
+    }
+  },
   components: {
     draggable,
     Card,
     PlayerState,
     SelfState,
-    Opponents,
+    Opponent,
     TurnTracker,
   },
 };

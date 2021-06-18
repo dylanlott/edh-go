@@ -197,8 +197,7 @@ func TestJoinGame(t *testing.T) {
 	for _, tt := range cases {
 		t.Run(tt.name, func(t *testing.T) {
 			s := testAPI(t)
-
-			game, err := s.CreateGame(context.Background(), InputCreateGame{
+			_, err := s.CreateGame(context.Background(), InputCreateGame{
 				ID: gameID,
 				Players: []*InputBoardState{
 					{
@@ -224,14 +223,22 @@ func TestJoinGame(t *testing.T) {
 			if err != nil {
 				t.Errorf("failed to get host game: %+v\n", err)
 			}
-			t.Logf("created game to join: %+v", game)
 			joined, err := s.JoinGame(context.Background(), &tt.input)
 			if tt.want != nil {
 				if diff := cmp.Diff(tt.want, joined, cmpopts.IgnoreFields(Game{}, "CreatedAt")); diff != "" {
 					t.Errorf("wanted: %+v - got: %+v\n", tt.want, diff)
 				}
 			}
-			log.Printf("Test - JoinGame#joined: %+v", joined)
+
+			// get the game from query and compare it
+			games, err := s.Games(context.Background(), &gameID)
+			if err != nil {
+				t.Errorf("failed to get games: %w", err)
+			}
+			if diff := cmp.Diff(tt.want, games[0], cmpopts.IgnoreFields(Game{}, "CreatedAt")); diff != "" {
+				t.Logf("[DIFF]: %+v", diff)
+				t.Errorf("wanted: %+v - got: %+v", tt.want, games[0])
+			}
 		})
 	}
 }
@@ -259,8 +266,8 @@ func TestGameUpdated(t *testing.T) {
 					},
 				},
 				Turn: &InputTurn{
-					Number: 0,
-					Phase:  "pregame",
+					Number: 3,
+					Phase:  "foo",
 					Player: "shakezula",
 				},
 				Rules: []*InputRule{
@@ -279,8 +286,8 @@ func TestGameUpdated(t *testing.T) {
 					},
 				},
 				Turn: &Turn{
-					Number: 0,
-					Phase:  "pregame",
+					Number: 3,
+					Phase:  "foo",
 					Player: "shakezula",
 				},
 				Rules: []*Rule{
@@ -293,7 +300,7 @@ func TestGameUpdated(t *testing.T) {
 
 	for _, tt := range cases {
 		s := testAPI(t)
-		testGame, err := s.CreateGame(context.Background(), InputCreateGame{
+		_, err := s.CreateGame(context.Background(), InputCreateGame{
 			ID: gameID,
 			Players: []*InputBoardState{
 				{
@@ -319,8 +326,6 @@ func TestGameUpdated(t *testing.T) {
 		if err != nil {
 			t.Errorf("failed to create test game for TestGameUpdated: %s", err)
 		}
-		log.Printf("created testGame: %+v", testGame)
-
 		resp, err := s.GameUpdated(context.Background(), tt.input)
 		if err != nil {
 			t.Errorf("failed to update game: %+v", err)
@@ -421,7 +426,7 @@ func TestUpdateGame(t *testing.T) {
 
 			// test game that was emitted
 			game := <-s.gameChannels[g.ID]
-			log.Printf("GAME: %+v", game)
+			t.Logf("%s got game: %+v", tt.name, game)
 			diff2 := cmp.Diff(game, tt.want, cmpopts.IgnoreFields(Game{}, "CreatedAt"))
 			if diff2 != "" {
 				t.Errorf("failed to emit game on channels correctly: diff %+v", diff2)

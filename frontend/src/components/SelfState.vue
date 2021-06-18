@@ -1,25 +1,24 @@
 <template>
   <div>
-    <div class="columns">
-      <!-- <div class="column is-10">
+    {{ boardstate }}
+    <!-- <div class="columns">
+      <div class="column is-10">
         <p class="title is-5">Battlefield</p>
         <draggable
           class="card-wrapper"
           v-model="boardstate.Field"
           group="people"
-          @start="drag=true"
-          @end="drag=false">
-          <div 
-            v-for="card in boardstate.Field" 
-            :key="card.id"
-            class="columns">
-            <Card v-bind="card"/>
+          @start="drag = true"
+          @end="drag = false"
+        >
+          <div v-for="card in boardstate.Field" :key="card.id" class="columns">
+            <Card v-bind="card" />
           </div>
         </draggable>
-      </div> -->
+      </div>
     </div>
     <div class="columns">
-      <!-- <div class="column">
+      <div class="column">
         <p class="title is-5">Exiled</p>
         <draggable
         class="column card-wrapper"
@@ -66,7 +65,7 @@
         group="people"
         @start="drag=true"
         @end="drag=false">
-           <div v-for="card in boardstate.emblems" :key="card.id">
+           <div v-for="card in boardstate.Emblems" :key="card.id">
              <Card v-bind="card"/>
            </div>
         </draggable>
@@ -83,10 +82,10 @@
              <Card v-bind="card" hidden="true"/>
            </div>
         </draggable>
-      </div> -->
+      </div>
     </div>
     <div class="columns">
-      <!-- <div class="column">
+      <div class="column">
         <p class="title is-4">Hand</p>
         <draggable
         class="columns card-wrapper"
@@ -101,55 +100,57 @@
             <Card v-bind="card"></Card>
            </div>
         </draggable>
-      </div> -->
+      </div>
     </div>
-    <hr>
-    <code>{{ self }}</code>
+    <hr /> -->
   </div>
 </template>
 <script>
-import draggable from 'vuedraggable'
-import Card from '@/components/Card'
-import gql from 'graphql-tag'
+import draggable from 'vuedraggable';
+import Card from '@/components/Card';
+import { mapState } from 'vuex';
 
 export default {
   name: 'selfstate',
-  data () {
+  data() {
     return {
       gameID: this.$route.params.id,
-    }
+    };
   },
-  props: ['self'],
+  props: {
+    boardstate: Object,
+  },
   methods: {
-    draw () {
-      console.log('TODO')
+    draw() {
+      console.log('TODO');
     },
-    shuffle () {
-      console.log('TODO')
+    shuffle() {
+      console.log('TODO');
     },
     handleBoardUpdate() {
-      console.log('handle board update')
-      this.$apollo.mutate({
-
-      })
-      .catch((res) => {
-        console.log('pushed updated board state: ', res)
-        return res
-      })
-      .catch((err) => {
-        console.log('error pushing board update: ', err)
-        return err
-      })
-    }
+      console.log('handle board update');
+      this.$apollo
+        .mutate({
+          // TODO
+        })
+        .catch((res) => {
+          console.log('pushed updated board state: ', res);
+          return res;
+        })
+        .catch((err) => {
+          console.log('error pushing board update: ', err);
+          return err;
+        });
+    },
   },
   components: {
     Card,
-    draggable
-  }
-}
+    draggable,
+  },
+};
 </script>
 <style media="screen">
-  .library {
-    visibility: true;
-  }
+.library {
+  visibility: true;
+}
 </style>
