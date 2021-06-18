@@ -505,3 +505,13 @@ issues I'm seeing with Join functionality are related to the authentication issu
 * Need to simplify and condense the boardstate update and fetching logic. 
 * It needs to be bi directional, with the boardstate components only getting display information from pulls, and the back end only receiving mutations from pushes.
 * I stashed the work I had but I suspect it was mostly nonsense. There's a lot of changes in that stash though. Need to look through them and figure it out.
+
+18 Jun 2021
+===========
+
+* Working on real time updates for Game 
+    * I need to get one realtime component working, and game object seems to be the best target for this.
+* I fixed a test in the JoinGame logic and added better assertions to that logic. 
+* I'm in the process of overhauling the UI to correctly work with the realtime logic 
+* Turns out, real time data is a hard problem.
+* I think the server is in a decent place right now, but the UI needs a lot of work. 

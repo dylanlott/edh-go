@@ -132,6 +132,7 @@ const BoardStates = {
             })
             sub.subscribe({
                 next (data) {
+                    console.table("subAll: ", data)
                     commit('updateBoardStates', data.data.boardstates)
                 },
                 error(err) {
@@ -169,13 +170,8 @@ const Game = {
             })
         },
         updateGame(state, game) {
-            state.game.ID = game.ID
-            // TODO: Figure out if this players map is still necessary 
-            // state.game.PlayerIDs = game.PlayerIDs.map((v) => {
-            //     return { Username: v.Username, ID: v.ID }
-            // }),
-            state.game.PlayerIDs = game.PlayerIDs
-            state.game.Turn = game.Turn
+            // merge updated game over current game
+            state.game = Object.assign(state.game, game)
         },
         updateTurn(state, turn) {
             state.game.Turn = turn
