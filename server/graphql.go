@@ -107,6 +107,7 @@ func (s *graphQLServer) Serve(route string, port int) error {
 					return true
 				},
 			}),
+			handler.WebsocketKeepAliveDuration(time.Second*10),
 		),
 	)
 	h := cors.AllowAll().Handler(s.auth(mux))

@@ -513,5 +513,20 @@ issues I'm seeing with Join functionality are related to the authentication issu
     * I need to get one realtime component working, and game object seems to be the best target for this.
 * I fixed a test in the JoinGame logic and added better assertions to that logic. 
 * I'm in the process of overhauling the UI to correctly work with the realtime logic 
-* Turns out, real time data is a hard problem.
+* Turns out, real time data is a hard problem. 
+    * This is an excellent introduction to discuss hard problem that arise quickly in every day engineering 
+    * cache invalidation
+    * efficient handling of boardstates
+    * managing multiple player boardstates and their respective browser caches is a distributed systems problem
 * I think the server is in a decent place right now, but the UI needs a lot of work. 
+* I'm pushing for mobile optimized browser and desktop optimized browser as MVP 
+* Client needs to be 95% working though 
+* Need to write the blog post about handling priority
+* This seems to be related to the problems I'm having with realtime right now https://github.com/99designs/gqlgen/issues/640 
+
+19 Jun 2021
+===========
+
+* Found the blog post that the graphQL code was initially based off of https://outcrawl.com/go-graphql-realtime-chat 
+* Referencing this implementation for my own code and I think I found the errors. 
+    * I don't think I was correctly notifying the sender channels when game updates occurredd.

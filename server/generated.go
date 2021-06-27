@@ -142,7 +142,7 @@ type ComplexityRoot struct {
 
 	Subscription struct {
 		BoardstatePosted func(childComplexity int, boardstate InputBoardState) int
-		GameUpdated      func(childComplexity int, game InputGame) int
+		GameUpdated      func(childComplexity int, gameID string) int
 		MessagePosted    func(childComplexity int, user string) int
 		UserJoined       func(childComplexity int, user string, gameID string) int
 	}
@@ -182,7 +182,7 @@ type QueryResolver interface {
 }
 type SubscriptionResolver interface {
 	MessagePosted(ctx context.Context, user string) (<-chan *Message, error)
-	GameUpdated(ctx context.Context, game InputGame) (<-chan *Game, error)
+	GameUpdated(ctx context.Context, gameID string) (<-chan *Game, error)
 	UserJoined(ctx context.Context, user string, gameID string) (<-chan string, error)
 	BoardstatePosted(ctx context.Context, boardstate InputBoardState) (<-chan *BoardState, error)
 }
@@ -749,7 +749,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Subscription.GameUpdated(childComplexity, args["game"].(InputGame)), true
+		return e.complexity.Subscription.GameUpdated(childComplexity, args["gameID"].(string)), true
 
 	case "Subscription.messagePosted":
 		if e.complexity.Subscription.MessagePosted == nil {
@@ -930,7 +930,7 @@ type Query {
 
 type Subscription {
   messagePosted(user: String!): Message!
-  gameUpdated(game: InputGame!): Game!
+  gameUpdated(gameID: String!): Game!
   userJoined(user: String!, gameID: String!): String!
   boardstatePosted(boardstate: InputBoardState!): BoardState!
 }
@@ -1496,15 +1496,15 @@ func (ec *executionContext) field_Subscription_boardstatePosted_args(ctx context
 func (ec *executionContext) field_Subscription_gameUpdated_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 InputGame
-	if tmp, ok := rawArgs["game"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("game"))
-		arg0, err = ec.unmarshalNInputGame2githubᚗcomᚋdylanlottᚋedhᚑgoᚋserverᚐInputGame(ctx, tmp)
+	var arg0 string
+	if tmp, ok := rawArgs["gameID"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("gameID"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["game"] = arg0
+	args["gameID"] = arg0
 	return args, nil
 }
 
@@ -3863,7 +3863,7 @@ func (ec *executionContext) _Subscription_gameUpdated(ctx context.Context, field
 	fc.Args = args
 	resTmp := ec._fieldMiddleware(ctx, nil, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Subscription().GameUpdated(rctx, args["game"].(InputGame))
+		return ec.resolvers.Subscription().GameUpdated(rctx, args["gameID"].(string))
 	})
 
 	if resTmp == nil {

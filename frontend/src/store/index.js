@@ -16,6 +16,7 @@ import {
     boardstateSubscription,
 } from '@/gqlQueries'
 import { updateBoardStateQuery } from '../gqlQueries';
+import { merge } from 'lodash';
 
 Vue.use(Vuex)
 
@@ -171,7 +172,9 @@ const Game = {
         },
         updateGame(state, game) {
             // merge updated game over current game
-            state.game = Object.assign(state.game, game)
+            const g = Object.assign(state.game, game)
+            console.table('updateGame mutation: ', g)
+            state.game = g
         },
         updateTurn(state, turn) {
             state.game.Turn = turn

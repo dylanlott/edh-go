@@ -43,30 +43,20 @@ func (s *graphQLServer) Games(ctx context.Context, gameID *string) ([]*Game, err
 	return []*Game{g}, nil
 }
 
-func (s *graphQLServer) GameUpdated(ctx context.Context, updated InputGame) (<-chan *Game, error) {
-	//
-	b, err := json.Marshal(updated)
-	if err != nil {
-		return nil, errs.New("failed to marshal input game: %s", err)
-	}
-	game := &Game{}
-	err = json.Unmarshal(b, &game)
-	if err != nil {
-		return nil, errs.New("failed to unmarshal game: %s", err)
-	}
-
+func (s *graphQLServer) GameUpdated(ctx context.Context, gameID string) (<-chan *Game, error) {
 	// create a new gameChannel to announce Game updates over
 	games := make(chan *Game, 1)
 	s.mutex.Lock()
 	// set the gameChannels to have the new receiving channel
-	s.gameChannels[updated.ID] = games
+	s.gameChannels[gameID] = games
 	// announce the game over the GameChannels
 	s.mutex.Unlock()
-	games <- game
+
+	// clean up
 	go func() {
 		<-ctx.Done()
 		s.mutex.Lock()
-		delete(s.gameChannels, updated.ID)
+		delete(s.gameChannels, gameID)
 		s.mutex.Unlock()
 	}()
 
@@ -77,23 +67,26 @@ func (s *graphQLServer) GameUpdated(ctx context.Context, updated InputGame) (<-c
 // or remove players, or change other meta informatin about a game.
 // NB: Game _can_ touch boardstate right now, and it probably shouldn't.
 func (s *graphQLServer) UpdateGame(ctx context.Context, new InputGame) (*Game, error) {
-	s.GameUpdated(ctx, new)
-
-	// check existence of game, fail if not found
+	game := &Game{}
 	b, err := json.Marshal(new)
 	if err != nil {
 		return nil, errs.New("failed to marshal input game: %s", err)
 	}
-	game := &Game{}
 	err = json.Unmarshal(b, &game)
 	if err != nil {
 		return nil, errs.New("failed to unmarshal game: %s", err)
 	}
 
+	// persist the game into redis
 	err = s.Set(GameKey(new.ID), game)
 	if err != nil {
 		return nil, fmt.Errorf("failed to save updated game state: %s", err)
 	}
+
+	// notify game channels of update
+	s.mutex.Lock()
+	s.gameChannels[game.ID] <- game
+	s.mutex.Unlock()
 
 	return game, nil
 }
@@ -175,23 +168,11 @@ func (s *graphQLServer) JoinGame(ctx context.Context, input *InputJoinGame) (*Ga
 		return nil, err
 	}
 
-	ig := InputGame{}
-	b, err := json.Marshal(game)
-	if err != nil {
-		log.Printf("failed to marshal input game in JoinGame: %s", err)
-		return nil, err
-	}
-	err = json.Unmarshal(b, &ig)
-	if err != nil {
-		log.Printf("failed to unmarshal input game in JoinGame: %s", err)
-		return nil, err
-	}
+	s.mutex.Lock()
+	s.gameChannels[game.ID] <- game
+	s.mutex.Unlock()
 
-	g, err := s.UpdateGame(ctx, ig)
-	if err != nil {
-		return nil, errs.Wrap(err)
-	}
-	return g, nil
+	return game, nil
 }
 
 // createGame is untested currently

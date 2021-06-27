@@ -3,15 +3,15 @@
     <div class="columns">
       <section class="column is-11 is-mobile">
         <p class="has-text-primary">
-          {{ game.game.Turn.Player }} |
-          {{ game.game.Turn.Phase }} |
-          {{ game.game.Turn.Number }}</p>
+          {{ game.Turn.Player }} |
+          {{ game.Turn.Phase }} |
+          {{ game.Turn.Number }}</p>
         <b-progress :value="progress" size="is-small" show-value></b-progress>
       </section>
       <section class="column is-1">
         <b-button
           type="button"
-          @click="handleTick(game.game)"
+          @click="handleTick(game)"
           class="is-success">
           Next
         </b-button>

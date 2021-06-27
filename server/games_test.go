@@ -229,113 +229,7 @@ func TestJoinGame(t *testing.T) {
 					t.Errorf("wanted: %+v - got: %+v\n", tt.want, diff)
 				}
 			}
-
-			// get the game from query and compare it
-			games, err := s.Games(context.Background(), &gameID)
-			if err != nil {
-				t.Errorf("failed to get games: %w", err)
-			}
-			if diff := cmp.Diff(tt.want, games[0], cmpopts.IgnoreFields(Game{}, "CreatedAt")); diff != "" {
-				t.Logf("[DIFF]: %+v", diff)
-				t.Errorf("wanted: %+v - got: %+v", tt.want, games[0])
-			}
 		})
-	}
-}
-
-func TestGameUpdated(t *testing.T) {
-	userID := string("deadbeef")
-	gameID := string("beefdead")
-	now := time.Now()
-
-	var cases = []struct {
-		name  string
-		input InputGame
-		err   error
-		want  *Game
-	}{
-		{
-			name: "test happy path game updated",
-			input: InputGame{
-				ID:        gameID,
-				CreatedAt: &now,
-				PlayerIDs: []*InputUser{
-					{
-						ID:       &userID,
-						Username: "shakezula",
-					},
-				},
-				Turn: &InputTurn{
-					Number: 3,
-					Phase:  "foo",
-					Player: "shakezula",
-				},
-				Rules: []*InputRule{
-					{Name: "format", Value: "EDH"},
-					{Name: "deck_size", Value: "99"},
-				},
-			},
-			err: nil,
-			want: &Game{
-				ID:        gameID,
-				CreatedAt: now,
-				PlayerIDs: []*User{
-					{
-						ID:       userID,
-						Username: "shakezula",
-					},
-				},
-				Turn: &Turn{
-					Number: 3,
-					Phase:  "foo",
-					Player: "shakezula",
-				},
-				Rules: []*Rule{
-					{Name: "format", Value: "EDH"},
-					{Name: "deck_size", Value: "99"},
-				},
-			},
-		},
-	}
-
-	for _, tt := range cases {
-		s := testAPI(t)
-		_, err := s.CreateGame(context.Background(), InputCreateGame{
-			ID: gameID,
-			Players: []*InputBoardState{
-				{
-					User: &InputUser{
-						ID:       &userID,
-						Username: "shakezula",
-					},
-					Life:     40,
-					Decklist: decklist(),
-					Commander: []*InputCard{
-						{
-							Name: "Gavi, Nest Warden",
-						},
-					},
-				},
-			},
-			Turn: &InputTurn{
-				Number: 0,
-				Phase:  "pregame",
-				Player: "shakezula",
-			},
-		})
-		if err != nil {
-			t.Errorf("failed to create test game for TestGameUpdated: %s", err)
-		}
-		resp, err := s.GameUpdated(context.Background(), tt.input)
-		if err != nil {
-			t.Errorf("failed to update game: %+v", err)
-		}
-		g := <-resp
-		diff := cmp.Diff(g, tt.want)
-		if diff != "" {
-			log.Printf("[DIFF]: %s", diff)
-			t.Errorf("GameUpdated() wanted: %+v - got: %+v", tt.want, g)
-		}
 	}
 }
 
@@ -426,7 +320,6 @@ func TestUpdateGame(t *testing.T) {
 
 			// test game that was emitted
 			game := <-s.gameChannels[g.ID]
-			t.Logf("%s got game: %+v", tt.name, game)
 			diff2 := cmp.Diff(game, tt.want, cmpopts.IgnoreFields(Game{}, "CreatedAt"))
 			if diff2 != "" {
 				t.Errorf("failed to emit game on channels correctly: diff %+v", diff2)
