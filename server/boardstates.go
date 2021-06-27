@@ -34,7 +34,6 @@ func (s *graphQLServer) BoardstatePosted(ctx context.Context, bs InputBoardState
 	s.mutex.Lock()
 	s.boardChannels[board.User.ID] = boardstates
 	s.mutex.Unlock()
-	boardstates <- board
 	go func() {
 		<-ctx.Done()
 		s.mutex.Lock()
@@ -45,15 +44,17 @@ func (s *graphQLServer) BoardstatePosted(ctx context.Context, bs InputBoardState
 	return boardstates, nil
 }
 
+// UpdateBoardState updates a BoardState in Redis and notifies that BoardState into the BoardChannels directory
+// This keys off of *input.User.ID so we might want to consider some pointer safety in the future here.
 func (s *graphQLServer) UpdateBoardState(ctx context.Context, input InputBoardState) (*BoardState, error) {
-	// immediately broadcast updated boardstate
-	s.BoardstatePosted(ctx, input)
-
+	if input.User.ID == nil {
+		return nil, errs.New("must provide a valid UserID")
+	}
+	// get a formatted boardstate from input
 	bs, err := boardStateFromInput(input)
 	if err != nil {
 		return nil, errs.Wrap(err)
 	}
-
 	// fetch game or fail if we can't find it
 	game := &Game{}
 	if err := s.Get(GameKey(input.GameID), &game); err != nil {
@@ -66,6 +67,25 @@ func (s *graphQLServer) UpdateBoardState(ctx context.Context, input InputBoardSt
 	// set boardstate into redis
 	if err := s.Set(BoardStateKey(input.GameID, input.User.Username), bs); err != nil {
 		return nil, fmt.Errorf("failed to persist boardstate: %s", err)
+	}
+
+	// notify boardChannels[*user.ID] of the updated state after successfully committing.
+	// if we can't find it, we want to call BoardStatePosted to create the channel and
+	// then we can push the boardstate into it.
+	log.Printf("looking up boardstate for %s", bs.User.ID)
+	if ch, ok := s.boardChannels[bs.User.ID]; !ok {
+		_, err := s.BoardstatePosted(ctx, input)
+		if err != nil {
+			return nil, errs.Wrap(err)
+		}
+		ch, ok := s.boardChannels[bs.User.ID]
+		if !ok {
+			return nil, errs.New("unable to find boardstate channel: %s", bs.User.ID)
+		}
+		ch <- bs
+		return bs, nil
+	} else {
+		ch <- bs
 	}
 
 	return bs, nil

@@ -93,6 +93,8 @@ export default {
       // rolls for turn, and deck tweaking can occur.
       // TODO: Make it so that only the game creator can leave the setup phase
       // TODO: Allow players to confirm "ready" if (phase === "setup")
+      // TODO: Handle turn order reversal 
+      // TODO: Handle extra player turns
       if (g.Turn.Phase === "setup") {
         g.Turn.Phase = this.phases[0]
         return g

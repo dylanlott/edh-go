@@ -538,3 +538,15 @@ issues I'm seeing with Join functionality are related to the authentication issu
 * Need to fix the game subscriptions so that a player joining notifies the board. 
 * JoinGame wasn't saving the new game to Redis either, so I fixed that today and was able to see a game update hit the front end after another client joined. BIG FACTS.
 * Bug with Turn Tracker: On the non-private window (the first player in the game) it ticks correctly and updates the other games, but if I tick it from the Private window (second player to join) then it doesn't update the first player's (non-private browser) Game. 
+* Still need to write a script to import the card database into the prod heroku database
+    * Could manually do it by hand for the first while though 
+    * https://stackoverflow.com/questions/6842393/import-sql-dump-into-postgresql-database Something like this for the script would work though 
+    * Will have to write a migration for the cards table as well that will match the cards schema
+* I think the Turn Tracker needs to get it's position from the game instead of setting it to 0 and attempting to go from there. Probably gonna have issues with multiplayer game edits.
+
+* Advice to future self with this project: Do not rewrite it. https://www.anthropicstudios.com/2021/06/25/when-to-rewrite/ I think there is a lot of value to this advice because seriously, if there's an issue, it's faster to fix it in the existing framework of all the work I've already done on this project, from dev ops and deployments to development servers and the like. It's been a major boost to productivity to make it fast and easy to deploy a new server and make a quick fix. 
+    * Being able to drop in, fix a one line bug, and immediately deploy it to Heroku without any issues and getting blue/green deploys out of the box? Insane value that I already have setup here, that transfers to any workstation by nature of it's git usage, and it's a completely scalable architecture maintained by a one-person dev team. 
+> "A working system is a valuable asset. It works. It lets you test new ideas cheaply. Don’t take that for granted." 
+Relevant quote from the article. 
+
+
