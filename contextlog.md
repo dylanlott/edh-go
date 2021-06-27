@@ -537,4 +537,4 @@ issues I'm seeing with Join functionality are related to the authentication issu
 * Figured out that I was doing subscriptions wrong with Apollo / GraphQL / graphqlgen. Basically, I need to take a gameID and return a *Game <-chan that can be alerted whenever a Game is updated. 
 * Need to fix the game subscriptions so that a player joining notifies the board. 
 * JoinGame wasn't saving the new game to Redis either, so I fixed that today and was able to see a game update hit the front end after another client joined. BIG FACTS.
-
+* Bug with Turn Tracker: On the non-private window (the first player in the game) it ticks correctly and updates the other games, but if I tick it from the Private window (second player to join) then it doesn't update the first player's (non-private browser) Game. 
