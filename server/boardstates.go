@@ -106,8 +106,7 @@ func (s *graphQLServer) Boardstates(ctx context.Context, gameID string, username
 		boardstates := []*BoardState{}
 		for _, p := range game.PlayerIDs {
 			board := &BoardState{}
-			boardKey := BoardStateKey(game.ID, p.Username)
-			err := s.Get(boardKey, &board)
+			err := s.Get(BoardStateKey(game.ID, p.Username), &board)
 			if err != nil {
 				log.Printf("error fetching user boardstate from redis: %s", err)
 			}
