@@ -530,3 +530,11 @@ issues I'm seeing with Join functionality are related to the authentication issu
 * Found the blog post that the graphQL code was initially based off of https://outcrawl.com/go-graphql-realtime-chat 
 * Referencing this implementation for my own code and I think I found the errors. 
     * I don't think I was correctly notifying the sender channels when game updates occurredd.
+
+27 July 2021
+============
+
+* Figured out that I was doing subscriptions wrong with Apollo / GraphQL / graphqlgen. Basically, I need to take a gameID and return a *Game <-chan that can be alerted whenever a Game is updated. 
+* Need to fix the game subscriptions so that a player joining notifies the board. 
+* JoinGame wasn't saving the new game to Redis either, so I fixed that today and was able to see a game update hit the front end after another client joined. BIG FACTS.
+

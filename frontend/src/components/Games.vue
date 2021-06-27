@@ -98,9 +98,6 @@ export default {
   },
   methods: {
     handleCreateGame() {
-      console.log('commander: ', this.commander)
-      console.log('decklist: ', this.decklist)
-      console.log('user: ', this.user)
       this.$store.dispatch('createGame', { 
         ID: '',
         Turn: {
@@ -127,9 +124,6 @@ export default {
             Controlled: [],
           },
         ],
-      })
-      .then((data) => {
-        console.log('createGame#data: ', data)
       })
     },
     queryCommanders() {

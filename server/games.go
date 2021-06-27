@@ -37,7 +37,7 @@ func (s *graphQLServer) Games(ctx context.Context, gameID *string) ([]*Game, err
 	g := &Game{}
 	err := s.Get(GameKey(*gameID), &g)
 	if err != nil {
-		log.Printf("games failed to get game %s: %s", *gameID, err)
+		log.Printf("failed to get game %s: %s", *gameID, err)
 		return nil, fmt.Errorf("failed to get game %s: %s", *gameID, err)
 	}
 	return []*Game{g}, nil
@@ -166,6 +166,12 @@ func (s *graphQLServer) JoinGame(ctx context.Context, input *InputJoinGame) (*Ga
 	if err != nil {
 		log.Printf("error persisting boardstate into redis: %s", err)
 		return nil, err
+	}
+
+	// persist updated game in Redis
+	err = s.Set(GameKey(game.ID), game)
+	if err != nil {
+		return nil, fmt.Errorf("failed to persist game after join: %w", err)
 	}
 
 	s.mutex.Lock()

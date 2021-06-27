@@ -612,8 +612,8 @@ export const selfStateQuery = gql`
 
 // gameUpdateQuery powers the TurnTracker and Opponents components.
 export const gameUpdateQuery = gql`
-subscription($game: InputGame!) {
-  gameUpdated(game: $game) {
+subscription($gameID: String!) {
+  gameUpdated(gameID: $gameID) {
     ID
     PlayerIDs {
       Username

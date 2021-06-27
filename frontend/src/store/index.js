@@ -201,9 +201,9 @@ const Game = {
                 })
             })
         },
-        subscribeToGame({ commit, state }, ID) {
+        subscribeToGame({ commit }, ID) {
             api.query({
-                query: gameQuery,// TODO: Add the right query  
+                query: gameQuery,
                 variables: {
                     gameID: ID,
                 }
@@ -211,18 +211,16 @@ const Game = {
             .then(data => {
                 if (data.data.games.length === 0) {
                     commit('error', 'no game received from subscription')
-                    console.error('no game received from subscription')
                     return
                 }
                 const sub = api.subscribe({
                     query: gameUpdateQuery,// nb: this is where we use the subscription { } query
                     variables: {
-                        game: state.game
+                        gameID: ID,
                     }
                 })
                 sub.subscribe({
                     next(data) {
-                        console.log('updating game: ', data.data)
                         commit('updateGame', data.data.gameUpdated)
                     },
                     error(err) {
