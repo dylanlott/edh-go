@@ -21,7 +21,6 @@ type Persistence interface {
 type KV interface {
 	Put(key Key, val Value) (Value, error)
 	Get(key Key) (Value, bool, error)
-	Do(cmd string, args ...interface{}) (interface{}, error)
 }
 
 // Database must be fulfilled for the cards package to operate correctly.

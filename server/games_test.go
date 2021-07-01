@@ -14,10 +14,10 @@ import (
 func TestCreateGame(t *testing.T) {
 	id := string("0xACAB")
 	var cases = []struct {
-		name  string
-		input *InputCreateGame
-		want  *Game
-		err   error
+		name    string
+		input   *InputCreateGame
+		want    *Game
+		wantErr bool
 	}{
 		{
 			name: "happy path creation",
@@ -62,10 +62,10 @@ func TestCreateGame(t *testing.T) {
 					{Name: "deck_size", Value: "99"},
 				},
 			},
-			err: nil,
+			wantErr: false,
 		},
 		{
-			name: "should allow for two commanders",
+			name: "should allow for game created with two commanders",
 			input: &InputCreateGame{
 				ID: "deadbeef",
 				Players: []*InputBoardState{
@@ -108,8 +108,9 @@ func TestCreateGame(t *testing.T) {
 				Rules: []*Rule{
 					{Name: "format", Value: "EDH"},
 					{Name: "deck_size", Value: "99"},
-				}, // TODO: make this test actually compare output results.
+				},
 			},
+			wantErr: false,
 		},
 	}
 
@@ -117,24 +118,17 @@ func TestCreateGame(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			s := testAPI(t)
 			result, err := s.CreateGame(context.Background(), *tt.input)
-			if result.ID == "" {
-				t.Errorf("games must have an ID")
-			}
-			if len(result.PlayerIDs) != len(tt.input.Players) {
-				t.Errorf("failed to add correct amount of players to the game")
+			if (err != nil) != tt.wantErr {
+				t.Errorf("s.UpdateBoardState() error = %+v - wanted: %+v", err, tt.wantErr)
 			}
 
+			// check results of want
 			diff := cmp.Diff(tt.want, result, cmpopts.IgnoreFields(
 				Game{},
 				"CreatedAt",
 			))
 			if diff != "" {
 				t.Errorf("failed to create game: %s", diff)
-			}
-			if tt.err != nil {
-				if diff := cmp.Diff(tt.err, err); diff != "" {
-					t.Errorf("wanted error: %+v - got error: %+v", tt.err, err)
-				}
 			}
 		})
 	}
@@ -307,22 +301,37 @@ func TestUpdateGame(t *testing.T) {
 			if err != nil {
 				t.Errorf("failed to create test host")
 			}
+
+			// register the channel for our tests
+			gameChannel, err := s.GameUpdated(tt.args.ctx, g.ID)
+			if err != nil {
+				t.Errorf("failed to get game subscription: %s", err)
+			}
+
+			// fire off our UpdateGame function
 			got, err := s.UpdateGame(tt.args.ctx, tt.args.new)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("graphQLServer.UpdateGame() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
+
+			// assert on the returns
 			diff := cmp.Diff(got, tt.want, cmpopts.IgnoreFields(Game{}, "CreatedAt"))
 			if diff != "" {
 				log.Printf("diff: %s", diff)
 				t.Errorf("UpdateGame wanted: %+v - got %+v", tt.want, got)
 			}
 
-			// test game that was emitted
-			game := <-s.gameChannels[g.ID]
-			diff2 := cmp.Diff(game, tt.want, cmpopts.IgnoreFields(Game{}, "CreatedAt"))
+			// assert on the game that was emitted from our subscription
+			emitted := <-gameChannel
+			diff2 := cmp.Diff(emitted, tt.want, cmpopts.IgnoreFields(Game{}, "CreatedAt"))
 			if diff2 != "" {
 				t.Errorf("failed to emit game on channels correctly: diff %+v", diff2)
+			}
+
+			_, ok := s.gameChannels[got.ID]
+			if !ok {
+				t.Errorf("failed to setup game channel")
 			}
 		})
 	}

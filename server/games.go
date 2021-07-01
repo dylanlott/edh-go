@@ -85,11 +85,12 @@ func (s *graphQLServer) UpdateGame(ctx context.Context, new InputGame) (*Game, e
 
 	// notify game channels of update
 	if ch, ok := s.gameChannels[game.ID]; !ok {
+		log.Printf("failed to find gameChannel[%s]", game.ID)
 		return nil, fmt.Errorf("failed to find game update channel: %s", game.ID)
 	} else {
+		log.Printf("emitting on gameChannel[%s]", game.ID)
 		ch <- game
 	}
-	s.gameChannels[game.ID] <- game
 
 	return game, nil
 }

@@ -66,12 +66,6 @@ func (r *redisDB) Get(key Key) (Value, bool, error) {
 	return Value(val), true, nil
 }
 
-// Do runs a redigo-style Do command through the Key Value store. This is
-// generally for use with Redis commands.
-func (r *redisDB) Do(cmd string, args ...interface{}) (interface{}, error) {
-	return nil, errs.New("not impl")
-}
-
 // String returns the string of Value.
 func (v Value) String() (string, error) {
 	return string(v), nil
