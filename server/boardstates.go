@@ -15,29 +15,23 @@ func BoardStateKey(gameID, username string) string {
 	return fmt.Sprintf("%s:%s", gameID, username)
 }
 
-// TODO: Need to determine how we format boardstate keys
-// TODO: Need to switch Directory over to Redis storage
-
-func (s *graphQLServer) BoardstatePosted(ctx context.Context, bs InputBoardState) (<-chan *BoardState, error) {
+// BoardstateUpdated returns a channel that emits all *BoardState events.
+func (s *graphQLServer) BoardstateUpdated(ctx context.Context, gameID string, userID string) (<-chan *BoardState, error) {
 	g := &Game{}
-	err := s.Get(GameKey(bs.GameID), g)
+	err := s.Get(GameKey(gameID), g)
 	if err != nil {
-
-	}
-
-	board, err := boardStateFromInput(bs)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get boardstate from input: %s", err)
+		return nil, errs.Wrap(err)
 	}
 
 	boardstates := make(chan *BoardState, 1)
 	s.mutex.Lock()
-	s.boardChannels[board.User.ID] = boardstates
+	s.boardChannels[userID] = boardstates
 	s.mutex.Unlock()
+
 	go func() {
 		<-ctx.Done()
 		s.mutex.Lock()
-		delete(s.boardChannels, board.User.ID)
+		delete(s.boardChannels, userID)
 		s.mutex.Unlock()
 	}()
 
@@ -48,42 +42,28 @@ func (s *graphQLServer) BoardstatePosted(ctx context.Context, bs InputBoardState
 // This keys off of *input.User.ID so we might want to consider some pointer safety in the future here.
 func (s *graphQLServer) UpdateBoardState(ctx context.Context, input InputBoardState) (*BoardState, error) {
 	if input.User.ID == nil {
-		return nil, errs.New("must provide a valid UserID")
+		return nil, errs.New("invalid boardstate")
 	}
 	// get a formatted boardstate from input
 	bs, err := boardStateFromInput(input)
 	if err != nil {
 		return nil, errs.Wrap(err)
 	}
-	// fetch game or fail if we can't find it
-	game := &Game{}
-	if err := s.Get(GameKey(input.GameID), &game); err != nil {
-		if err == redis.Nil {
-			return nil, fmt.Errorf("game %s does not exist", input.GameID)
-		}
-		return nil, fmt.Errorf("failed to get game %s: %s", input.GameID, err)
+
+	// check if the game exists - if it does then allow the boardstate for it to be set.
+	if _, ok := s.gameChannels[input.GameID]; !ok {
+		return nil, errs.New("game does not exist")
 	}
 
 	// set boardstate into redis
-	if err := s.Set(BoardStateKey(input.GameID, input.User.Username), bs); err != nil {
+	log.Printf("updating userID %s at game %s", *input.User.ID, input.GameID)
+	if err := s.Set(BoardStateKey(input.GameID, *input.User.ID), bs); err != nil {
 		return nil, fmt.Errorf("failed to persist boardstate: %s", err)
 	}
 
-	// notify boardChannels[*user.ID] of the updated state after successfully committing.
-	// if we can't find it, we want to call BoardStatePosted to create the channel and
-	// then we can push the boardstate into it.
-	log.Printf("looking up boardstate for %s", bs.User.ID)
-	if ch, ok := s.boardChannels[bs.User.ID]; !ok {
-		_, err := s.BoardstatePosted(ctx, input)
-		if err != nil {
-			return nil, errs.Wrap(err)
-		}
-		ch, ok := s.boardChannels[bs.User.ID]
-		if !ok {
-			return nil, errs.New("unable to find boardstate channel: %s", bs.User.ID)
-		}
-		ch <- bs
-		return bs, nil
+	// emit channel over boardstate
+	if ch, ok := s.boardChannels[*input.User.ID]; !ok {
+		return nil, errs.New("userID not found")
 	} else {
 		ch <- bs
 	}

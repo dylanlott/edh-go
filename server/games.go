@@ -84,9 +84,12 @@ func (s *graphQLServer) UpdateGame(ctx context.Context, new InputGame) (*Game, e
 	}
 
 	// notify game channels of update
-	s.mutex.Lock()
+	if ch, ok := s.gameChannels[game.ID]; !ok {
+		return nil, fmt.Errorf("failed to find game update channel: %s", game.ID)
+	} else {
+		ch <- game
+	}
 	s.gameChannels[game.ID] <- game
-	s.mutex.Unlock()
 
 	return game, nil
 }
@@ -94,7 +97,7 @@ func (s *graphQLServer) UpdateGame(ctx context.Context, new InputGame) (*Game, e
 // JoinGame ...
 func (s *graphQLServer) JoinGame(ctx context.Context, input *InputJoinGame) (*Game, error) {
 	// TODO: Check context for User auth and append user info that way
-	// TODO: We check for game existence a lot, we should probably make this a function
+	// TODO: PUll user boardstate creation out into a function since we do it multiple places
 	if input.User.ID == nil {
 		return nil, errors.New("must provide a user ID to join a game")
 	}

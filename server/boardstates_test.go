@@ -72,10 +72,13 @@ func TestUpdateBoardState(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			s := testAPI(t)
-			_, err := s.CreateGame(tt.args.ctx, *seedInputGame)
+			created, err := s.CreateGame(tt.args.ctx, *seedInputGame)
 			if err != nil {
 				t.Errorf("failed to create dummy game: %s", err)
 			}
+
+			// register the BoardState channel for the userID
+			boardstateChannel, err := s.BoardstateUpdated(tt.args.ctx, created.ID, *tt.args.input.User.ID)
 			got, err := s.UpdateBoardState(tt.args.ctx, tt.args.input)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("graphQLServer.UpdateBoardState() error = %v, wantErr %v", err, tt.wantErr)
@@ -87,7 +90,7 @@ func TestUpdateBoardState(t *testing.T) {
 
 			// assert on boardstate notifications if no error is expected
 			if tt.wantErr == false {
-				boardstate := <-s.boardChannels[got.User.ID]
+				boardstate := <-boardstateChannel
 				if !reflect.DeepEqual(boardstate, tt.want) {
 					diff := cmp.Diff(boardstate, tt.want)
 					t.Logf("DIFF: %+v", diff)
