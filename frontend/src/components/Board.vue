@@ -1,25 +1,28 @@
 <template>
   <div class="board shell">
-      <div class="columns shell" :key="player.ID" v-for="player in game.PlayerIDs">
-        <!-- FIND OPPONENTS  -->
-        <div class="column" v-if="player.ID != user.ID">
-          // {{ player.ID }}
-          // BOARDSTATE: {{ boardstates[player.ID] ? boardstates[player.ID].Commander[0].Name : "" }}
-        </div>
-        <!-- FIND SELF  -->
-        <div class="column" v-if="player.ID == user.ID">
-          // SELF: {{ player.ID }}
-          // BOARDSTATE: {{ boardstates[player.ID] ? boardstates[player.ID].Commander[0].Name : "" }}
-        </div>
+    <div class="columns shell" :key="player.ID" v-for="player in game.PlayerIDs">
+      <!-- 
+        NB: This loops - if we run into serious performance issues we might want to consider
+        changing how we store and update player boardstates.
+        Maybe 
+      -->
+      <!-- FIND OPPONENTS  -->
+      <div class="column" v-if="player.ID != user.ID">
+        <div class="title is-6">{{player.Username }} {{ player.ID }}</div>
       </div>
+      <!-- FIND SELF  -->
+      <div class="column" v-if="player.ID == user.ID">
+        <div class="title is-6">{{player.Username }} {{ player.ID }}</div>
+        <SelfState :playerID="player.ID"></SelfState>
+      </div>
+    </div>
 
-      <!-- TURN TRACKER -->
-      <div class="shell column is-9">
-        <TurnTracker :game="game" />
-      </div>
-
-      </div>
-    <!-- <div class="columns">
+    <!-- TURN TRACKER -->
+    <div class="shell column is-9">
+      <TurnTracker :game="game" />
+    </div>
+  </div>
+  <!-- <div class="columns">
       <div class="shell column is-3">
         <div class="title is-4">{{ boardstates[user.ID].Life }}</div>
         <button class="button is-small" @click="increaseLife()">Increase</button>
@@ -27,28 +30,7 @@
       </div>
     </div> -->
 
-    <!-- <SelfState :boardstate="self"></SelfState> -->
-
-    <!-- CONTROL PANEL -->
-    <!-- <div class="shell controlpanel columns">
-      <div class="columns">
-        <div class="column">
-          <button class="button is-small is-primary">Collapse All</button>
-        </div>
-        <div class="column">
-          <button class="button is-small is-primary">Untap</button>
-        </div>
-        <div class="column">
-          <button @click="draw()" class="button is-small is-primary">Draw</button>
-        </div>
-        <div class="column">
-          <button class="button is-small is-primary">Shuffle</button>
-        </div>
-        <div class="column">
-          <button @click="mill()" class="button is-small is-primary">Mill</button>
-        </div>
-      </div>
-    </div> -->
+  <!-- <SelfState :boardstate="self"></SelfState> -->
 </template>
 <script>
 import _ from 'lodash';
@@ -63,9 +45,7 @@ import { mapState } from 'vuex';
 export default {
   name: 'board',
   data() {
-    return {
-      opponentStateOpen: false,
-    };
+    return {};
   },
   created() {
     // Start from the game:
@@ -77,18 +57,14 @@ export default {
     // this.$store.dispatch('subscribeToGame', this.$route.params.id)
     this.$store
       .dispatch('getBoardStates', this.$route.params.id)
-      .then(() => this.$store.dispatch('subAll', this.$route.params.id))
+      .then(() => this.$store.dispatch('subAll', this.$route.params.id));
   },
   computed: mapState({
     game: (state) => state.Game.game,
-    boardstates: (state) => state.BoardStates.boardstates,
+    // boardstates: (state) => state.BoardStates.boardstates,
     user: (state) => state.User.User,
   }),
   methods: {
-    mutateBoardState() {
-      // QUESTION: Does this work like I think it does? I think it does, but need to make sure.
-      return this.$store.dispatch('mutateBoardState', this.boardstates[this.user.ID]);
-    },
   },
   components: {
     draggable,

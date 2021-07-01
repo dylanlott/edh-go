@@ -55,6 +55,9 @@ const BoardStates = {
             })
         },
     },
+    getters: {
+        self: state => state.BoardStates.boardstates[state.User.ID]
+    },
     actions: {
         draw({ commit, dispatch }, boardstate) {
             const bs = Object.assign({}, boardstate)
@@ -307,6 +310,7 @@ const Game = {
                 }
             })
             .then((data) => {
+                console.log('updateGame is setting: ', data.data.updateGame)
                 commit('updateGame', data.data.updateGame)
                 return data
             })
