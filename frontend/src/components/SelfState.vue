@@ -6,12 +6,12 @@
         <p class="title is-5">Battlefield</p>
         <draggable
           class="card-wrapper"
-          v-model="self.Field"
+          v-model="self().Field"
           group="people"
           @start="drag = true"
           @end="drag = false"
         >
-          <div v-for="card in self.Field" :key="card.id" class="columns">
+          <div v-for="card in self().Field" :key="card.id" class="columns">
             <Card v-bind="card" />
           </div>
         </draggable>
@@ -23,11 +23,11 @@
         <p class="title is-5">Exiled</p>
         <draggable
         class="column card-wrapper"
-        v-model="self.Exiled"
+        v-model="self().Exiled"
         group="people"
         @start="drag=true"
         @end="drag=false">
-           <div v-for="card in self.Exiled" :key="card.id">
+           <div v-for="card in self().Exiled" :key="card.id">
              <Card v-bind="card"/>
            </div>
         </draggable>
@@ -36,11 +36,11 @@
         <p class="title is-5">Graveyard</p>
         <draggable
         class="column card-wrapper"
-        v-model="self.Graveyard"
+        v-model="self().Graveyard"
         group="people"
         @start="drag=true"
         @end="drag=false">
-           <div v-for="card in self.Graveyard" :key="card.id">
+           <div v-for="card in self().Graveyard" :key="card.id">
              <Card v-bind="card"/>
            </div>
         </draggable>
@@ -49,11 +49,11 @@
         <p class="title is-5">Revealed</p>
         <draggable
         class="column card-wrapper"
-        v-model="self.Revealed"
+        v-model="self().Revealed"
         group="people"
         @start="drag=true"
         @end="drag=false">
-           <div v-for="card in self.Revealed" :key="card.id">
+           <div v-for="card in self().Revealed" :key="card.id">
              <Card v-bind="card"/>
            </div>
         </draggable>
@@ -62,11 +62,11 @@
         <p class="title is-5">Emblems/Counters</p>
         <draggable
         class="column card-wrapper"
-        v-model="self.emblems"
+        v-model="self().emblems"
         group="people"
         @start="drag=true"
         @end="drag=false">
-           <div v-for="card in self.Emblems" :key="card.id">
+           <div v-for="card in self().Emblems" :key="card.id">
              <Card v-bind="card"/>
            </div>
         </draggable>
@@ -75,11 +75,11 @@
         <p class="title is-5">Library</p>
         <draggable
         class="column card-wrapper"
-        v-model="self.Library"
+        v-model="self().Library"
         group="people"
         @start="drag=true"
         @end="drag=false">
-           <div v-for="card in self.Library" :key="card.id">
+           <div v-for="card in self().Library" :key="card.id">
              <Card v-bind="card" hidden="true"/>
            </div>
         </draggable>
@@ -90,13 +90,13 @@
         <p class="title is-4">Hand</p>
         <draggable
         class="columns card-wrapper"
-        v-model="self.Hand"
+        v-model="self().Hand"
         group="people"
         @start="drag=true"
         @end="drag=false">
            <div 
             class="column mtg-card"
-            v-for="card in self.Hand"
+            v-for="card in self().Hand"
             :key="card.id">
             <Card v-bind="card"></Card>
            </div>
@@ -121,11 +121,8 @@ export default {
     playerID: String,
   },
   computed: {
-    self() {
-      return this.$store.getters.self
-    },
   ...mapState({
-    boardstates: state => state.BoardStates.boardstates,
+    boardstates: state => state.BoardStates.boardstates
   }),
   },
   methods: {
@@ -141,6 +138,9 @@ export default {
     mutateBoardState(bs) {
       return this.$store.dispatch('mutateBoardState', bs);
     },
+  },
+  self() {
+    return this.playerID
   },
   components: {
     Card,

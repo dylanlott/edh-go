@@ -16,7 +16,6 @@ import {
     boardstateSubscription,
 } from '@/gqlQueries'
 import { updateBoardStateQuery } from '../gqlQueries';
-import { merge } from 'lodash';
 
 Vue.use(Vuex)
 
@@ -47,6 +46,7 @@ const BoardStates = {
         updateBoardStates(state, payload) {
             // update each boardstate by player ID
             payload.forEach((bs) => {
+                console.log('updating boardstate:', bs)
                 if (bs.User.ID == "" || bs.User.ID == undefined) {
                     state.error = "boardstate did not have ID"
                     return
@@ -55,18 +55,16 @@ const BoardStates = {
             })
         },
     },
-    getters: {
-        self: state => state.BoardStates.boardstates[state.User.ID]
-    },
     actions: {
         draw({ commit, dispatch }, boardstate) {
             const bs = Object.assign({}, boardstate)
             if (bs.Library.length < 1) {
-                // handle issue
+                // handle player losing issue
                 commit('error', 'you cannot draw from an empty library. you lose the game.')
                 console.error('cannot draw from an empty library.')
             }
             const card = bs.Library.shift()
+            console.log('card: ', card)
             bs.Hand.push(card)
             dispatch('mutateBoardState', bs)
         },
@@ -87,7 +85,7 @@ const BoardStates = {
                 })
         },
         // gets all boardstates from server, but doesn't subscribe
-        getBoardStates({ commit }, gameID) {
+        getBoardStates({ state, commit, rootState }, gameID) {
             return new Promise((resolve, reject) => {
                 api.query({
                     query: boardstates,
@@ -96,6 +94,13 @@ const BoardStates = {
                     }
                 })
                 .then((resp) => {
+                    resp.data.boardstates.forEach((boardstate) => {
+                        if (boardstate.User.ID === rootState.User.User.ID) {
+                            console.log("self detected: ", boardstate)
+                            state.boardstates[rootState.User.User.ID] = boardstate
+                        }
+                    })
+                    // Note: we don't need to put this resp into an array because its already a list
                     commit('updateBoardStates', resp.data.boardstates)
                     return resolve(resp.data)
                 })
@@ -106,19 +111,23 @@ const BoardStates = {
             })
         },
         // used for subscribing to single board updates
-        subscribeToBoardState({ state, commit, rootState }, payload) {
-            // self.GameID == "" since it's not assigned before that query fires
-            // we need to assign that first 
-            const self = rootState.User.User
+        subToBoardstate({ rootState, commit }, payload) {
+            console.log('rootState.User.User.ID', rootState.User.User.ID)
             const sub = api.subscribe({
                 query: boardstateSubscription,// TODO: Add the right query  
                 variables: {
-                    inputBoardState: state.boardstates[self.ID],
+                    gameID: payload.gameID,
+                    userID: payload.userID,
                 },
             })
             sub.subscribe({
                 next(data) {
-                    commit('updateBoardStates', [data.data.boardstatePosted])
+                    console.log("received boardstate update: ", data.data.boardstateUpdated)
+                    // detect self vs opponents here and assign accordingly 
+                    if (data.data.boardstateUpdated.User.ID == rootState.User.User.ID) {
+                        console.log("SELF RECEIVED: ", data.data.boardstateUpdated)
+                    }
+                    commit('updateBoardStates', [data.data.boardstateUpdated])
                 },
                 error(err) {
                     commit('error', err)
@@ -126,24 +135,6 @@ const BoardStates = {
                 }
             })
         },
-        // subAll subscribes to all boardstate updates including our own.
-        subAll({ commit }, gameID) {
-            const sub = api.subscribe({
-                query: boardstates,
-                variables: {
-                    gameID: gameID
-                }
-            })
-            sub.subscribe({
-                next (data) {
-                    console.table("subAll: ", data)
-                    commit('updateBoardStates', data.data.boardstates)
-                },
-                error(err) {
-                    commit('subAll: subscription error', err)
-                }
-            })
-        }
     },
 }
 
@@ -204,7 +195,7 @@ const Game = {
                 })
             })
         },
-        subscribeToGame({ commit }, ID) {
+        subscribeToGame({ state, commit }, ID) {
             api.query({
                 query: gameQuery,
                 variables: {
