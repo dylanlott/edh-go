@@ -315,9 +315,14 @@ func (s *graphQLServer) createLibraryFromDecklist(ctx context.Context, decklist 
 	}
 	trimmed := strings.TrimSpace(decklist)
 	r := csv.NewReader(strings.NewReader(trimmed))
+	// set lazy quotes for using double quotes in csv files
+	r.LazyQuotes = true
+	r.TrimLeadingSpace = true
 	cards := []*Card{}
 
 	for {
+		// TODO: Use r.ReadAll() to get the whole decklist and do only one
+		// DB lookup for all of the cards instead of one by one.
 		record, err := r.Read()
 		if err == io.EOF {
 			break
@@ -339,6 +344,7 @@ func (s *graphQLServer) createLibraryFromDecklist(ctx context.Context, decklist 
 
 		// NB: In the future, this should be optimized to be one query for all the cards
 		// instead of a query for each card in the deck.
+		log.Printf("parsing record: %+v", record)
 		name := record[1]
 		card, err := s.Card(ctx, name, nil)
 		if err != nil {
