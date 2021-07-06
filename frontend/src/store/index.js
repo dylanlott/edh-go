@@ -22,10 +22,15 @@ Vue.use(Vuex)
 const ls = window.localStorage
 
 const BoardStates = {
+    // BoardStates should only ever be updated by push from the server, we 
+    // don't normally want to update these ourselves. 
     state: {
         // boardstates holds an object with all player boardstates
         // keyed by the player's UUID (ID)
         boardstates: {},
+        // we load our personal state into self but we still don't want to 
+        // violate our one-direction data flow principle
+        self: {},
         // error is an error message from the API. 
         // TODO: Make these decay 
         error: undefined
@@ -54,10 +59,14 @@ const BoardStates = {
                 state.boardstates[bs.User.ID] = bs
             })
         },
+        updateSelf(state, payload) {
+            state.self = payload
+        }
     },
     actions: {
         draw({ commit, dispatch }, boardstate) {
             const bs = Object.assign({}, boardstate)
+            console.log('draw#boardstate:', bs)
             if (bs.Library.length < 1) {
                 // handle player losing issue
                 commit('error', 'you cannot draw from an empty library. you lose the game.')
@@ -98,6 +107,7 @@ const BoardStates = {
                         if (boardstate.User.ID === rootState.User.User.ID) {
                             console.log("self detected: ", boardstate)
                             state.boardstates[rootState.User.User.ID] = boardstate
+                            commit('updateSelf', boardstate)
                         }
                     })
                     // Note: we don't need to put this resp into an array because its already a list
@@ -334,6 +344,15 @@ const User = {
             Cookies.set("token", payload.Token)
             Cookies.set("user_info", JSON.stringify(payload))
         },
+        logout(state) {
+            // set back to default state
+            state.User = {Username: "", Token: "", ID: ""}
+            // and then remove all cookies
+            Cookies.remove("username")
+            Cookies.remove("userID")
+            Cookies.remove("token")
+            Cookies.remove("user_info")
+        },
         loading(state, bool) {
             state.loading = bool
         },
@@ -369,7 +388,7 @@ const User = {
             })
         },
         logout({ commit }) {
-            commit('setUser', undefined)
+            commit('logout')
             router.push({ path: '/' })
         },
         signup({ commit, dispatch }, payload) {

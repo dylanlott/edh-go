@@ -1,20 +1,48 @@
 <template>
   <div class="board shell" v-if="user && game">
     <!-- TURN TRACKER -->
-    <div class="shell column is-12">
+    <div class="shell column">
       <TurnTracker :game="game" />
     </div>
     <div class="columns shell" :key="player.ID" v-for="player in game.PlayerIDs">
       <!-- ### OPPONENTS BOARDSTATES ### -->
       <div class="column" v-if="user.ID && player.ID != user.ID">
-        <div class="title is-6">{{ player.Username }} {{ player.ID }}</div>
+        <div class="title">{{ player.Username }} {{ player.ID }}</div>
       </div>
+    </div>
+    <div class="columns shell">
       <!-- ### END OF OPPONENTS BOARDSTATES ### -->
 
       <!-- ### SELF BOARDSTATE ### -->
-      <!-- LIFE  -->
-      <div class="column" v-if="user.ID ? player.ID == user.ID : false">
+      <div class="column" v-if="self">
         <div class="title is-6">{{ user.Username }} {{ user.ID }}</div>
+
+        <!-- SELF - BATTLEFIELD -->
+        <div class="column">
+          <p class="title is-5">Battlefield</p>
+          <draggable class="card-wrapper" v-model="self.Field" group="people" @start="drag = true" @end="drag = false">
+            <div v-for="card in self.Field" :key="card.id" class="columns">
+              <Card v-bind="card" />
+            </div>
+          </draggable>
+        </div>
+        <!-- END SELF BATTLEFIELD -->
+
+        <!-- SELF - LIBRARY  -->
+        <div class="column" @click="handleDraw()">
+          <p class="title is-5">Library</p>
+          <draggable
+            class="column card-wrapper"
+            v-model="self.Library"
+            group="people"
+            @start="drag = true"
+            @end="drag = false"
+          >
+            <div v-for="card in self.Library" :key="card.id">
+              <Card v-bind="card" hidden="true" />
+            </div>
+          </draggable>
+        </div>
       </div>
 
       <!-- ### END OF SELF ### -->
@@ -35,18 +63,17 @@ export default {
   },
   created() {
     // Get the root game and then register boardstate listeners off of that.
-    this.$store.dispatch('getGame', this.$route.params.id)
-      .then(() => {
-        // sub to game updates
-        this.$store.dispatch('subscribeToGame', this.$route.params.id);
-        // sub to player boardstate updates
-        this.game.PlayerIDs.forEach((player) => {
-          this.$store.dispatch('subToBoardstate', {
-            gameID: this.$route.params.id,
-            userID: player.ID,
-          });
+    this.$store.dispatch('getGame', this.$route.params.id).then(() => {
+      // sub to game updates
+      this.$store.dispatch('subscribeToGame', this.$route.params.id);
+      // sub to player boardstate updates
+      this.game.PlayerIDs.forEach((player) => {
+        this.$store.dispatch('subToBoardstate', {
+          gameID: this.$route.params.id,
+          userID: player.ID,
         });
       });
+    });
 
     // get initial boardstates
     this.$store.dispatch('getBoardStates', this.$route.params.id);
@@ -54,12 +81,15 @@ export default {
   computed: mapState({
     game: (state) => state.Game.game,
     bs: (state) => state.BoardStates.boardstates,
+    self: (state) => state.BoardStates.self,
     user: (state) => state.User.User,
   }),
   methods: {
     handleIncLife() {},
     handleDecLife() {},
-    handleDraw() {},
+    handleDraw() {
+      this.$store.dispatch('draw', this.self)
+    },
   },
   components: {
     draggable,
