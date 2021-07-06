@@ -21,6 +21,7 @@
     "jquery": "^3.5.1",
     "js-cookie": "^2.2.1",
     "lodash": "^4.17.20",
+    "node-sass": "5",
     "popper.js": "^1.16.1",
     "subscriptions-transport-ws": "^0.9.18",
     "vue": "^2.6.12",
@@ -32,10 +33,10 @@
   },
   "devDependencies": {
     "@types/lodash": "^4.14.169",
+    "@vue/cli": "^4.5.13",
     "@vue/cli-plugin-babel": "^4.5.8",
     "@vue/cli-service": "^4.5.8",
-    "node-sass": "^4.14.1",
-    "sass-loader": "^8.0.2",
+    "sass-loader": "^10",
     "vue-template-compiler": "^2.6.12"
   },
   "postcss": {
