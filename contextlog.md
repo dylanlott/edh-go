@@ -549,4 +549,17 @@ issues I'm seeing with Join functionality are related to the authentication issu
 > "A working system is a valuable asset. It works. It lets you test new ideas cheaply. Don’t take that for granted." 
 Relevant quote from the article. 
 
+5 July 2021
+============ 
+
+* Need to write a Postgres KeyValueStore for the app so that we can check performance between redis and postgres 
+  * Would be nice to drop a dependency if we could, but if Redis is fast enough it is probably worth keeping
+  * I have a hunch that it's definitely fast enough, and on the other hand it was an original design goal of the app 
+* Need to write the GameLog feature 
+    * Compare hstore/json approach with a column-only approach 
+* Need a simple Profile page, too
+  * Forgot Password flow is gonna be a pain 
+  * Need a Profile model, too 
+  * Finish the BoardState updates first, though. Much more important. 
+
 
