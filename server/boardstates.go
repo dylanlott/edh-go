@@ -11,8 +11,8 @@ import (
 )
 
 // BoardStateKey formats a board state key for boardstate to user mapping.
-func BoardStateKey(gameID, username string) string {
-	return fmt.Sprintf("%s:%s", gameID, username)
+func BoardStateKey(gameID, userID string) string {
+	return fmt.Sprintf("%s:%s", gameID, userID)
 }
 
 // BoardstateUpdated returns a channel that emits all *BoardState events.
@@ -72,7 +72,7 @@ func (s *graphQLServer) UpdateBoardState(ctx context.Context, input InputBoardSt
 }
 
 // Boardstates queries Redis for different boardstates per player or game
-func (s *graphQLServer) Boardstates(ctx context.Context, gameID string, username *string) ([]*BoardState, error) {
+func (s *graphQLServer) Boardstates(ctx context.Context, gameID string, userID *string) ([]*BoardState, error) {
 	game := &Game{}
 	err := s.Get(GameKey(gameID), &game)
 	if err != nil {
@@ -82,11 +82,11 @@ func (s *graphQLServer) Boardstates(ctx context.Context, gameID string, username
 		return nil, fmt.Errorf("failed to find game %s to update boardstates: %s", gameID, err)
 	}
 	// if username is not provided, send all
-	if username == nil {
+	if userID == nil {
 		boardstates := []*BoardState{}
 		for _, p := range game.PlayerIDs {
 			board := &BoardState{}
-			err := s.Get(BoardStateKey(game.ID, p.Username), &board)
+			err := s.Get(BoardStateKey(gameID, p.ID), &board)
 			if err != nil {
 				log.Printf("error fetching user boardstate from redis: %s", err)
 			}
@@ -95,25 +95,13 @@ func (s *graphQLServer) Boardstates(ctx context.Context, gameID string, username
 		return boardstates, nil
 	}
 
-	boardstates := []*BoardState{}
-	for _, p := range game.PlayerIDs {
-		if p.Username == *username {
-			board := &BoardState{}
-			boardKey := BoardStateKey(game.ID, p.Username)
-			err := s.Get(boardKey, &board)
-			if err != nil {
-				log.Printf("error fetching user boardstate from redis: %s", err)
-			}
-
-			boardstates = append(boardstates, board)
-		}
+	// username provided, return that boardstate
+	bs := &BoardState{}
+	err = s.Get(BoardStateKey(gameID, *userID), &bs)
+	if err != nil {
+		return nil, errs.Wrap(err)
 	}
-
-	if len(boardstates) == 0 {
-		return []*BoardState{}, errs.New("no boardstate for user %s found", *username)
-	}
-
-	return boardstates, nil
+	return []*BoardState{bs}, nil
 }
 
 func boardStateFromInput(bs InputBoardState) (*BoardState, error) {
