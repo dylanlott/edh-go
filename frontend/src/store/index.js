@@ -108,10 +108,11 @@ const BoardStates = {
                             console.log("self detected: ", boardstate)
                             state.boardstates[rootState.User.User.ID] = boardstate
                             commit('updateSelf', boardstate)
+                        } else {
+                            commit('updateBoardStates', resp.data.boardstates)
                         }
                     })
                     // Note: we don't need to put this resp into an array because its already a list
-                    commit('updateBoardStates', resp.data.boardstates)
                     return resolve(resp.data)
                 })
                 .catch((err) => {
@@ -122,7 +123,6 @@ const BoardStates = {
         },
         // used for subscribing to single board updates
         subToBoardstate({ rootState, commit }, payload) {
-            console.log('rootState.User.User.ID', rootState.User.User.ID)
             const sub = api.subscribe({
                 query: boardstateSubscription,// TODO: Add the right query  
                 variables: {
