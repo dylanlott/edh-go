@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"reflect"
 
 	redis "github.com/go-redis/redis/v7"
 	"github.com/zeebo/errs"
@@ -51,12 +52,16 @@ func (s *graphQLServer) UpdateBoardState(ctx context.Context, input InputBoardSt
 	}
 
 	// check if the game exists - if it does then allow the boardstate for it to be set.
-	if _, ok := s.gameChannels[input.GameID]; !ok {
-		return nil, errs.New("game does not exist")
+	g := &Game{}
+	err = s.Get(GameKey(input.GameID), &g)
+	if err != nil {
+		return nil, errs.Wrap(err)
+	}
+	if reflect.DeepEqual(g, &Game{}) {
+		return nil, errs.New("failed to marshall game: %+v", g)
 	}
 
 	// set boardstate into redis
-	log.Printf("updating userID %s at game %s", *input.User.ID, input.GameID)
 	if err := s.Set(BoardStateKey(input.GameID, *input.User.ID), bs); err != nil {
 		return nil, fmt.Errorf("failed to persist boardstate: %s", err)
 	}
@@ -84,11 +89,14 @@ func (s *graphQLServer) Boardstates(ctx context.Context, gameID string, userID *
 	// if username is not provided, send all
 	if userID == nil {
 		boardstates := []*BoardState{}
+		log.Printf("playerIDS: %+v", game.PlayerIDs)
 		for _, p := range game.PlayerIDs {
 			board := &BoardState{}
+			log.Printf("checking gameID %s and playerID %s", gameID, p.ID)
 			err := s.Get(BoardStateKey(gameID, p.ID), &board)
 			if err != nil {
-				log.Printf("error fetching user boardstate from redis: %s", err)
+				// NB: Should we fail gracefully here?
+				return nil, errs.Wrap(err)
 			}
 			boardstates = append(boardstates, board)
 		}

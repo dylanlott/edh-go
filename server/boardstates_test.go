@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -90,7 +91,6 @@ func TestUpdateBoardState(t *testing.T) {
 				t.Errorf("graphQLServer.UpdateBoardState() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			assert.Equal(t, err, nil)
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("graphQLServer.UpdateBoardState() = %v, want %v", got, tt.want)
 			}
@@ -195,18 +195,60 @@ func Test_Boardstates(t *testing.T) {
 			},
 			wantErr: false,
 		},
+		// {
+		// 	name: "should return all boardstate that match the gameID",
+		// 	args: args{
+		// 		ctx:    context.Background(),
+		// 		gameID: seedGameID,
+		// 		userID: nil,
+		// 	},
+		// 	want: []*BoardState{
+		// 		{
+		// 			GameID: seedGameID,
+		// 			User: &User{
+		// 				Username: "shakezula",
+		// 				ID:       p1,
+		// 			},
+		// 			Life: 40,
+		// 			Commander: []*Card{
+		// 				{
+		// 					ID:   p1commander,
+		// 					Name: "Kykar, Wind's Fury",
+		// 				},
+		// 			},
+		// 		},
+		// 		{
+		// 			GameID: seedGameID,
+		// 			User: &User{
+		// 				Username: "meatwad",
+		// 				ID:       p2,
+		// 			},
+		// 			Life: 38,
+		// 			Commander: []*Card{
+		// 				{
+		// 					ID:   p2commander,
+		// 					Name: "Sidisi, Undead Vizier",
+		// 				},
+		// 			},
+		// 		},
+		// 	},
+		// 	wantErr: false,
+		// },
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			_, err := s.BoardstateUpdated(tt.args.ctx, tt.args.gameID, *tt.args.userID)
-			assert.NoError(t, err, "failed to setup channel listener")
+			if tt.args.userID != nil {
+				_, err := s.BoardstateUpdated(tt.args.ctx, tt.args.gameID, *tt.args.userID)
+				assert.NoError(t, err, "failed to setup channel listener")
+			}
 			got, err := s.Boardstates(tt.args.ctx, tt.args.gameID, tt.args.userID)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("graphQLServer.Boardstates() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("graphQLServer.Boardstates() error = %+v, wantErr %+v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("graphQLServer.Boardstates() = %v, want %v", got, tt.want)
+				t.Logf("diff: %s", cmp.Diff(got, tt.want, cmpopts.IgnoreUnexported(BoardState{})))
+				t.Errorf("graphQLServer.Boardstates() = %+v, want %+v", got, tt.want)
 			}
 		})
 	}
