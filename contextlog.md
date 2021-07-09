@@ -574,3 +574,10 @@ the CreateGame function.
 Sure enough, I was right. The `CreateGame` function was keying BoardStates by 
 Username instead of ID's like they should be. I should write a regression test
 for that.
+
+Okay, so now we're in a place where BoardStates are solid, game creation is 
+solid, and board updates are being subscribed to and received.
+
+Now we just need to push on the UI until it's in a place where we can play
+test with multiple people. 
+
