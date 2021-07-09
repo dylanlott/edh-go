@@ -103,11 +103,8 @@ const BoardStates = {
                     }
                 })
                 .then((resp) => {
-                    console.log('GET BOARDSTATES SUCCEEDED: ', resp)
                     resp.data.boardstates.forEach((boardstate) => {
                         if (boardstate.User.ID === rootState.User.User.ID) {
-                            console.log("self detected: ", boardstate)
-                            state.boardstates[rootState.User.User.ID] = boardstate
                             commit('updateSelf', boardstate)
                         } else {
                             commit('updateBoardStates', resp.data.boardstates)
@@ -134,7 +131,6 @@ const BoardStates = {
             })
             sub.subscribe({
                 next(data) {
-                    console.log("received boardstate update: ", data.data.boardstateUpdated)
                     // detect self vs opponents here and assign accordingly 
                     if (data.data.boardstateUpdated.User.ID == rootState.User.User.ID) {
                         console.log("SELF RECEIVED: ", data.data.boardstateUpdated)

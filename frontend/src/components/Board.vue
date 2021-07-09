@@ -20,7 +20,14 @@
         <!-- SELF - BATTLEFIELD -->
         <div class="column">
           <p class="title is-5">Battlefield</p>
-          <draggable class="card-wrapper" v-model="self.Field" group="people" @start="drag = true" @end="drag = false">
+          <draggable
+            class="card-wrapper"
+            @change="handleChange()"
+            v-model="self.Field"
+            group="people"
+            @start="drag = true"
+            @end="drag = false"
+          >
             <div v-for="card in self.Field" :key="card.id" class="columns">
               <Card v-bind="card" />
             </div>
@@ -35,11 +42,28 @@
             class="column card-wrapper"
             v-model="self.Library"
             group="people"
+            @change="handleChange()"
             @start="drag = true"
             @end="drag = false"
           >
             <div v-for="card in self.Library" :key="card.id">
               <Card v-bind="card" hidden="true" />
+            </div>
+          </draggable>
+        </div>
+
+        <div class="column">
+          <p class="title is-4">Hand</p>
+          <draggable
+            class="columns card-wrapper"
+            v-model="self.Hand"
+            group="people"
+            @change="handleChange()"
+            @start="drag = true"
+            @end="drag = false"
+          >
+            <div class="column mtg-card" v-for="card in self.Hand" :key="card.id">
+              <Card v-bind="card"></Card>
             </div>
           </draggable>
         </div>
@@ -74,7 +98,7 @@ export default {
     });
 
     // get initial boardstates
-    console.log('getting game ', this.$route.params.id)
+    console.log('getting game ', this.$route.params.id);
   },
   computed: mapState({
     game: (state) => state.Game.game,
@@ -86,7 +110,10 @@ export default {
     handleIncLife() {},
     handleDecLife() {},
     handleDraw() {
-      this.$store.dispatch('draw', this.self)
+      this.$store.dispatch('draw', this.self);
+    },
+    handleChange() {
+      this.$store.dispatch('mutateBoardState', this.self);
     },
   },
   components: {
