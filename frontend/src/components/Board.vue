@@ -62,21 +62,19 @@ export default {
     return {};
   },
   created() {
-    // Get the root game and then register boardstate listeners off of that.
     this.$store.dispatch('getGame', this.$route.params.id).then(() => {
-      // sub to game updates
-      this.$store.dispatch('subscribeToGame', this.$route.params.id);
-      // sub to player boardstate updates
       this.game.PlayerIDs.forEach((player) => {
         this.$store.dispatch('subToBoardstate', {
           gameID: this.$route.params.id,
           userID: player.ID,
         });
       });
+      this.$store.dispatch('subscribeToGame', this.$route.params.id);
+      this.$store.dispatch('getBoardStates', this.$route.params.id);
     });
 
     // get initial boardstates
-    this.$store.dispatch('getBoardStates', this.$route.params.id);
+    console.log('getting game ', this.$route.params.id)
   },
   computed: mapState({
     game: (state) => state.Game.game,

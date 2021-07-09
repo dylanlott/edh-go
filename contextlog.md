@@ -563,3 +563,14 @@ Relevant quote from the article.
   * Finish the BoardState updates first, though. Much more important. 
 
 
+8 July 2021
+============
+For some reason, boardstates are failing to load now on the front end.
+This happened after I refactored some tests. I think it's related to how
+I refactored the Boardstates fetch function. I need to write better tests for 
+that function. We need to make sure we're properly setting the BoardState in
+the CreateGame function. 
+
+Sure enough, I was right. The `CreateGame` function was keying BoardStates by 
+Username instead of ID's like they should be. I should write a regression test
+for that.

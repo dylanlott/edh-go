@@ -103,6 +103,7 @@ const BoardStates = {
                     }
                 })
                 .then((resp) => {
+                    console.log('GET BOARDSTATES SUCCEEDED: ', resp)
                     resp.data.boardstates.forEach((boardstate) => {
                         if (boardstate.User.ID === rootState.User.User.ID) {
                             console.log("self detected: ", boardstate)
@@ -116,6 +117,7 @@ const BoardStates = {
                     return resolve(resp.data)
                 })
                 .catch((err) => {
+                    console.error('GET BOARDSTATES FAILED: ', err)
                     commit('error', err)
                     return reject(err)
                 })

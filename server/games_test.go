@@ -119,7 +119,7 @@ func TestCreateGame(t *testing.T) {
 			s := testAPI(t)
 			result, err := s.CreateGame(context.Background(), *tt.input)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("s.UpdateBoardState() error = %+v - wanted: %+v", err, tt.wantErr)
+				t.Errorf("s.CreateGame() error = %+v - wanted: %+v", err, tt.wantErr)
 			}
 
 			// check results of want
@@ -140,10 +140,11 @@ func TestJoinGame(t *testing.T) {
 	userID2 := "abc123"
 
 	var cases = []struct {
-		name  string
-		input InputJoinGame
-		want  interface{}
-		err   error
+		name    string
+		input   InputJoinGame
+		want    interface{}
+		err     error
+		wantErr bool
 	}{
 		{
 			name: "join game happy path",
@@ -218,6 +219,9 @@ func TestJoinGame(t *testing.T) {
 				t.Errorf("failed to get host game: %+v\n", err)
 			}
 			joined, err := s.JoinGame(context.Background(), &tt.input)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("s.JoinGame() error = %+v - wanted: %+v", err, tt.wantErr)
+			}
 			if tt.want != nil {
 				if diff := cmp.Diff(tt.want, joined, cmpopts.IgnoreFields(Game{}, "CreatedAt")); diff != "" {
 					t.Errorf("wanted: %+v - got: %+v\n", tt.want, diff)

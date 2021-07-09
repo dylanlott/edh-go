@@ -16,19 +16,6 @@ import (
 	"github.com/zeebo/errs"
 )
 
-// IPersistence defines the persistence interface for the server.
-// This interface stores Game and BoardStates for realtime interaction.
-type IPersistence interface {
-	Set(key string, value interface{}) error
-	Get(key string, dest interface{}) error
-}
-
-// Observer is an interface that will eventually get fulfilled for
-// emitting game state updates.
-type Observer interface{}
-
-var _ IPersistence = (&graphQLServer{})
-
 // Games returns a list of Games.
 func (s *graphQLServer) Games(ctx context.Context, gameID *string) ([]*Game, error) {
 	if gameID == nil {
@@ -40,6 +27,7 @@ func (s *graphQLServer) Games(ctx context.Context, gameID *string) ([]*Game, err
 		log.Printf("failed to get game %s: %s", *gameID, err)
 		return nil, fmt.Errorf("failed to get game %s: %s", *gameID, err)
 	}
+	log.Printf("found game: %+v", g)
 	return []*Game{g}, nil
 }
 
@@ -222,7 +210,7 @@ func (s *graphQLServer) CreateGame(ctx context.Context, inputGame InputCreateGam
 		}
 		g.PlayerIDs = append(g.PlayerIDs, user)
 
-		// Init default boardstate minus library and commander
+		// Set default boardstate, handle library and commander specifically
 		bs := &BoardState{
 			User:       user,
 			Life:       player.Life,
@@ -264,8 +252,12 @@ func (s *graphQLServer) CreateGame(ctx context.Context, inputGame InputCreateGam
 			return nil, err
 		}
 		bs.Library = shuff
-		boardKey := BoardStateKey(g.ID, bs.User.Username)
-		err = s.Set(boardKey, bs)
+
+		// TODO: Use UpdateBoardState instead and use InputBoardState types
+		// so that we can set arbitrary board states at create game time.
+
+		// remember that BoardStates are keyed by User.ID not Username anymore
+		err = s.Set(BoardStateKey(g.ID, bs.User.ID), bs)
 		if err != nil {
 			log.Printf("error persisting boardstate into redis: %s", err)
 			return nil, err
@@ -273,7 +265,7 @@ func (s *graphQLServer) CreateGame(ctx context.Context, inputGame InputCreateGam
 
 		// save the baordChannels to the same key format of <gameID:username>
 		s.mutex.Lock()
-		s.boardChannels[boardKey] = make(chan *BoardState, 1)
+		s.boardChannels[BoardStateKey(g.ID, bs.User.ID)] = make(chan *BoardState, 1)
 		s.mutex.Unlock()
 	}
 
@@ -344,7 +336,6 @@ func (s *graphQLServer) createLibraryFromDecklist(ctx context.Context, decklist 
 
 		// NB: In the future, this should be optimized to be one query for all the cards
 		// instead of a query for each card in the deck.
-		log.Printf("parsing record: %+v", record)
 		name := record[1]
 		card, err := s.Card(ctx, name, nil)
 		if err != nil {
@@ -387,34 +378,4 @@ func (s *graphQLServer) createLibraryFromDecklist(ctx context.Context, decklist 
 // GameKey formats the keys for Games in our Directory
 func GameKey(gameID string) string {
 	return fmt.Sprintf("%s", gameID)
-}
-
-// TODO: Need to access Set and Get through Persistence interface instead
-// of directly from the Server object. Persistence should be created and
-// attached to the Server instead of directly attaching the Redis client.
-
-// Set will set a value into the Redis client and returns an error, if any
-func (s *graphQLServer) Set(key string, value interface{}) error {
-	// TODO: Need to set this to an env variable
-	exp, err := time.ParseDuration("12h")
-	if err != nil {
-		exp = 0
-	}
-	p, err := json.Marshal(value)
-	if err != nil {
-		log.Printf("failed to marshal value in Set: %s", err)
-		return err
-	}
-
-	return s.redisClient.Set(key, p, exp).Err()
-}
-
-// Get returns a value from Redis client to `dest` and returns an error, if any
-func (s *graphQLServer) Get(key string, dest interface{}) error {
-	p, err := s.redisClient.Get(key).Result()
-	if err != nil {
-		log.Printf("failed to get key from redis: %s", err)
-		return err
-	}
-	return json.Unmarshal([]byte(p), dest)
 }
