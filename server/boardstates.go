@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
 	"reflect"
 
 	redis "github.com/go-redis/redis/v7"
@@ -89,10 +88,8 @@ func (s *graphQLServer) Boardstates(ctx context.Context, gameID string, userID *
 	// if username is not provided, send all
 	if userID == nil {
 		boardstates := []*BoardState{}
-		log.Printf("playerIDS: %+v", game.PlayerIDs)
 		for _, p := range game.PlayerIDs {
 			board := &BoardState{}
-			log.Printf("checking gameID %s and playerID %s", gameID, p.ID)
 			err := s.Get(BoardStateKey(gameID, p.ID), &board)
 			if err != nil {
 				// NB: Should we fail gracefully here?

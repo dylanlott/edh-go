@@ -1,13 +1,13 @@
 <template>
   <div class="board container is-fluid" v-if="user && game">
     <!-- TURN TRACKER -->
-    <div class="column">
-      <TurnTracker :game="game" />
-    </div>
+    <div class="column"><TurnTracker :game="game" /></div>
+    <!-- END TURN TRACKER -->
+
+    <!-- ### OPPONENTS BOARDSTATES ### -->
     <div class="columns" :key="player.ID" v-for="player in game.PlayerIDs">
-      <!-- ### OPPONENTS BOARDSTATES ### -->
       <div class="columns" v-if="user.ID && player.ID != user.ID">
-        <div class="title">{{ player.Username }} {{ player.ID }}</div>
+        <div class="title">{{ player.Username }}</div>
       </div>
     </div>
     <!-- ### END OF OPPONENTS BOARDSTATES ### -->
@@ -64,23 +64,23 @@
     <template>
       <b-navbar>
         <template #start>
-            <draggable
-              v-model="self.Library"
-              group="people"
-              @change="handleChange()"
-              @start="drag = true"
-              @end="drag = false"
-            >
-          <b-navbar-item @click="handleDraw()" href="#">
+          <draggable
+            v-model="self.Library"
+            group="people"
+            @change="handleChange()"
+            @start="drag = true"
+            @end="drag = false"
+          >
+            <b-navbar-item @click="handleDraw()" href="#">
               <button class="button is-primary">
                 <span class="icon">
                   <i class="fa fa-book"></i>
                 </span>
                 <span>Draw</span>
               </button>
-          </b-navbar-item>
-            </draggable>
-          <b-navbar-item href="#"> 
+            </b-navbar-item>
+          </draggable>
+          <b-navbar-item href="#">
             <button class="button is-primary">
               <span class="icon">
                 <i class="fa fa-arrow-up"></i>
@@ -128,6 +128,7 @@ export default {
     return {};
   },
   created() {
+    this.$store.dispatch('getBoardStates', this.$route.params.id);
     this.$store.dispatch('getGame', this.$route.params.id).then(() => {
       this.game.PlayerIDs.forEach((player) => {
         this.$store.dispatch('subToBoardstate', {
@@ -136,7 +137,6 @@ export default {
         });
       });
       this.$store.dispatch('subscribeToGame', this.$route.params.id);
-      this.$store.dispatch('getBoardStates', this.$route.params.id);
     });
   },
   computed: mapState({
@@ -153,6 +153,7 @@ export default {
       this.$store.dispatch('mutateBoardState', this.self);
     },
     handleTap(card) {
+      // TODO: Make this a boardstate action
       card.Tapped = true;
       this.handleChange();
     },

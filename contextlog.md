@@ -581,3 +581,35 @@ solid, and board updates are being subscribed to and received.
 Now we just need to push on the UI until it's in a place where we can play
 test with multiple people. 
 
+9 July 2021
+============
+
+I got BoardState updates working and fixed some more bugs where Boardstate
+channels were being keyed by user.Usernames instead of user.ID's again. 
+
+Boardstates are working now, but I need to get the JoinGame functionality
+working so that I can reliably test multiplayer interactions.
+I've made huge progress on this trip, though. This is the closest I've been 
+to a working app in the history of the project. Just need to finish this final
+push. 
+
+10 July 2021
+=============
+
+Okay so I fixed parts of the JoinGame logic. Now the front end has an issue
+where the player's user ID and Username are not being set the same in the UI
+as they're being set in the server, so I need to figure out where they are. 
+
+Should we require authentication to play? I wanted to allow anonymous users, 
+but it might be too difficult to maintain in the long term. 
+
+Okay, so I can't support anonymous play, I think it's too much hassle. But 
+after cleaning up the join game logic assuming the player has logged in, it 
+solved the problems and boardstates started working almost flawlessly. 
+
+I think we should probably just push people to sign up anyway, and make it
+as easy as possible to sign up. 
+
+One problem: I think that we need to make sure we subscribe to new boardstates 
+when a player is added to the Game.
+

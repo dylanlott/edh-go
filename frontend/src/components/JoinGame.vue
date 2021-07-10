@@ -37,9 +37,11 @@
             <b-input maxlength="200000" v-model="deck.library" type="textarea"></b-input>
           </b-field>
 
-          <b-field label="Add a username?">
-            <b-input v-model="username"></b-input>
-          </b-field>
+           <div v-if="!user.Username">
+            <b-field label="Add a username?">
+              <b-input v-model="username"></b-input>
+            </b-field>
+          </div>
 
           <b-button @click="handleJoinGame()" type="button" class="is-success">Join Game</b-button>
         </div>
@@ -50,7 +52,6 @@
 <script>
 import gql from 'graphql-tag';
 import { mapState } from 'vuex';
-import router from '@/router';
 
 export default {
   name: 'join',
@@ -76,6 +77,7 @@ export default {
     },
     ...mapState({
       game: (state) => state.Game.game,
+      user: (state) => state.User.User,
     }),
   },
   created() {
@@ -89,7 +91,7 @@ export default {
       this.$apollo
         .query({
           query: gql`
-            query($name: String!) {
+            query ($name: String!) {
               search(name: $name) {
                 Name
                 ID
@@ -119,29 +121,29 @@ export default {
         });
     },
     handleJoinGame() {
-      this.$store
-        .dispatch('joinGame', {
-          inputGame: {
-            ID: this.$route.params.id,
-            Decklist: this.deck.library,
-            User: {
-              ID: this.uuid(),
-              Username: this.username || '',
-            },
-            BoardState: {
-              GameID: this.$route.params.id,
-              User: {
-                Username: this.username || '',
-              },
-              Life: 40,
-              Commander: [
-                {
-                  Name: this.deck.commander,
-                },
-              ],
-            },
+      this.$store.dispatch('joinGame', {
+        inputGame: {
+          ID: this.$route.params.id,
+          Decklist: this.deck.library,
+          User: {
+            ID: this.user.ID,
+            Username: this.user.Username,
           },
-        })
+          BoardState: {
+            GameID: this.$route.params.id,
+            User: {
+              Username: this.user.Username,
+              ID: this.user.ID,
+            },
+            Life: 40,
+            Commander: [
+              {
+                Name: this.deck.commander,
+              },
+            ],
+          },
+        },
+      });
     },
     uuid() {
       return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {

@@ -144,6 +144,7 @@ func (s *graphQLServer) JoinGame(ctx context.Context, input *InputJoinGame) (*Ga
 		bs.Commander = []*Card{commander[0]}
 	}
 
+	// shuffle their library for the start of the game
 	shuff, err := Shuffle(bs.Library)
 	if err != nil {
 		log.Printf("error shuffling library: %s", err)
@@ -151,10 +152,11 @@ func (s *graphQLServer) JoinGame(ctx context.Context, input *InputJoinGame) (*Ga
 	}
 	bs.Library = shuff
 
+	// add them to the game's list of players
 	game.PlayerIDs = append(game.PlayerIDs, user)
 
-	// set board state in Redis
-	err = s.Set(BoardStateKey(game.ID, user.Username), bs)
+	// set board state in redis keyed by game.ID and user.ID
+	err = s.Set(BoardStateKey(game.ID, user.ID), bs)
 	if err != nil {
 		log.Printf("error persisting boardstate into redis: %s", err)
 		return nil, err
@@ -263,9 +265,8 @@ func (s *graphQLServer) CreateGame(ctx context.Context, inputGame InputCreateGam
 			return nil, err
 		}
 
-		// save the baordChannels to the same key format of <gameID:username>
 		s.mutex.Lock()
-		s.boardChannels[BoardStateKey(g.ID, bs.User.ID)] = make(chan *BoardState, 1)
+		s.boardChannels[bs.User.ID] = make(chan *BoardState, 1)
 		s.mutex.Unlock()
 	}
 
@@ -378,4 +379,14 @@ func (s *graphQLServer) createLibraryFromDecklist(ctx context.Context, decklist 
 // GameKey formats the keys for Games in our Directory
 func GameKey(gameID string) string {
 	return fmt.Sprintf("%s", gameID)
+}
+
+// publish a game update
+func (s *graphQLServer) publishGame(gameID string, g *Game) {
+	s.gameChannels[gameID] <- g
+}
+
+// publish a boardstate update
+func (s *graphQLServer) publishBoardstate(gameID string, userID string, bs *BoardState) {
+	s.boardChannels[userID] <- bs
 }

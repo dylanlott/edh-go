@@ -175,7 +175,7 @@ const Game = {
         updateGame(state, game) {
             // merge updated game over current game
             const g = Object.assign(state.game, game)
-            console.table('updateGame mutation: ', g)
+            console.log('updateGame mutation: ', g)
             state.game = g
         },
         updateTurn(state, turn) {
@@ -232,7 +232,7 @@ const Game = {
                 })
             })
         },
-        joinGame({ commit }, payload) {
+        joinGame({ commit, dispatch }, payload) {
             return new Promise((resolve, reject) => {
                 api.mutate({
                     mutation: gql`mutation ($InputJoinGame: InputJoinGame) {
@@ -254,8 +254,9 @@ const Game = {
                     }
                 })
                 .then((res) => {
-                    console.log("updating game after joing: ", res.data.joinGame)
                     commit('updateGame', res.data.joinGame)
+                    console.log(this.$store.dispatch)
+                    dispatch('boardstates/getBoardStates', res.data.joinGame.ID)
                     router.push({ path: `/games/${res.data.joinGame.ID}` })
                     return resolve(res)
                 })
